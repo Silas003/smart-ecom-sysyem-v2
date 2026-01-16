@@ -1,14 +1,8 @@
 package com.amalitech.demo.config;
 
 
-import com.amalitech.demo.models.Category;
-import com.amalitech.demo.models.Inventory;
-import com.amalitech.demo.models.Product;
-import com.amalitech.demo.models.User;
-import com.amalitech.demo.repository.CategoryRepository;
-import com.amalitech.demo.repository.InventoryRepository;
-import com.amalitech.demo.repository.ProductRepository;
-import com.amalitech.demo.repository.UserRepository;
+import com.amalitech.demo.models.*;
+import com.amalitech.demo.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +15,7 @@ public class PreLoader {
 
     @Bean
     CommandLineRunner loadData(UserRepository userRepository,
-                               CategoryRepository categoryRepository, ProductRepository productRepository, InventoryRepository inventoryRepository) {
+                               CategoryRepository categoryRepository, ProductRepository productRepository, InventoryRepository inventoryRepository, ReviewsRepository reviewsRepository) {
 
         return args -> {
 
@@ -29,7 +23,7 @@ public class PreLoader {
 
                 int r = ThreadLocalRandom.current().nextInt(1000, 10000);
 
-                userRepository.save(
+                User u = userRepository.save(
                         new User(
                                 "AliceOp" + r,
                                 String.format("%dw@gmail.com", r),
@@ -53,6 +47,9 @@ public class PreLoader {
 
                 inventoryRepository.save(
                         new Inventory(p,r,r,"storage location " + r)
+                );
+                reviewsRepository.save(
+                        new Reviews(9, "Great Product " + r,u ,p)
                 );
             }
         };

@@ -1,6 +1,6 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.exceptions.UserNotFoundException;
+import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ public class UserService {
         return userRepository.save(user);
     }
     public static User getUserById(Long id) {
-       return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+       return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     public static List<User> getAllUsers() {
@@ -31,7 +31,7 @@ public class UserService {
 
     public User updateUser(Long id, User user) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         existingUser.setUsername(user.getUsername());
         existingUser.setEmail(user.getEmail());

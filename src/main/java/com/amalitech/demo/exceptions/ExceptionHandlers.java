@@ -31,9 +31,9 @@ public class ExceptionHandlers {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
+    @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<?> handleAllExceptions(UserNotFoundException ex,WebRequest request) {
+    public ResponseEntity<?> handleAllExceptions(EntityNotFoundException ex,WebRequest request) {
         Map<String,Object> errors= new HashMap<>();
         errors.put("timestamp",LocalDateTime.now());
         errors.put("mesage",ex.getMessage());

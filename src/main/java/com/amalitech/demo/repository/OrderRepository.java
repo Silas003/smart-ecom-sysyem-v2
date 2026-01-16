@@ -1,4 +1,7 @@
 package com.amalitech.demo.repository;
 
-public class OrderRepository {
+import com.amalitech.demo.models.Order;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface OrderRepository extends JpaRepository<Order,Long> {
 }

@@ -10,19 +10,19 @@ import java.util.List;
 
 @Service
 public class CategoryService {
-    private static CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
 
     public CategoryService(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 
-    public static Category getCategoryById(Long id) {
+    public  Category getCategoryById(Long id) {
         return categoryRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Category not found with id: " + id)
         );
     }
 
-    public static Category createCategory(Category category) {
+    public  Category createCategory(Category category) {
         if(categoryRepository.findByName(category.getName())){
             throw new IllegalArgumentException("category with given name already exists");
         }
@@ -30,7 +30,7 @@ public class CategoryService {
     }
 
 
-    public static List<Category> getAllCategories() {
+    public  List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
 

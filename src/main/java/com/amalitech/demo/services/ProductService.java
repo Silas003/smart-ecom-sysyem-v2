@@ -11,22 +11,22 @@ import java.util.List;
 public class ProductService {
 
 
-    private static ProductRepository productRepository ;
+    private final ProductRepository productRepository ;
     public ProductService(ProductRepository productRepository){
         this.productRepository = productRepository;
     }
 
-    public static Product createProduct(Product product) {
+    public  Product createProduct(Product product) {
         if( productRepository.findByName(product.getName()) != null){
             throw new IllegalArgumentException("Product with given name already exists");
         }
         return productRepository.save(product);
     }
-    public static Product getProductById(Long id) {
+    public  Product getProductById(Long id) {
         return productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
 
-    public static List<Product> getAllProducts() {
+    public  List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 

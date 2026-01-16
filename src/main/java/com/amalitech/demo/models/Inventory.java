@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 
@@ -20,7 +19,7 @@ public class Inventory {
     private Long id;
 
     @OneToOne(optional = false)
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @JoinColumn(name = "product_id", referencedColumnName = "product_id")
     @NotNull
     private Product product;
 

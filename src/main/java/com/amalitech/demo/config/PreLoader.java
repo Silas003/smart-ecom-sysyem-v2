@@ -13,10 +13,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 
@@ -42,11 +38,15 @@ public class PreLoader {
                         )
                 );
 
-                categoryRepository.save(
+                Category c = categoryRepository.save(
                         new Category("Category" + r)
                 );
 
-                Product p = new Product();
+                Product p = new Product("Product" + r,
+                        Double.valueOf(r),
+                        Integer.valueOf(r),
+                        c
+                );
                 productRepository.save(
                         p
                 );

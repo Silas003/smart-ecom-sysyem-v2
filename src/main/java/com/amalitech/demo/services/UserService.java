@@ -10,22 +10,22 @@ import java.util.List;
 @Service
 public class UserService {
 
-    private static  UserRepository userRepository ;
+    private final  UserRepository userRepository ;
     public UserService(UserRepository userRepository){
         this.userRepository = userRepository;
     }
 
-    public static User createUser(User user) {
+    public  User createUser(User user) {
         if( userRepository.findByEmail(user.getEmail()) != null|| userRepository.findByUsername(user.getUsername()) != null){
             throw new IllegalArgumentException("User with given email or username already exists");
         }
         return userRepository.save(user);
     }
-    public static User getUserById(Long id) {
+    public  User getUserById(Long id) {
        return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
-    public static List<User> getAllUsers() {
+    public  List<User> getAllUsers() {
         return userRepository.findAll();
     }
 

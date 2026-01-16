@@ -12,20 +12,20 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v1/categories")
 public class CategoryController {
-    private static CategoryService categoryService;
+    private final CategoryService categoryService;
     public CategoryController(CategoryService categoryService){
         this.categoryService = categoryService;
     }
 
     @GetMapping("/")
     public ResponseEntity<List<Category>> getAllCategories(){
-        List<Category> categories = CategoryService.getAllCategories();
+        List<Category> categories = categoryService.getAllCategories();
         return  ResponseEntity.status(HttpStatus.OK).body(categories);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Category> getCategoryById(@PathVariable Long id){
-        Category category = CategoryService.getCategoryById(id);
+        Category category = categoryService.getCategoryById(id);
         return  ResponseEntity.status(HttpStatus.OK).body(category);
     }
 
@@ -42,7 +42,7 @@ public class CategoryController {
 
     @PostMapping("/create_category")
     public ResponseEntity<Category> createCategory(@RequestBody @Valid Category category) {
-        Category newCategory = CategoryService.createCategory(category);
+        Category newCategory = categoryService.createCategory(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCategory);
     }
 }

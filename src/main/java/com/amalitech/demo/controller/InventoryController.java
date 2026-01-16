@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/inventories")
 public class InventoryController {
-    private static InventoryService inventoryService;
+    private final InventoryService inventoryService;
 
     public InventoryController(InventoryService inventoryService) {
         this.inventoryService = inventoryService;

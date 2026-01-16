@@ -18,8 +18,13 @@ import java.util.stream.Collectors;
 public class ReviewsService {
     private final ReviewsRepository reviewsRepository;
 
-    public ReviewsService(ReviewsRepository reviewsRepository) {
+    private final ProductService productService;
+    private final UserService userService;
+
+    public ReviewsService(ReviewsRepository reviewsRepository,ProductService productService,UserService userService) {
         this.reviewsRepository = reviewsRepository;
+        this.userService = userService;
+        this.productService = productService;
     }
 
     public List<ReviewResponse> getAllReviews() {
@@ -28,8 +33,8 @@ public class ReviewsService {
     }
     @Transactional
     public ReviewResponse createReview(ReviewRequest request, Long userId) {
-        Product product = ProductService.getProductById(request.getProductId());
-        User user = com.amalitech.demo.services.UserService.getUserById(userId);
+        Product product = productService.getProductById(request.getProductId());
+        User user = userService.getUserById(userId);
 
         Reviews review = new Reviews(request.getRating(), request.getDescription(), user, product);
         Reviews saved = reviewsRepository.save(review);
@@ -43,13 +48,13 @@ public class ReviewsService {
     }
 
     public List<ReviewResponse> getReviewsByProduct(Long productId) {
-        ProductService.getProductById(productId); // validate exists
+        productService.getProductById(productId); // validate exists
         List<Reviews> reviews = reviewsRepository.findByProduct_IdOrderByIdDesc(productId);
         return reviews.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     public List<ReviewResponse> getReviewsByUser(Long userId) {
-        com.amalitech.demo.services.UserService.getUserById(userId); // validate exists
+        userService.getUserById(userId); // validate exists
         List<Reviews> reviews = reviewsRepository.findByUser_IdOrderByIdDesc(userId);
         return reviews.stream().map(this::toResponse).collect(Collectors.toList());
     }

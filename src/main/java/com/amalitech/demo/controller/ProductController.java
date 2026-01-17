@@ -1,9 +1,14 @@
 package com.amalitech.demo.controller;
 
 
+import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.services.ProductService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +25,14 @@ public class ProductController {
         this.productService = productService;
     }
     @GetMapping("/")
-    public ResponseEntity<List<Product>> getAllProducts(){
-        List<Product> products = productService.getAllProducts();
-        return  ResponseEntity.status(HttpStatus.OK).body(products);
+    public ResponseDto getAllProducts(
+            @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable
+    )
+    {
+        Page<Product> products = productService.getAllProducts(pageable);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"products retrieved",products);
+
+        return  responseDto;
     }
 
     @GetMapping("/{id}")

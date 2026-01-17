@@ -23,7 +23,7 @@ public class CategoryService {
     }
 
     public  Category createCategory(Category category) {
-        if(categoryRepository.findByName(category.getName())){
+        if(categoryRepository.findByName(category.getName()) != null){
             throw new IllegalArgumentException("category with given name already exists");
         }
         return categoryRepository.save(category);

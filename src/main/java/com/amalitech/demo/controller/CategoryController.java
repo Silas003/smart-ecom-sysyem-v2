@@ -1,5 +1,6 @@
 package com.amalitech.demo.controller;
 
+import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.services.CategoryService;
 import jakarta.validation.Valid;
@@ -18,31 +19,36 @@ public class CategoryController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Category>> getAllCategories(){
+    public ResponseEntity<ResponseDto> getAllCategories(){
         List<Category> categories = categoryService.getAllCategories();
-        return  ResponseEntity.status(HttpStatus.OK).body(categories);
+        ResponseDto  responseDto = new ResponseDto<List<Category>>(HttpStatus.OK,"categories retrieved",categories);
+        return  ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Long id){
+    public ResponseEntity<ResponseDto> getCategoryById(@PathVariable Long id){
         Category category = categoryService.getCategoryById(id);
-        return  ResponseEntity.status(HttpStatus.OK).body(category);
+        ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.OK,"category retrieved",category);
+        return  ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody @Valid Category category){
+    public ResponseEntity<ResponseDto> updateCategory(@PathVariable Long id, @RequestBody @Valid Category category){
         Category updatedCategory = categoryService.updateCategory(id, category);
-        return  ResponseEntity.status(HttpStatus.ACCEPTED).body(updatedCategory);
+        ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.OK,"category retrieved",updatedCategory);
+        return  ResponseEntity.status(HttpStatus.ACCEPTED).body(responseDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    public ResponseEntity<ResponseDto> deleteCategory(@PathVariable Long id) {
+        ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.NO_CONTENT,"category deleted successfully",null);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
     }
 
     @PostMapping("/create_category")
-    public ResponseEntity<Category> createCategory(@RequestBody @Valid Category category) {
+    public ResponseEntity<ResponseDto> createCategory(@RequestBody @Valid Category category) {
         Category newCategory = categoryService.createCategory(category);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newCategory);
+        ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.CREATED,"category created",newCategory);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 }

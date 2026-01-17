@@ -3,6 +3,8 @@ package com.amalitech.demo.services;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,8 +28,8 @@ public class ProductService {
         return productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
 
-    public  List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public Page<Product> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable);
     }
 
     public Product updateProduct(Long id, Product product) {

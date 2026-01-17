@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -59,6 +60,16 @@ public class ExceptionHandlers {
         errors.put("message","Invalid parameter: " + ex.getMessage());
         errors.put("path",request.getDescription(false));
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String,Object>> handleNoResourceFoundException(NoResourceFoundException ex){
+        Map<String,Object> errors = new HashMap<String,Object>();
+        errors.put("timestamp",LocalDateTime.now());
+        errors.put("message","Resoource Not Found");
+        errors.put("details",ex.getMessage());
+        return new ResponseEntity<>(errors,HttpStatus.NOT_FOUND
+        );
     }
 
 }

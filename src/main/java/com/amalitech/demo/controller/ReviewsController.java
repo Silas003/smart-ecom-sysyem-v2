@@ -1,7 +1,9 @@
 package com.amalitech.demo.controller;
 
+import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.ReviewRequest;
 import com.amalitech.demo.dto.ReviewResponse;
+import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.services.ReviewsService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,38 +23,44 @@ public class ReviewsController {
 
 
     @GetMapping("/")
-    public ResponseEntity<List<ReviewResponse>> getAllReviews( ){
-        List<ReviewResponse> resp = reviewsService.getAllReviews();
-        return ResponseEntity.status(HttpStatus.OK).body(resp);
+    public ResponseEntity<ResponseDto> getAllReviews( ){
+        List<Reviews> reviews = reviewsService.getAllReviews();
+        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"reviews retrieved",reviews);
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
     @PostMapping("/")
-    public ResponseEntity<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request, @RequestParam Long userId){
-        ReviewResponse resp = reviewsService.createReview(request, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(resp);
+    public ResponseEntity<ResponseDto> createReview(@RequestBody @Valid Reviews reviews, @RequestParam Long userId){
+        Reviews review = reviewsService.createReview(reviews, userId);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.CREATED,"review created",review);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<ReviewResponse> getReview(@PathVariable Long id){
-        ReviewResponse resp = reviewsService.getReview(id);
-        return ResponseEntity.ok(resp);
+    public ResponseEntity<ResponseDto> getReview(@PathVariable Long id){
+        Reviews resp = reviewsService.getReview(id);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"reviews retrieved",resp);
+        return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/{productId}/products")
-    public ResponseEntity<List<ReviewResponse>> getReviewsByProduct(@PathVariable Long productId){
-        List<ReviewResponse> resp = reviewsService.getReviewsByProduct(productId);
-        return ResponseEntity.ok(resp);
+    public ResponseEntity<ResponseDto> getReviewsByProduct(@PathVariable Long productId){
+        List<Reviews> resp = reviewsService.getReviewsByProduct(productId);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"product reviews retrieved",resp);
+        return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/{userId}/users/")
-    public ResponseEntity<List<ReviewResponse>> getReviewsByUser(@PathVariable Long userId){
-        List<ReviewResponse> resp = reviewsService.getReviewsByUser(userId);
-        return ResponseEntity.ok(resp);
+    public ResponseEntity<ResponseDto> getReviewsByUser(@PathVariable Long userId){
+        List<Reviews> resp = reviewsService.getReviewsByUser(userId);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"user reviews retrieved",resp);
+        return ResponseEntity.ok(responseDto);
     }
 
     @DeleteMapping("/reviews/{id}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id, @RequestParam Long userId){
+    public ResponseEntity<ResponseDto> deleteReview(@PathVariable Long id, @RequestParam Long userId){
         reviewsService.deleteReview(id, userId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        ResponseDto responseDto = new ResponseDto(HttpStatus.NO_CONTENT,"review deleted",null);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
     }
 }

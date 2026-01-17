@@ -1,5 +1,6 @@
 package com.amalitech.demo.controller;
 
+import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.services.UserService;
 import jakarta.validation.Valid;
@@ -19,31 +20,39 @@ public class UserController {
         this.userService = userService;
     }
     @GetMapping("/")
-    public ResponseEntity<List<User>> getAllUsers(){
+    public ResponseEntity<ResponseDto> getAllUsers(){
         List<User> users = userService.getAllUsers();
-        return  ResponseEntity.status(HttpStatus.OK).body(users);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"users retrieved",users);
+        return  ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id){
+    public ResponseEntity<ResponseDto> getUserById(@PathVariable Long id){
             User user = userService.getUserById(id);
-        return  ResponseEntity.status(HttpStatus.OK).body(user);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"user retrieved",user);
+
+        return  ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody @Valid User user){
+    public ResponseEntity<ResponseDto> updateUser(@PathVariable Long id, @RequestBody @Valid User user){
         User updatedUser = userService.updateUser(id, user);
-        return  ResponseEntity.status(HttpStatus.ACCEPTED).body(updatedUser);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.ACCEPTED,"user updated succesfully",updatedUser);
+
+        return  ResponseEntity.status(HttpStatus.ACCEPTED).body(responseDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    public ResponseEntity<ResponseDto> deleteUser(@PathVariable Long id) {
+        ResponseDto responseDto = new ResponseDto(HttpStatus.NO_CONTENT,"user deletion success",null);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
     }
 
     @PostMapping("/create_user")
-    public ResponseEntity<User> createUser(@RequestBody @Valid User user) {
+    public ResponseEntity<ResponseDto> createUser(@RequestBody @Valid User user) {
         User newUser = userService.createUser(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.CREATED,"users retrieved",newUser);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 }

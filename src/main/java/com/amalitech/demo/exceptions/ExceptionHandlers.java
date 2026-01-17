@@ -39,7 +39,7 @@ public class ExceptionHandlers {
         errors.put("timestamp",LocalDateTime.now());
         errors.put("mesage",ex.getMessage());
         errors.put("path",request.getDescription(false));
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errors, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

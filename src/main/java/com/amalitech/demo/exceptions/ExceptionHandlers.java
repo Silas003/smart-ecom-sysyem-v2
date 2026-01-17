@@ -26,7 +26,7 @@ public class ExceptionHandlers {
     public ResponseEntity<?> handleMethodArgumentTypeMismatch(MethodArgumentNotValidException ex, WebRequest request) {
         Map<String,Object> errors= new HashMap<>();
         errors.put("timestamp",LocalDateTime.now());
-        errors.put("mesage","Validation Failed");
+        errors.put("message","Validation Failed");
         errors.put("details",ex.getBindingResult().getFieldErrors().stream().map(x-> x.getDefaultMessage()).toList());
         errors.put("path",request.getDescription(false));
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
@@ -37,9 +37,9 @@ public class ExceptionHandlers {
     public ResponseEntity<?> handleAllExceptions(EntityNotFoundException ex,WebRequest request) {
         Map<String,Object> errors= new HashMap<>();
         errors.put("timestamp",LocalDateTime.now());
-        errors.put("mesage",ex.getMessage());
+        errors.put("message",ex.getMessage());
         errors.put("path",request.getDescription(false));
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errors, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -63,6 +63,7 @@ public class ExceptionHandlers {
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Map<String,Object>> handleNoResourceFoundException(NoResourceFoundException ex){
         Map<String,Object> errors = new HashMap<String,Object>();
         errors.put("timestamp",LocalDateTime.now());

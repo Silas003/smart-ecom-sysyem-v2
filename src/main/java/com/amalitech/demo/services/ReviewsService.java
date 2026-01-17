@@ -32,11 +32,11 @@ public class ReviewsService {
         return reviews;
     }
     @Transactional
-    public Reviews createReview(Reviews reviews, Long userId) {
-        Product product = productService.getProductById(reviews.getProduct().getId());
+    public Reviews createReview(ReviewRequest request, Long userId) {
+        Product product = productService.getProductById(request.getProductId());
         User user = userService.getUserById(userId);
 
-        Reviews review = new Reviews(reviews.getRating(), reviews.getDescription(), user, product);
+        Reviews review = new Reviews(request.getRating(), request.getDescription(), user, product);
         return reviewsRepository.save(review);
 
     }

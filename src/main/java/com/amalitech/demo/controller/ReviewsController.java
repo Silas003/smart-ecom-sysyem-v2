@@ -29,8 +29,8 @@ public class ReviewsController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
     @PostMapping("/")
-    public ResponseEntity<ResponseDto> createReview(@RequestBody @Valid Reviews reviews, @RequestParam Long userId){
-        Reviews review = reviewsService.createReview(reviews, userId);
+    public ResponseEntity<ResponseDto> createReview(@RequestBody @Valid ReviewRequest request, @RequestParam Long userId){
+        Reviews review = reviewsService.createReview(request, userId);
         ResponseDto responseDto = new ResponseDto(HttpStatus.CREATED,"review created",review);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
@@ -57,10 +57,9 @@ public class ReviewsController {
         return ResponseEntity.ok(responseDto);
     }
 
-    @DeleteMapping("/reviews/{id}")
-    public ResponseEntity<ResponseDto> deleteReview(@PathVariable Long id, @RequestParam Long userId){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteReview(@PathVariable Long id, @RequestParam Long userId){
         reviewsService.deleteReview(id, userId);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.NO_CONTENT,"review deleted",null);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

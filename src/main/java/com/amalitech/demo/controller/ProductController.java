@@ -1,7 +1,9 @@
 package com.amalitech.demo.controller;
 
 
+import com.amalitech.demo.dto.ProductRequest;
 import com.amalitech.demo.dto.ResponseDto;
+import com.amalitech.demo.models.Category;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.services.ProductService;
 import jakarta.validation.Valid;
@@ -21,7 +23,6 @@ public class ProductController {
     private final ProductService productService;
 
     public ProductController(ProductService productService){
-
         this.productService = productService;
     }
     @GetMapping("/")
@@ -36,25 +37,33 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id){
+    public ResponseEntity<ResponseDto> getProductById(@PathVariable Long id){
         Product product = productService.getProductById(id);
-        return  ResponseEntity.status(HttpStatus.OK).body(product);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"product retrieved",product);
+
+        return  ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody @Valid Product product){
-        Product updatedProduct = productService.updateProduct(id, product);
-        return  ResponseEntity.status(HttpStatus.ACCEPTED).body(updatedProduct);
+    public ResponseEntity<ResponseDto> updateProduct(@PathVariable Long id, @RequestBody @Valid ProductRequest productRequest){
+        Product updatedProduct = productService.updateProduct(id, productRequest);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.ACCEPTED,"product updated ",updatedProduct);
+
+        return  ResponseEntity.status(HttpStatus.ACCEPTED).body(responseDto);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+
     }
 
     @PostMapping("/create_product")
-    public ResponseEntity<Product> createProduct(@RequestBody @Valid Product product) {
-        Product newProduct = productService.createProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newProduct);
+    public ResponseEntity<ResponseDto> createProduct(@RequestBody @Valid ProductRequest productRequest) {
+        Product newProduct = productService.createProduct(productRequest);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.CREATED,"product created ",newProduct);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 }

@@ -1,5 +1,6 @@
 package com.amalitech.demo.controller;
 
+import com.amalitech.demo.dto.CategoryRequest;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.services.CategoryService;
@@ -33,21 +34,21 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseDto> updateCategory(@PathVariable Long id, @RequestBody @Valid Category category){
-        Category updatedCategory = categoryService.updateCategory(id, category);
-        ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.OK,"category retrieved",updatedCategory);
+    public ResponseEntity<ResponseDto> updateCategory(@PathVariable Long id, @RequestBody @Valid CategoryRequest categoryRequest){
+        Category updatedCategory = categoryService.updateCategory(id, categoryRequest);
+        ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.ACCEPTED,"category updated",updatedCategory);
         return  ResponseEntity.status(HttpStatus.ACCEPTED).body(responseDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseDto> deleteCategory(@PathVariable Long id) {
-        ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.NO_CONTENT,"category deleted successfully",null);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/create_category")
-    public ResponseEntity<ResponseDto> createCategory(@RequestBody @Valid Category category) {
-        Category newCategory = categoryService.createCategory(category);
+    public ResponseEntity<ResponseDto> createCategory(@RequestBody @Valid CategoryRequest categoryRequest) {
+        Category newCategory = categoryService.createCategory(categoryRequest);
         ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.CREATED,"category created",newCategory);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }

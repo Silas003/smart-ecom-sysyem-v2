@@ -29,31 +29,29 @@ public class InventoryController {
     @GetMapping("/{id}")
     public ResponseEntity<ResponseDto> getInventoryById(@PathVariable Long id){
         Inventory inventory = inventoryService.getInventoryById(id);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"users retrieved",inventory);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"inventory retrieved",inventory);
 
         return  ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseDto> updateInventory(@PathVariable Long id, @RequestBody @Valid Inventory inventory){
-        Inventory updatedInventory = inventoryService.updateInventory(id, inventory);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.ACCEPTED,"users retrieved",updatedInventory);
+    public ResponseEntity<ResponseDto> updateInventory(@PathVariable Long id, @RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest){
+        Inventory updatedInventory = inventoryService.updateInventory(id, inventoryRequest);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.ACCEPTED,"inventory updated",updatedInventory);
 
         return  ResponseEntity.status(HttpStatus.ACCEPTED).body(responseDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseDto> deleteInventory(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteInventory(@PathVariable Long id) {
         inventoryService.deleteInventory(id);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"users retrieved",null);
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/create_inventory")
-    public ResponseEntity<ResponseDto> createInventory(@RequestBody @Valid Inventory inventory) {
-        Inventory newInventory = inventoryService.createInventory(inventory);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"users retrieved",newInventory);
+    public ResponseEntity<ResponseDto> createInventory(@RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest) {
+        Inventory newInventory = inventoryService.createInventory(inventoryRequest);
+        ResponseDto responseDto = new ResponseDto(HttpStatus.CREATED,"inventory created",newInventory);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }

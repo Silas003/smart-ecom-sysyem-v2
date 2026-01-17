@@ -3,6 +3,8 @@ package com.amalitech.demo.controller;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.services.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/categories")
+@Tag(name = "Categories" ,description = "")
 public class CategoryController {
     private final CategoryService categoryService;
     public CategoryController(CategoryService categoryService){
@@ -19,6 +22,7 @@ public class CategoryController {
     }
 
     @GetMapping("/")
+    @Operation(summary = "Get all categories", description = "Retrieve all categories")
     public ResponseEntity<ResponseDto> getAllCategories(){
         List<Category> categories = categoryService.getAllCategories();
         ResponseDto  responseDto = new ResponseDto<List<Category>>(HttpStatus.OK,"categories retrieved",categories);
@@ -26,6 +30,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get category", description = "Retrieve a category by id")
     public ResponseEntity<ResponseDto> getCategoryById(@PathVariable Long id){
         Category category = categoryService.getCategoryById(id);
         ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.OK,"category retrieved",category);
@@ -33,6 +38,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Update category", description = "Update a category by id")
     public ResponseEntity<ResponseDto> updateCategory(@PathVariable Long id, @RequestBody @Valid Category category){
         Category updatedCategory = categoryService.updateCategory(id, category);
         ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.OK,"category retrieved",updatedCategory);
@@ -40,12 +46,14 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete category", description = "Delete a category by id")
     public ResponseEntity<ResponseDto> deleteCategory(@PathVariable Long id) {
         ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.NO_CONTENT,"category deleted successfully",null);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
     }
 
     @PostMapping("/create_category")
+    @Operation(summary = "Create category", description = "Create a category ")
     public ResponseEntity<ResponseDto> createCategory(@RequestBody @Valid Category category) {
         Category newCategory = categoryService.createCategory(category);
         ResponseDto  responseDto = new ResponseDto<Category>(HttpStatus.CREATED,"category created",newCategory);

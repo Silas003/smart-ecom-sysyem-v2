@@ -72,4 +72,13 @@ public class ExceptionHandlers {
         );
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String,Object>> handleConstraintViolationException(ConstraintViolationException ex){
+        Map<String,Object> errors = new HashMap<String,Object>();
+        errors.put("timestamp",LocalDateTime.now());
+        errors.put("message","Validations failed");
+        errors.put("details",ex.getMessage());
+        return new ResponseEntity<>(errors,HttpStatus.BAD_REQUEST);
+    }
+
 }

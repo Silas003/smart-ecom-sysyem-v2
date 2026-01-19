@@ -59,11 +59,8 @@ public class ReviewsService {
     }
 
     @Transactional
-    public void deleteReview(Long id, Long requesterId) {
+    public void deleteReview(Long id) {
         Reviews review = reviewsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Review not found"));
-        if(!review.getUser().getId().equals(requesterId)){
-            throw new IllegalArgumentException("Not allowed to delete this review");
-        }
         reviewsRepository.delete(review);
     }
 

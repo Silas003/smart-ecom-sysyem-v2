@@ -1,4 +1,4 @@
-package com.amalitech.demo.controller;
+package com.amalitech.demo.restcontroller;
 
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.ReviewRequest;
@@ -58,8 +58,8 @@ public class ReviewsController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id, @RequestParam Long userId){
-        reviewsService.deleteReview(id, userId);
+    public ResponseEntity<Void> deleteReview(@PathVariable Long id){
+        reviewsService.deleteReview(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

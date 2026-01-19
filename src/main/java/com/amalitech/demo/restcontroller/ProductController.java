@@ -1,4 +1,4 @@
-package com.amalitech.demo.controller;
+package com.amalitech.demo.restcontroller;
 
 
 import com.amalitech.demo.dto.ProductRequest;

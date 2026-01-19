@@ -6,10 +6,6 @@ type Product {
   category: Category
 }
 
-type Category {
-  id: ID!
-  name: String!
-}
 
 input ProductInput {
   name: String!
@@ -19,7 +15,7 @@ input ProductInput {
 }
 
 type Query {
-  products: [Product!]!
+  products(page:Int!,size:Int!): [Product!]!
   productById(id: ID!): Product
 }
 
@@ -54,13 +50,14 @@ input UserInput {
 
 type Review {
   id: ID!
-  productId: ID!
-  userId: ID!
+  product: Product
+  user: User
   rating: Int!
   description: String
 }
 
 input ReviewInput {
+  userId: ID!
   productId: ID!
   rating: Int!
   description: String
@@ -68,7 +65,7 @@ input ReviewInput {
 
 type Inventory {
   id: ID!
-  productId: ID!
+  product: Product
   stockQuantity: Int!
   reservedQuantity: Int!
   stockStatus: String!

@@ -1,16 +1,15 @@
 package com.amalitech.demo.graphqlcontroller;
 
-import com.amalitech.demo.dto.ProductInput;
+
 import com.amalitech.demo.dto.ProductRequest;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.services.ProductService;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
-
-import java.util.List;
 
 @Controller
 public class ProductGraphqlController {
@@ -22,8 +21,8 @@ public class ProductGraphqlController {
     }
 
     @QueryMapping
-    public List<Product> products() {
-        return productService.getAllProducts(Pageable.unpaged()).getContent();
+    public Page<Product> products(@Argument Integer page, @Argument Integer size) {
+        return productService.getAllProducts(PageRequest.of(page,size));
     }
 
     @QueryMapping
@@ -32,23 +31,13 @@ public class ProductGraphqlController {
     }
 
     @MutationMapping
-    public Product createProduct(@Argument ProductInput input) {
-        ProductRequest req = new ProductRequest();
-        req.setName(input.getName());
-        req.setPrice(input.getPrice());
-        req.setStockQuantity(input.getStockQuantity());
-        req.setCategoryId(input.getCategoryId());
-        return productService.createProduct(req);
+    public Product createProduct(@Argument("input")  ProductRequest request) {
+        return productService.createProduct(request);
     }
 
     @MutationMapping
-    public Product updateProduct(@Argument Long id, @Argument ProductInput input) {
-        ProductRequest req = new ProductRequest();
-        req.setName(input.getName());
-        req.setPrice(input.getPrice());
-        req.setStockQuantity(input.getStockQuantity());
-        req.setCategoryId(input.getCategoryId());
-        return productService.updateProduct(id, req);
+    public Product updateProduct(@Argument Long id, @Argument("input")  ProductRequest request) {
+        return productService.updateProduct(id, request);
     }
 
     @MutationMapping

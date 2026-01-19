@@ -1,6 +1,5 @@
 package com.amalitech.demo.graphqlcontroller;
 
-import com.amalitech.demo.dto.CategoryInput;
 import com.amalitech.demo.dto.CategoryRequest;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.services.CategoryService;
@@ -31,17 +30,13 @@ public class CategoryGraphqlController {
     }
 
     @MutationMapping
-    public Category createCategory(@Argument CategoryInput input) {
-        CategoryRequest req = new CategoryRequest();
-        req.setName(input.getName());
-        return categoryService.createCategory(req);
+    public Category createCategory(@Argument("input") CategoryRequest request) {
+        return categoryService.createCategory(request);
     }
 
     @MutationMapping
-    public Category updateCategory(@Argument Long id, @Argument CategoryInput input) {
-        CategoryRequest req = new CategoryRequest();
-        req.setName(input.getName());
-        return categoryService.updateCategory(id, req);
+    public Category updateCategory(@Argument Long id,@Argument("input")  CategoryRequest categoryRequest) {
+        return categoryService.updateCategory(id, categoryRequest);
     }
 
     @MutationMapping

@@ -1,4 +1,6 @@
 package com.amalitech.demo.models;
+//import com.amalitech.demo.utils.UniqueEmail;
+//import com.amalitech.demo.utils.UniqueUserName;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -23,10 +25,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+//    @UniqueUserName
     @Size(min=5, message="Username must be at least 5 characters long")
     @NotBlank(message="Username cannot be blank")
     private String username;
 
+//    @UniqueEmail
     @Email
     @NotBlank
     private String email;

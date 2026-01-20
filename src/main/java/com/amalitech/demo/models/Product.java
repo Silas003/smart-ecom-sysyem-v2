@@ -1,5 +1,6 @@
 package com.amalitech.demo.models;
 
+//import com.amalitech.demo.utils.UniqueProductName;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -20,6 +21,7 @@ public class Product {
 
     @NotBlank
     @NotNull
+//    @UniqueProductName
     @Column(columnDefinition = "TEXT UNIQUE", nullable = false)
     private String name;
 

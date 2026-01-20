@@ -3,9 +3,9 @@ package com.amalitech.demo.restcontroller;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.ReviewRequest;
 import com.amalitech.demo.dto.ReviewResponse;
-import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.services.ReviewsService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,50 +14,52 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/reviews")
+@AllArgsConstructor
 public class ReviewsController {
     private final ReviewsService reviewsService;
 
-    public ReviewsController(ReviewsService reviewsService) {
-        this.reviewsService = reviewsService;
-    }
-
 
     @GetMapping("/")
-    public ResponseEntity<ResponseDto> getAllReviews( ){
-        List<Reviews> reviews = reviewsService.getAllReviews();
-        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"reviews retrieved",reviews);
-        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<List<ReviewResponse>> getAllReviews( ){
+        List<ReviewResponse> reviews = reviewsService.getAllReviews();
+        return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",reviews);
+
     }
     @PostMapping("/")
-    public ResponseEntity<ResponseDto> createReview(@RequestBody @Valid ReviewRequest request, @RequestParam Long userId){
-        Reviews review = reviewsService.createReview(request, userId);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.CREATED,"review created",review);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request, @RequestParam Long userId){
+        ReviewResponse review = reviewsService.createReview(request, userId);
+        return  new ResponseDto<>(HttpStatus.CREATED,"review created",review);
     }
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDto> getReview(@PathVariable Long id){
-        Reviews resp = reviewsService.getReview(id);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"reviews retrieved",resp);
-        return ResponseEntity.ok(responseDto);
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<ReviewResponse> getReview(@PathVariable Long id){
+        ReviewResponse resp = reviewsService.getReview(id);
+        return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",resp);
+
     }
 
-    @GetMapping("/{productId}/products")
-    public ResponseEntity<ResponseDto> getReviewsByProduct(@PathVariable Long productId){
-        List<Reviews> resp = reviewsService.getReviewsByProduct(productId);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"product reviews retrieved",resp);
-        return ResponseEntity.ok(responseDto);
+    @GetMapping("/products/{productId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<List<ReviewResponse>> getReviewsByProduct(@PathVariable Long productId){
+        List<ReviewResponse> resp = reviewsService.getReviewsByProduct(productId);
+        return new ResponseDto<>(HttpStatus.OK,"product reviews retrieved",resp);
+
     }
 
-    @GetMapping("/{userId}/users/")
-    public ResponseEntity<ResponseDto> getReviewsByUser(@PathVariable Long userId){
-        List<Reviews> resp = reviewsService.getReviewsByUser(userId);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"user reviews retrieved",resp);
-        return ResponseEntity.ok(responseDto);
+    @GetMapping("/users/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<List<ReviewResponse>> getReviewsByUser(@PathVariable Long userId){
+        List<ReviewResponse> resp = reviewsService.getReviewsByUser(userId);
+        return new ResponseDto<>(HttpStatus.OK,"user reviews retrieved",resp);
+
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> deleteReview(@PathVariable Long id){
         reviewsService.deleteReview(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

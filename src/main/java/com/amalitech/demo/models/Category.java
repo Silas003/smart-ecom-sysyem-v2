@@ -1,9 +1,10 @@
 package com.amalitech.demo.models;
+//import com.amalitech.demo.utils.UniqueCategoryName;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
+//
 @Data
 @Entity
 @Table(name = "categories")
@@ -14,6 +15,7 @@ public class Category {
 
     @NotBlank
     @NotNull
+//    @UniqueCategoryName
     private String name;
     public Category(){}
     public Category(String name){

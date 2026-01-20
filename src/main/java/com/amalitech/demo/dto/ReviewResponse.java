@@ -12,7 +12,4 @@ public class ReviewResponse {
     private Long userId;
     private Integer rating;
     private String description;
-    private LocalDateTime createdAt;
-
-
 }

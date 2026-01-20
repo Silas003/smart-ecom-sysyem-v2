@@ -9,12 +9,13 @@ public class ResponseDto<T> {
     private String message;
     private T data;
 
-    public ResponseDto(HttpStatus status,String message,T data){
+    public ResponseDto(HttpStatus status, String message, T data) {
         this.status = status;
         this.message = message;
         this.data = data;
-
     }
+
+
 }
 
 

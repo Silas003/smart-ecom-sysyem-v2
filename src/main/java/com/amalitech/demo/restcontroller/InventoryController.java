@@ -4,6 +4,7 @@ import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.models.Inventory;
 import com.amalitech.demo.services.InventoryService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,48 +13,48 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/inventories")
+@AllArgsConstructor
 public class InventoryController {
     private final InventoryService inventoryService;
 
-    public InventoryController(InventoryService inventoryService) {
-        this.inventoryService = inventoryService;
-    }
     @GetMapping("/")
-    public ResponseEntity<ResponseDto> getAllInventorys(){
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<List<Inventory>> getAllInventories(){
         List<Inventory> inventories = inventoryService.getAllInventories();
-        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"inventories retrieved",inventories);
+        return new ResponseDto<>(HttpStatus.OK,"inventories retrieved",inventories);
 
-        return  ResponseEntity.status(HttpStatus.OK).body(responseDto);
+
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDto> getInventoryById(@PathVariable Long id){
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Inventory> getInventoryById(@PathVariable Long id){
         Inventory inventory = inventoryService.getInventoryById(id);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.OK,"inventory retrieved",inventory);
+        return new ResponseDto<>(HttpStatus.OK,"inventory retrieved",inventory);
 
-        return  ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseDto> updateInventory(@PathVariable Long id, @RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest){
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Inventory> updateInventory(@PathVariable Long id, @RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest){
         Inventory updatedInventory = inventoryService.updateInventory(id, inventoryRequest);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.ACCEPTED,"inventory updated",updatedInventory);
+        return new ResponseDto<>(HttpStatus.ACCEPTED,"inventory updated",updatedInventory);
 
-        return  ResponseEntity.status(HttpStatus.ACCEPTED).body(responseDto);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> deleteInventory(@PathVariable Long id) {
         inventoryService.deleteInventory(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/create_inventory")
-    public ResponseEntity<ResponseDto> createInventory(@RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseDto<Inventory> createInventory(@RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest) {
         Inventory newInventory = inventoryService.createInventory(inventoryRequest);
-        ResponseDto responseDto = new ResponseDto(HttpStatus.CREATED,"inventory created",newInventory);
+        return new ResponseDto<>(HttpStatus.CREATED,"inventory created",newInventory);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
 }

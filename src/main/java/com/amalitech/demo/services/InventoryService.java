@@ -25,7 +25,7 @@ public class InventoryService {
 
     public Inventory createInventory(InventoryRequest request) {
         Product product = productService.getProductById(request.getProductId());
-        if( inventoryRepository.findByProductId(product.getId())){
+        if( inventoryRepository.existsByProductId(product.getId())){
             throw new IllegalArgumentException("inventory with given product already exists");
         }
         Inventory inventory = inventoryMapper.toEntity(request);

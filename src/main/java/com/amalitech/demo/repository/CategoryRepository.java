@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category,Long> {
-
-    @Query("SELECT c FROM Category c WHERE c.name = ?1")
-    Category findByName(@NotBlank @NotNull String name);
+    Category findByName(String name);
+    boolean existsByName( String name);
 }

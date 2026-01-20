@@ -1,6 +1,7 @@
 package com.amalitech.demo.graphqlcontroller;
 
 import com.amalitech.demo.dto.UserRequest;
+import com.amalitech.demo.dto.UserResponse;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.services.UserService;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -20,22 +21,22 @@ public class UserGraphqlController {
     }
 
     @QueryMapping
-    public List<User> users() {
+    public List<UserResponse> users() {
         return userService.getAllUsers();
     }
 
     @QueryMapping
-    public User userById(@Argument Long id) {
+    public UserResponse userById(@Argument Long id) {
         return userService.getUserById(id);
     }
 
     @MutationMapping
-    public User createUser(@Argument("input")  UserRequest request) {
+    public UserResponse createUser(@Argument("input")  UserRequest request) {
         return userService.createUser(request);
     }
 
     @MutationMapping
-    public User updateUser(@Argument("input")  Long id, @Argument UserRequest request) {
+    public UserResponse updateUser(@Argument  Long id, @Argument("input") UserRequest request) {
         return userService.updateUser(id, request);
     }
 

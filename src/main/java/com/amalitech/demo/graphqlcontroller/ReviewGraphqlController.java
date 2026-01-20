@@ -1,6 +1,7 @@
 package com.amalitech.demo.graphqlcontroller;
 
 import com.amalitech.demo.dto.ReviewRequest;
+import com.amalitech.demo.dto.ReviewResponse;
 import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.services.ReviewsService;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -20,17 +21,17 @@ public class  ReviewGraphqlController {
     }
 
     @QueryMapping
-    public List<Reviews> reviews() {
+    public List<ReviewResponse> reviews() {
         return reviewsService.getAllReviews();
     }
 
     @QueryMapping
-    public Reviews reviewById(@Argument Long id) {
+    public ReviewResponse reviewById(@Argument Long id) {
         return reviewsService.getReview(id);
     }
 
     @MutationMapping
-    public Reviews createReview(@Argument("input")  ReviewRequest request, @Argument Long userId) {
+    public ReviewResponse createReview(@Argument("input")  ReviewRequest request, @Argument Long userId) {
         return reviewsService.createReview(request, userId);
     }
 

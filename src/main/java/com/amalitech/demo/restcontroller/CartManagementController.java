@@ -1,9 +1,8 @@
 package com.amalitech.demo.restcontroller;
+import com.amalitech.demo.dto.CartItemsReponse;
 import com.amalitech.demo.dto.CartResponse;
 import com.amalitech.demo.dto.ResponseDto;
-import com.amalitech.demo.models.Cart;
-import com.amalitech.demo.repository.CartItemRepository;
-import com.amalitech.demo.repository.CartRepository;
+import com.amalitech.demo.models.CartItems;
 import com.amalitech.demo.services.CartService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,5 +28,12 @@ public class CartManagementController {
     public ResponseDto<CartResponse> getCartByUserId(@PathVariable Long userId) {
         CartResponse cart = cartService.getCartByUserId(userId);
         return new ResponseDto<>(HttpStatus.OK, "cart fetched", cart);
+    }
+
+    @PostMapping("/{cartId}/add_item")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseDto<CartItemsReponse> addItemToCart(@PathVariable Long cartId, @RequestParam Long productId, @RequestParam int quantity) {
+        CartItemsReponse cartItems = cartService.addItemToCart(cartId, productId, quantity);
+        return new ResponseDto<>(HttpStatus.CREATED, "item added", cartItems);
     }
 }

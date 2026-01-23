@@ -28,7 +28,7 @@ public class Reviews {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", referencedColumnName = "product_id")
+    @JoinColumn(name = "product_id", referencedColumnName = "id")
     @NotNull
     private Product product;
 

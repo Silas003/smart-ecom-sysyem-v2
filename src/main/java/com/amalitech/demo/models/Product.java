@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false,name = "product_id")
+    @Column(nullable = false,name = "id")
     private Long id;
 
     @NotBlank

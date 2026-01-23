@@ -1,6 +1,5 @@
 package com.amalitech.demo.graphqlcontroller;
 
-import com.amalitech.demo.dto.ReviewInput;
 import com.amalitech.demo.dto.ReviewRequest;
 import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.services.ReviewsService;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 
 @Controller
-public class ReviewGraphqlController {
+public class  ReviewGraphqlController {
 
     private final ReviewsService reviewsService;
 
@@ -31,12 +30,8 @@ public class ReviewGraphqlController {
     }
 
     @MutationMapping
-    public Reviews createReview(@Argument ReviewInput input, @Argument Long userId) {
-        ReviewRequest req = new ReviewRequest();
-        req.setRating(input.getRating());
-        req.setDescription(input.getDescription());
-        req.setProductId(input.getProductId());
-        return reviewsService.createReview(req, userId);
+    public Reviews createReview(@Argument("input")  ReviewRequest request, @Argument Long userId) {
+        return reviewsService.createReview(request, userId);
     }
 
     @MutationMapping

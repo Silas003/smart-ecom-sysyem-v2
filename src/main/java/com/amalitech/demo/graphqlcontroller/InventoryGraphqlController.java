@@ -1,6 +1,5 @@
 package com.amalitech.demo.graphqlcontroller;
 
-import com.amalitech.demo.dto.InventoryInput;
 import com.amalitech.demo.dto.InventoryRequest;
 import com.amalitech.demo.models.Inventory;
 import com.amalitech.demo.services.InventoryService;
@@ -31,23 +30,13 @@ public class InventoryGraphqlController {
     }
 
     @MutationMapping
-    public Inventory createInventory(@Argument InventoryInput input) {
-        InventoryRequest req = new InventoryRequest();
-        req.setProductId(input.getProductId());
-        req.setStockQuantity(input.getStockQuantity());
-        req.setReservedQuantity(input.getReservedQuantity());
-        req.setStockStatus(input.getStockStatus());
-        return inventoryService.createInventory(req);
+    public Inventory createInventory(@Argument("input")  InventoryRequest request) {
+        return inventoryService.createInventory(request);
     }
 
     @MutationMapping
-    public Inventory updateInventory(@Argument Long id, @Argument InventoryInput input) {
-        InventoryRequest req = new InventoryRequest();
-        req.setProductId(input.getProductId());
-        req.setStockQuantity(input.getStockQuantity());
-        req.setReservedQuantity(input.getReservedQuantity());
-        req.setStockStatus(input.getStockStatus());
-        return inventoryService.updateInventory(id, req);
+    public Inventory updateInventory(@Argument Long id, @Argument("input")  InventoryRequest request) {
+        return inventoryService.updateInventory(id, request);
     }
 
     @MutationMapping

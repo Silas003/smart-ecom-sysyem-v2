@@ -1,6 +1,5 @@
 package com.amalitech.demo.graphqlcontroller;
 
-import com.amalitech.demo.dto.UserInput;
 import com.amalitech.demo.dto.UserRequest;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.services.UserService;
@@ -31,23 +30,13 @@ public class UserGraphqlController {
     }
 
     @MutationMapping
-    public User createUser(@Argument UserInput input) {
-        UserRequest req = new UserRequest();
-        req.setUsername(input.getUsername());
-        req.setEmail(input.getEmail());
-        req.setPassword(input.getPassword());
-        req.setUserRole(input.getUserRole());
-        return userService.createUser(req);
+    public User createUser(@Argument("input")  UserRequest request) {
+        return userService.createUser(request);
     }
 
     @MutationMapping
-    public User updateUser(@Argument Long id, @Argument UserInput input) {
-        UserRequest req = new UserRequest();
-        req.setUsername(input.getUsername());
-        req.setEmail(input.getEmail());
-        req.setPassword(input.getPassword());
-        req.setUserRole(input.getUserRole());
-        return userService.updateUser(id, req);
+    public User updateUser(@Argument("input")  Long id, @Argument UserRequest request) {
+        return userService.updateUser(id, request);
     }
 
     @MutationMapping

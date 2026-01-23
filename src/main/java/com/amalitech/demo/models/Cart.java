@@ -26,12 +26,17 @@ public class Cart{
     private User user;
 
     @NotNull
-    @Column(name = "status",columnDefinition = "VARCHAR(20) NOT NULL CHECK(status in ('active','checkedout','cancelled'))DEFAULT 'active'")
+    @Column(name = "status",columnDefinition = "VARCHAR(20) DEFAULT 'active' CHECK(status in ('active','checkedout','cancelled'))")
     private String status;
 
-    @NotBlank
+    @NotNull
     @Column(name = "update_at", columnDefinition = "TIMESTAMP DEFAULT NOW()")
     private LocalDateTime updatedAt;
+
+    public Cart(User user, String active) {
+        this.user = user;
+        this.status = active;
+    }
 
     @PrePersist
     protected void onCreate() {

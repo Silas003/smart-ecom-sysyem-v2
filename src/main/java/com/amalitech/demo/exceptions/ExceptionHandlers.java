@@ -3,6 +3,7 @@ package com.amalitech.demo.exceptions;
 
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
+import org.springframework.aop.AopInvocationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,4 +84,13 @@ public class ExceptionHandlers {
         return new ResponseEntity<>(errors,HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(AopInvocationException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<Map<String,Object>>  handleAopInvocationException(AopInvocationException ex){
+        Map<String,Object> errors = new HashMap<String,Object>();
+        errors.put("timestamp",LocalDateTime.now());
+        errors.put("message","Internal Server Error");
+        errors.put("details",ex.getMessage());
+        return new ResponseEntity<>(errors,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

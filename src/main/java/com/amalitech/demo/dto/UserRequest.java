@@ -26,4 +26,11 @@ public class UserRequest {
 
     @NotBlank(message="User role cannot be blank")
     private String userRole;
+
+
+    public UserRequest(String email,String password) {
+        this.email = email;
+        this.password = password;
+    }
+    public UserRequest() {}
 }

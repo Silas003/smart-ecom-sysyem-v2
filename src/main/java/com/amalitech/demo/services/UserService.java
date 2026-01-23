@@ -65,4 +65,21 @@ public class UserService {
 
         userRepository.delete(existingUser);
     }
+
+    public UserResponse loginUser(UserRequest userRequest) {
+        String email = userRequest.getEmail();
+        String password = userRequest.getPassword();
+        User user = userRepository.findByEmail(email);
+        if(user != null){
+          boolean authenticated =   PasswordUtils.verifyPassword(password, user.getPassword());
+            if(!authenticated){
+                throw new IllegalArgumentException("Invalid credentials");
+            }
+            else {
+                return userMapper.toResponse(user);
+            }
+        }else{
+            throw new IllegalArgumentException("User with given email does not exist");
+        }
+    }
 }

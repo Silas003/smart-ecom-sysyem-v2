@@ -1,0 +1,112 @@
+type Product {
+  id: ID!
+  name: String!
+  price: Float!
+  stockQuantity: Int!
+  category: Category
+}
+
+type Category {
+  id: ID!
+  name: String!
+}
+
+input ProductInput {
+  name: String!
+  price: Float!
+  stockQuantity: Int!
+  categoryId: ID!
+}
+
+type Query {
+  products: [Product!]!
+  productById(id: ID!): Product
+}
+
+type Mutation {
+  createProduct(input: ProductInput!): Product!
+  updateProduct(id: ID!, input: ProductInput!): Product!
+  deleteProduct(id: ID!): Boolean!
+}
+
+type Category {
+  id: ID!
+  name: String!
+}
+
+input CategoryInput {
+  name: String!
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  userRole: String
+}
+
+input UserInput {
+  username: String!
+  email: String!
+  password: String!
+  userRole: String
+}
+
+type Review {
+  id: ID!
+  productId: ID!
+  userId: ID!
+  rating: Int!
+  description: String
+}
+
+input ReviewInput {
+  productId: ID!
+  rating: Int!
+  description: String
+}
+
+type Inventory {
+  id: ID!
+  productId: ID!
+  stockQuantity: Int!
+  reservedQuantity: Int!
+  stockStatus: String!
+}
+
+input InventoryInput {
+  productId: ID!
+  stockQuantity: Int!
+  reservedQuantity: Int!
+  stockStatus: String!
+}
+
+extend type Query {
+  categories: [Category!]!
+  categoryById(id: ID!): Category
+  users: [User!]!
+  userById(id: ID!): User
+  reviews: [Review!]!
+  reviewById(id: ID!): Review
+  reviewsByProduct(productId: ID!): [Review!]!
+  reviewsByUser(userId: ID!): [Review!]!
+  inventories: [Inventory!]!
+  inventoryById(id: ID!): Inventory
+}
+
+extend type Mutation {
+  createCategory(input: CategoryInput!): Category!
+  updateCategory(id: ID!, input: CategoryInput!): Category!
+  deleteCategory(id: ID!): Boolean!
+
+  createUser(input: UserInput!): User!
+  updateUser(id: ID!, input: UserInput!): User!
+  deleteUser(id: ID!): Boolean!
+
+  createReview(input: ReviewInput!, userId: ID!): Review!
+  deleteReview(id: ID!, userId: ID!): Boolean!
+
+  createInventory(input: InventoryInput!): Inventory!
+  updateInventory(id: ID!, input: InventoryInput!): Inventory!
+  deleteInventory(id: ID!): Boolean!
+}

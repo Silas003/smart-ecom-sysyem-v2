@@ -3,9 +3,14 @@ package com.amalitech.demo.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
 public class UserRequest {
     @Size(min=5, message="Username must be at least 5 characters long")
     @NotBlank(message="Username cannot be blank")

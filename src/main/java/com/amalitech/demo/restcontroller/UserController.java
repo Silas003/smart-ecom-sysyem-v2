@@ -39,7 +39,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<UserResponse> updateUser(@PathVariable Long id, @RequestBody @Valid UserRequest userRequest){
         UserResponse updatedUser = userService.updateUser(id, userRequest);
-        return new ResponseDto<>(HttpStatus.ACCEPTED,"user updated ",updatedUser);
+        return new ResponseDto<>(HttpStatus.OK,"user updated",updatedUser);
 
     }
 

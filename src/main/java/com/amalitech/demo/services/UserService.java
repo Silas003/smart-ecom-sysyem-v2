@@ -49,9 +49,11 @@ public class UserService {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
+        String password = PasswordUtils.hashPassword(userRequest.getPassword());
+
         existingUser.setUsername(userRequest.getUsername());
         existingUser.setEmail(userRequest.getEmail());
-        existingUser.setPassword(userRequest.getPassword());
+        existingUser.setPassword(password);
         existingUser.setUserRole(userRequest.getUserRole());
         User resUser= userRepository.save(existingUser);
         return userMapper.toResponse(resUser);

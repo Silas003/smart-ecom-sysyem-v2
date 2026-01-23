@@ -3,6 +3,7 @@ package com.amalitech.demo.exceptions;
 
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -27,7 +28,7 @@ public class ExceptionHandlers {
         Map<String,Object> errors= new HashMap<>();
         errors.put("timestamp",LocalDateTime.now());
         errors.put("message","Validation Failed");
-        errors.put("details",ex.getBindingResult().getFieldErrors().stream().map(x-> x.getDefaultMessage()).toList());
+        errors.put("details",ex.getBindingResult().getFieldErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
         errors.put("path",request.getDescription(false));
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
@@ -67,7 +68,7 @@ public class ExceptionHandlers {
     public ResponseEntity<Map<String,Object>> handleNoResourceFoundException(NoResourceFoundException ex){
         Map<String,Object> errors = new HashMap<String,Object>();
         errors.put("timestamp",LocalDateTime.now());
-        errors.put("message","Resoource Not Found");
+        errors.put("message","Resource Not Found");
         errors.put("details",ex.getMessage());
         return new ResponseEntity<>(errors,HttpStatus.NOT_FOUND
         );

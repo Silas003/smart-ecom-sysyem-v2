@@ -54,4 +54,12 @@ public class UserController {
         UserResponse newUser = userService.createUser(userRequest);
         return new ResponseDto<>(HttpStatus.CREATED,"user retrieved",newUser);
     }
+
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<UserResponse> loginUser(@RequestBody UserRequest user) {
+        UserResponse userResponse = userService.loginUser(user);
+
+        return new ResponseDto<>(HttpStatus.OK,"user login successful",userResponse);
+    }
 }

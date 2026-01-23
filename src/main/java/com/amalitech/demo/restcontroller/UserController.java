@@ -5,6 +5,7 @@ import com.amalitech.demo.dto.UserRequest;
 import com.amalitech.demo.dto.UserResponse;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ public class UserController {
 
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get all users", description = "Retrieve a list of all users")
     public ResponseDto<List<UserResponse>> getAllUsers(){
         List<UserResponse> users = userService.getAllUsers();
         return new ResponseDto<>(HttpStatus.OK,"users retrieved",users);
@@ -29,6 +31,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get user by id", description = "Retrieve a single user by its id")
     public ResponseDto<UserResponse> getUserById(@PathVariable Long id){
             UserResponse user = userService.getUserById(id);
             return new ResponseDto<>(HttpStatus.OK,"user retrieved",user);
@@ -37,6 +40,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Update user", description = "Update an existing user's data")
     public ResponseDto<UserResponse> updateUser(@PathVariable Long id, @RequestBody @Valid UserRequest userRequest){
         UserResponse updatedUser = userService.updateUser(id, userRequest);
         return new ResponseDto<>(HttpStatus.OK,"user updated",updatedUser);
@@ -44,12 +48,14 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete user", description = "Delete a user by id")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/create_user")
+    @Operation(summary = "Create user", description = "Create a new user")
     public ResponseDto<UserResponse> createUser(@RequestBody @Valid UserRequest userRequest) {
         UserResponse newUser = userService.createUser(userRequest);
         return new ResponseDto<>(HttpStatus.CREATED,"user retrieved",newUser);

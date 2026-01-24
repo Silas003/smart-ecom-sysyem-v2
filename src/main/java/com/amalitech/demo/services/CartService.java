@@ -78,4 +78,8 @@ public class CartService {
         }
 
     }
+
+    public CartResponse updateCartStatus(Long cartId,String Status){
+        return new CartResponse(1L,1,"checkedout");
+    }
 }

@@ -36,4 +36,13 @@ public class CartManagementController {
         CartItemsReponse cartItems = cartService.addItemToCart(cartId, productId, quantity);
         return new ResponseDto<>(HttpStatus.CREATED, "item added", cartItems);
     }
+
+    @PatchMapping("/{cardtId}/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<CartResponse> updateCartStatus(@RequestParam String status){
+        cartService.
+        return new ResponseDto<>(HttpStatus.OK,"cart",null);
+    }
+
+
 }

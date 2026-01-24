@@ -1,6 +1,7 @@
 package com.amalitech.demo.config;
 
 
+import com.amalitech.demo.dto.OrderStatus;
 import com.amalitech.demo.models.*;
 import com.amalitech.demo.repository.*;
 import org.springframework.boot.CommandLineRunner;
@@ -43,7 +44,7 @@ public class PreLoader {
                 );
 
                 Orders o = new Orders(
-                        u,Double.valueOf(5353+r),"processing"
+                        u,Double.valueOf(5353+r), OrderStatus.pending
                 );
                 ordersRepository.save(o);
                 productRepository.save(

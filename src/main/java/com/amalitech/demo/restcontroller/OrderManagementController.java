@@ -3,17 +3,18 @@ package com.amalitech.demo.restcontroller;
 
 import com.amalitech.demo.dto.OrderResponse;
 import com.amalitech.demo.dto.ResponseDto;
-import com.amalitech.demo.models.Orders;
+import com.amalitech.demo.dto.UpdateOrderRequest;
 import com.amalitech.demo.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,4 +49,19 @@ public class OrderManagementController {
         Page<OrderResponse> orders  = orderService.getAllOrders(pageable);
         return new ResponseDto<>(HttpStatus.OK,"orders retrieved",orders);
     }
+
+    @DeleteMapping("/{orderId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity deleteOrder(@PathVariable Long orderId){
+        orderService.deleteOrder(orderId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PatchMapping("/{orderId}")
+    @ResponseStatus(HttpStatus.OK)
+    public OrderResponse updateOrderStatus(@PathVariable Long orderId,
+                                           @RequestBody @Valid UpdateOrderRequest request) {
+        return orderService.updateOrderStatus(orderId, request.status());
+    }
+
 }

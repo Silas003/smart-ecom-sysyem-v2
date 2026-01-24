@@ -16,7 +16,6 @@ public interface OrdersMapper{
     @Mapping(target = "userId",source="user.id")
     List<OrderResponse> toResponse(List<Orders> orders);
 
-    @Mapping(target = "userId",source = "user.id")
-    Page<OrderResponse> toResponse(Page<Orders> orders);
+
 
 }

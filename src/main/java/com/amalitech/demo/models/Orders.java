@@ -1,6 +1,7 @@
 package com.amalitech.demo.models;
 
 
+import com.amalitech.demo.dto.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -30,11 +31,10 @@ public class Orders {
     @PositiveOrZero(message = "order total amount cannot be less than zero.")
     private Double totalAmount;
 
-    @NotNull
-    @Column(columnDefinition = " VARCHAR(20) DEFAULT 'processing' CHECK(status in ('processing','delivered','cancelled'))")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 
-    public Orders(User user, Double totalAmount, String status) {
+    public Orders(User user, Double totalAmount, OrderStatus status) {
         this.user = user;
         this.totalAmount =totalAmount;
         this.status =status;

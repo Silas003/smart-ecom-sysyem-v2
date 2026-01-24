@@ -14,7 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class PreLoader {
 
     @Bean
-    CommandLineRunner loadData(UserRepository userRepository,
+    CommandLineRunner loadData(UserRepository userRepository, OrdersRepository ordersRepository,
                                CategoryRepository categoryRepository, ProductRepository productRepository, InventoryRepository inventoryRepository, ReviewsRepository reviewsRepository) {
 
         return args -> {
@@ -41,6 +41,11 @@ public class PreLoader {
                         Integer.valueOf(r),
                         c
                 );
+
+                Orders o = new Orders(
+                        u,Double.valueOf(5353+r),"processing"
+                );
+                ordersRepository.save(o);
                 productRepository.save(
                         p
                 );

@@ -37,9 +37,9 @@ public class OrderService {
         );
     }
 
-    public List<OrderResponse> getAllOrders(Pageable pageable) {
+    public Page<OrderResponse> getAllOrders(Pageable pageable) {
         Page<Orders> orders = ordersRepository.findAll(pageable);
-        List<OrderResponse> orderResponses= orders.stream().map(o->ordersMapper.toResponse(o)).toList();
+        Page<OrderResponse> orderResponses= ordersMapper.toResponse(orders);
         return orderResponses;
     }
 }

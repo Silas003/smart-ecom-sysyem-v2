@@ -42,10 +42,10 @@ public class OrderManagementController {
 
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<List<OrderResponse>> getAllOrder(@PageableDefault(
+    public ResponseDto<Page<OrderResponse>> getAllOrder(@PageableDefault(
             size = 10,sort = "totalAmount",direction = Sort.Direction.DESC
     )Pageable pageable){
-        List<OrderResponse> orders  = orderService.getAllOrders(pageable);
+        Page<OrderResponse> orders  = orderService.getAllOrders(pageable);
         return new ResponseDto<>(HttpStatus.OK,"orders retrieved",orders);
     }
 }

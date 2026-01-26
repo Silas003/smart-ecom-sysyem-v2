@@ -3,9 +3,15 @@ package com.amalitech.demo.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 //
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
 @Entity
 @Table(name = "categories")
 public class Category {
@@ -15,7 +21,6 @@ public class Category {
 
     @NotBlank
     @NotNull
-//    @UniqueCategoryName
     private String name;
     public Category(){}
     public Category(String name){

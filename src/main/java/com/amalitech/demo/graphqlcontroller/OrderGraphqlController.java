@@ -49,11 +49,6 @@ public class OrderGraphqlController {
         return orderService.updateOrderStatus(id, status);
     }
 
-    // Resolver to populate product for an order item using DataLoader
-    @SchemaMapping(typeName = "OrderItem", field = "product")
-    public CompletableFuture<Product> product(OrderItem item, DataFetchingEnvironment env) {
-        DataLoader<Long, Product> loader = env.getDataLoader("productLoader");
-        return loader.load(item.getProduct().getId());
-    }
+
 
 }

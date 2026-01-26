@@ -32,12 +32,11 @@ public class Inventory {
     private int stockQuantity;
 
     @NotNull
-    @Column(name = "quantity_in_reserved")
+    @Column(name = "quantity_reserved")
     @PositiveOrZero
     private int reservedQuantity;
 
     @NotBlank
-    @NotNull
     @Column(name = "stock_status")
     private String stockStatus;
 

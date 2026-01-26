@@ -12,7 +12,8 @@ public interface InventoryMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "product", ignore = true) // product will be set in the service after resolving productId
+    @Mapping(target = "product", ignore = true)
+        @Mapping(target = "version",ignore = true)// product will be set in the service after resolving productId
     Inventory toEntity(InventoryRequest req);
 
     @Mapping(source = "product.id", target = "productId")

@@ -9,6 +9,9 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
     // category will be set in the service after resolving the id
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "category", ignore = true)
     Product toEntity(ProductRequest req);
 
     @Mapping(source = "category.id", target = "categoryId")

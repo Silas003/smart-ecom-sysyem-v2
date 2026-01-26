@@ -31,8 +31,7 @@ public class Product {
     private String name;
 
     @PositiveOrZero
-    @Min(0)
-    @Column(columnDefinition = "DECIMAL(12,2) DEFAULT 0.0", nullable = false)
+    @Column( nullable = false)
     private Double price;
 
     @CreationTimestamp

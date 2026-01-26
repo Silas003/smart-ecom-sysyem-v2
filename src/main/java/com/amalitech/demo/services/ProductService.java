@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.*;
+
 @Service
 public class ProductService {
 
@@ -61,5 +63,15 @@ public class ProductService {
                 .orElseThrow(() -> new EntityNotFoundException("product not found"));
 
         productRepository.delete(existingProduct);
+    }
+
+    // Bulk loader used by DataLoader to preserve input order
+    public List<Product> loadProductsByIds(List<Long> ids) {
+        List<Product> products = productRepository.findAllById(ids);
+        Map<Long, Product> map = new HashMap<>();
+        for (Product p : products) map.put(p.getId(), p);
+        List<Product> ordered = new ArrayList<>();
+        for (Long id : ids) ordered.add(map.get(id));
+        return ordered;
     }
 }

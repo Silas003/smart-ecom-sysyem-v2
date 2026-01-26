@@ -68,7 +68,12 @@ public class ReviewsService {
         ReviewResponse resp = new ReviewResponse();
         resp.setId(r.getId());
         resp.setProductId(r.getProduct().getId());
-        resp.setUserId(r.getUser().getId());
+        // anonymize reviewer display to prevent exposing raw user id or email
+        String display = r.getUser().getUsername();
+        if(display == null || display.isBlank()){
+            display = "Anonymous";
+        }
+        resp.setReviewerDisplay(display);
         resp.setRating(r.getRating());
         resp.setDescription(r.getDescription());
         return resp;

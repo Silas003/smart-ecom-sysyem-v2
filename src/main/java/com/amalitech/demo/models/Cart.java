@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -29,8 +31,7 @@ public class Cart{
     @Column(name = "status",columnDefinition = "VARCHAR(20) DEFAULT 'active' CHECK(status in ('active','checkedout','cancelled'))")
     private String status;
 
-    @NotNull
-    @Column(name = "update_at", columnDefinition = "TIMESTAMP DEFAULT NOW()")
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     public Cart(User user, String active) {
@@ -40,13 +41,7 @@ public class Cart{
 
     @PrePersist
     protected void onCreate() {
-        this.updatedAt = LocalDateTime.now();
         this.status = "active";
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 
 

@@ -1,6 +1,7 @@
 package com.amalitech.demo.config;
 
 
+import com.amalitech.demo.dto.OrderStatus;
 import com.amalitech.demo.models.*;
 import com.amalitech.demo.repository.*;
 import org.springframework.boot.CommandLineRunner;
@@ -14,7 +15,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class PreLoader {
 
     @Bean
-    CommandLineRunner loadData(UserRepository userRepository,
+    CommandLineRunner loadData(UserRepository userRepository, OrdersRepository ordersRepository,
                                CategoryRepository categoryRepository, ProductRepository productRepository, InventoryRepository inventoryRepository, ReviewsRepository reviewsRepository) {
 
         return args -> {
@@ -41,6 +42,11 @@ public class PreLoader {
                         Integer.valueOf(r),
                         c
                 );
+
+                Orders o = new Orders(
+                        u,Double.valueOf(5353+r), OrderStatus.pending
+                );
+                ordersRepository.save(o);
                 productRepository.save(
                         p
                 );

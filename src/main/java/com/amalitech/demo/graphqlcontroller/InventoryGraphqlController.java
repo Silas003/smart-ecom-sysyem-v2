@@ -1,7 +1,7 @@
 package com.amalitech.demo.graphqlcontroller;
 
 import com.amalitech.demo.dto.InventoryRequest;
-import com.amalitech.demo.models.Inventory;
+import com.amalitech.demo.dto.InventoryResponse;
 import com.amalitech.demo.services.InventoryService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -20,22 +20,22 @@ public class InventoryGraphqlController {
     }
 
     @QueryMapping
-    public List<Inventory> inventories() {
+    public List<InventoryResponse> inventories() {
         return inventoryService.getAllInventories();
     }
 
     @QueryMapping
-    public Inventory inventoryById(@Argument Long id) {
+    public InventoryResponse inventoryById(@Argument Long id) {
         return inventoryService.getInventoryById(id);
     }
 
     @MutationMapping
-    public Inventory createInventory(@Argument("input")  InventoryRequest request) {
+    public InventoryResponse createInventory(@Argument("input")  InventoryRequest request) {
         return inventoryService.createInventory(request);
     }
 
     @MutationMapping
-    public Inventory updateInventory(@Argument Long id, @Argument("input")  InventoryRequest request) {
+    public InventoryResponse updateInventory(@Argument Long id, @Argument("input")  InventoryRequest request) {
         return inventoryService.updateInventory(id, request);
     }
 

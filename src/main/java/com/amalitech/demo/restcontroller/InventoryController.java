@@ -1,7 +1,7 @@
 package com.amalitech.demo.restcontroller;
 
+import com.amalitech.demo.dto.InventoryResponse;
 import com.amalitech.demo.dto.ResponseDto;
-import com.amalitech.demo.models.Inventory;
 import com.amalitech.demo.services.InventoryService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -19,8 +19,8 @@ public class InventoryController {
 
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<List<Inventory>> getAllInventories(){
-        List<Inventory> inventories = inventoryService.getAllInventories();
+    public ResponseDto<List<InventoryResponse>> getAllInventories(){
+        List<InventoryResponse> inventories = inventoryService.getAllInventories();
         return new ResponseDto<>(HttpStatus.OK,"inventories retrieved",inventories);
 
 
@@ -28,16 +28,16 @@ public class InventoryController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<Inventory> getInventoryById(@PathVariable Long id){
-        Inventory inventory = inventoryService.getInventoryById(id);
+    public ResponseDto<InventoryResponse> getInventoryById(@PathVariable Long id){
+        InventoryResponse inventory = inventoryService.getInventoryById(id);
         return new ResponseDto<>(HttpStatus.OK,"inventory retrieved",inventory);
 
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<Inventory> updateInventory(@PathVariable Long id, @RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest){
-        Inventory updatedInventory = inventoryService.updateInventory(id, inventoryRequest);
+    public ResponseDto<InventoryResponse> updateInventory(@PathVariable Long id, @RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest){
+        InventoryResponse updatedInventory = inventoryService.updateInventory(id, inventoryRequest);
         return new ResponseDto<>(HttpStatus.ACCEPTED,"inventory updated",updatedInventory);
 
     }
@@ -51,8 +51,8 @@ public class InventoryController {
 
     @PostMapping("/create_inventory")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<Inventory> createInventory(@RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest) {
-        Inventory newInventory = inventoryService.createInventory(inventoryRequest);
+    public ResponseDto<InventoryResponse> createInventory(@RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest) {
+        InventoryResponse newInventory = inventoryService.createInventory(inventoryRequest);
         return new ResponseDto<>(HttpStatus.CREATED,"inventory created",newInventory);
 
     }

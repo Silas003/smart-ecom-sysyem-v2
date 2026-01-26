@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -24,7 +25,7 @@ public class CartItems{
     @PositiveOrZero(message = "Quantity must be zero or positive")
     private Integer quantity;
 
-    @Column(name = "updated_at" , nullable = false)
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     @ManyToOne(cascade = CascadeType.ALL)

@@ -4,17 +4,18 @@ package com.amalitech.demo.models;
 import com.amalitech.demo.dto.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
+@Table(name = "orders")
 public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,33 +23,33 @@ public class Orders {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id",referencedColumnName = "id")
-    private User user;
-
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     @NotNull
-    private LocalDateTime orderDate;
-
-    @PositiveOrZero(message = "order total amount cannot be less than zero.")
-    private Double totalAmount;
+    private User user;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    public Orders(User user, Double totalAmount, OrderStatus status) {
-        this.user = user;
-        this.totalAmount =totalAmount;
-        this.status =status;
+    @Column(name = "total_amount", nullable = false)
+    private Double totalAmount;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items;
+
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP")
+    private LocalDateTime createdAt;
+
+    public Orders(User u, Double aDouble, OrderStatus orderStatus) {
+        this.user = u;
+        this.totalAmount = aDouble;
+        this.status = orderStatus;
     }
 
     @PrePersist
-    private void onCreate(){
-        this.orderDate = LocalDateTime.now();
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        if (this.status == null) this.status = OrderStatus.pending;
     }
 
-    @PreUpdate void onUpdate(){
-        this.orderDate = LocalDateTime.now();
-    }
-
-    public Orders(){}
-
+    public Orders() {}
 }

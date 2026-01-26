@@ -1,6 +1,7 @@
 package com.amalitech.demo.services;
 
 import com.amalitech.demo.dto.InventoryRequest;
+import com.amalitech.demo.dto.InventoryResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.InventoryMapper;
 import com.amalitech.demo.models.Inventory;
@@ -9,6 +10,7 @@ import com.amalitech.demo.repository.InventoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class InventoryService {
@@ -23,25 +25,27 @@ public class InventoryService {
         this.inventoryMapper = inventoryMapper;
     }
 
-    public Inventory createInventory(InventoryRequest request) {
+    public InventoryResponse createInventory(InventoryRequest request) {
         Product product = productService.getProductById(request.getProductId());
         if( inventoryRepository.existsByProductId(product.getId())){
             throw new IllegalArgumentException("inventory with given product already exists");
         }
         Inventory inventory = inventoryMapper.toEntity(request);
         inventory.setProduct(product);
-        return inventoryRepository.save(inventory);
+        Inventory saved = inventoryRepository.save(inventory);
+        return inventoryMapper.toResponse(saved);
     }
 
-    public Inventory getInventoryById(Long id) {
-        return inventoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
+    public InventoryResponse getInventoryById(Long id) {
+        Inventory inv = inventoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
+        return inventoryMapper.toResponse(inv);
     }
 
-    public List<Inventory> getAllInventories() {
-        return inventoryRepository.findAll();
+    public List<InventoryResponse> getAllInventories() {
+        return inventoryRepository.findAll().stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
     }
 
-    public Inventory updateInventory(Long id, InventoryRequest request) {
+    public InventoryResponse updateInventory(Long id, InventoryRequest request) {
         Inventory existingInventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
 
@@ -51,7 +55,8 @@ public class InventoryService {
         existingInventory.setReservedQuantity(request.getReservedQuantity());
         existingInventory.setStockStatus(request.getStockStatus());
 
-        return inventoryRepository.save(existingInventory);
+        Inventory saved = inventoryRepository.save(existingInventory);
+        return inventoryMapper.toResponse(saved);
     }
 
     public void deleteInventory(Long id){

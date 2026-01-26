@@ -1,6 +1,7 @@
 package com.amalitech.demo.restcontroller;
 
 
+import com.amalitech.demo.dto.OrderRequest;
 import com.amalitech.demo.dto.OrderResponse;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.UpdateOrderRequest;
@@ -26,10 +27,10 @@ import java.util.List;
 public class OrderManagementController {
     private OrderService orderService;
 
-    @GetMapping("/user")
+    @GetMapping("/user/{userId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(method = "GET",tags = "user Orders",description = "Get orders by userId")
-    public ResponseDto<List<OrderResponse>> getOrdersByUserId(@RequestParam Long userId){
+    public ResponseDto<List<OrderResponse>> getOrdersByUserId(@PathVariable @Valid Long userId){
         List<OrderResponse> orders = orderService.getOrderByUserId(userId);
         return new ResponseDto<>(HttpStatus.OK,"user orders retrieved",orders);
     }
@@ -59,9 +60,17 @@ public class OrderManagementController {
 
     @PatchMapping("/{orderId}")
     @ResponseStatus(HttpStatus.OK)
-    public OrderResponse updateOrderStatus(@PathVariable Long orderId,
+    public ResponseDto<OrderResponse> updateOrderStatus(@PathVariable Long orderId,
                                            @RequestBody @Valid UpdateOrderRequest request) {
-        return orderService.updateOrderStatus(orderId, request.status());
+        return new ResponseDto<>(HttpStatus.OK,"order updated",orderService.updateOrderStatus(orderId, request.status()));
+    }
+
+    @PostMapping("/")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Create order", description = "Create a new order")
+    public ResponseDto<OrderResponse> createOrder( @RequestBody @Valid OrderRequest request){
+        OrderResponse resp = orderService.createOrder( request);
+        return new ResponseDto<>(HttpStatus.CREATED, "order created", resp);
     }
 
 }

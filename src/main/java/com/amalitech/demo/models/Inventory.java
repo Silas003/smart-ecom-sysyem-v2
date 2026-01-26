@@ -38,6 +38,9 @@ public class Inventory {
     @Column(name="stock_status")
     private String stockStatus;
 
+    @Version
+    private Long version;
+
     @Column(name = "created_at" , columnDefinition = "TIMESTAMP DEFAULT NOW()")
     @NotNull
     private LocalDateTime createdAt;

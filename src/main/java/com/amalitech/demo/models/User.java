@@ -40,6 +40,7 @@ public class User {
     private String password;
 
     @NotBlank(message="User role cannot be blank")
+    @Column(name = "userrole")
     private String userRole;
 
 }

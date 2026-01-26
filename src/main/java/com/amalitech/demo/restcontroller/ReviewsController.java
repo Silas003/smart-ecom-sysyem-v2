@@ -21,8 +21,8 @@ public class ReviewsController {
 
 
     @GetMapping("/")
-    @Operation(summary = "Get all reviews", description = "Retrieve all reviews")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get all reviews", description = "Retrieve all reviews")
     public ResponseDto<List<ReviewResponse>> getAllReviews( ){
         List<ReviewResponse> reviews = reviewsService.getAllReviews();
         return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",reviews);
@@ -30,9 +30,8 @@ public class ReviewsController {
     }
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Create review", description = "Create a new review for a product")
-
-    public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request, @RequestParam Long userId){
+    @Operation(summary = "Create review", description = "Create a new review for a product. User is inferred from X-User-Id header")
+    public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request, @RequestHeader("X-User-Id") Long userId){
         ReviewResponse review = reviewsService.createReview(request, userId);
         return  new ResponseDto<>(HttpStatus.CREATED,"review created",review);
     }
@@ -50,7 +49,6 @@ public class ReviewsController {
     @GetMapping("/products/{productId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get reviews by product", description = "Retrieve reviews for a specific product")
-
     public ResponseDto<List<ReviewResponse>> getReviewsByProduct(@PathVariable Long productId){
         List<ReviewResponse> resp = reviewsService.getReviewsByProduct(productId);
         return new ResponseDto<>(HttpStatus.OK,"product reviews retrieved",resp);
@@ -60,7 +58,6 @@ public class ReviewsController {
     @GetMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get reviews by user", description = "Retrieve reviews written by a specific user")
-
     public ResponseDto<List<ReviewResponse>> getReviewsByUser(@PathVariable Long userId){
         List<ReviewResponse> resp = reviewsService.getReviewsByUser(userId);
         return new ResponseDto<>(HttpStatus.OK,"user reviews retrieved",resp);

@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 
 
@@ -35,35 +38,27 @@ public class Inventory {
 
     @NotBlank
     @NotNull
-    @Column(name="stock_status")
+    @Column(name = "stock_status")
     private String stockStatus;
 
     @Version
     private Long version;
 
-    @Column(name = "created_at" , columnDefinition = "TIMESTAMP DEFAULT NOW()")
-    @NotNull
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at" , columnDefinition = "TIMESTAMP DEFAULT NOW()")
-    @NotNull
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public Inventory(){}
-    public Inventory(Product product, int stockQuantity, int reservedQuantity, String stockStatus){
+    public Inventory() {
+    }
+
+    public Inventory(Product product, int stockQuantity, int reservedQuantity, String stockStatus) {
         this.product = product;
         this.stockQuantity = stockQuantity;
         this.reservedQuantity = reservedQuantity;
         this.stockStatus = stockStatus;
     }
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 }
+

@@ -1,6 +1,7 @@
 package com.amalitech.demo.services.interfaces;
 
 import com.amalitech.demo.dto.request.ProductRequest;
+import com.amalitech.demo.dto.response.ProductResponse;
 import com.amalitech.demo.models.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,5 +19,5 @@ public interface ProductServiceInterface {
 
     void deleteProduct(Long id);
 
-
+    Page<ProductResponse> getProductsByCategoryId(Long categoryId);
 }

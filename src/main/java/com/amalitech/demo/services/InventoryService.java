@@ -8,6 +8,7 @@ import com.amalitech.demo.models.Inventory;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.repository.InventoryRepository;
 import com.amalitech.demo.services.interfaces.InventoryServiceInterface;
+import com.amalitech.demo.services.interfaces.ProductServiceInterface;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,10 +18,10 @@ import java.util.stream.Collectors;
 public class InventoryService implements InventoryServiceInterface {
 
     private final InventoryRepository inventoryRepository;
-    private final ProductService productService;
+    private final ProductServiceInterface productService;
     private final InventoryMapper inventoryMapper;
 
-    public InventoryService(InventoryRepository inventoryRepository, ProductService productService, InventoryMapper inventoryMapper){
+    public InventoryService(InventoryRepository inventoryRepository, ProductServiceInterface productService, InventoryMapper inventoryMapper){
         this.inventoryRepository = inventoryRepository;
         this.productService = productService;
         this.inventoryMapper = inventoryMapper;

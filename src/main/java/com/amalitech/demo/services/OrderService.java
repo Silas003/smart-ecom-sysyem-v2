@@ -10,6 +10,10 @@ import com.amalitech.demo.models.*;
 import com.amalitech.demo.repository.*;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -37,6 +41,7 @@ public class OrderService implements OrderServiceInterface {
             );
 
     @Override
+    @Cacheable(value="ordersByUser", key="#userId", sync = true)
     public List<OrderResponse> getOrderByUserId(Long userId){
         List<Orders> orders = ordersRepository.findByUser_IdWithItemsAndProducts(userId).orElseThrow(
                 ()-> new EntityNotFoundException("user does not have any orders")
@@ -46,6 +51,7 @@ public class OrderService implements OrderServiceInterface {
     }
 
     @Override
+    @Cacheable(value = "order", key = "#id")
     public OrderResponse getOrderById(Long id){
         Orders order = ordersRepository.findByIdWithItemsAndProducts(id).orElseThrow(()-> new EntityNotFoundException("order not found"));
         return ordersMapper.toResponse(order);
@@ -64,12 +70,24 @@ public class OrderService implements OrderServiceInterface {
     }
 
     @Override
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "order", key = "#orderId"),
+                    @CacheEvict(value = "ordersByUser", allEntries = true)
+            }
+    )
     public void deleteOrder(Long orderId) {
         Orders order = ordersRepository.findById(orderId)
                 .orElseThrow(()-> new EntityNotFoundException("order not found"));
         ordersRepository.delete(order);
     }
 
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "order", key = "#orderId"),
+                    @CacheEvict(value = "ordersByUser", allEntries = true)
+            }
+    )
     @Transactional
     @Override
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
@@ -95,6 +113,7 @@ public class OrderService implements OrderServiceInterface {
         return ordersMapper.toResponse(updated);
     }
 
+    @CachePut(value = "orderByUser",key="#result.userId")
     @Transactional
     @Override
     public OrderResponse createOrder(OrderRequest req) {
@@ -113,12 +132,10 @@ public class OrderService implements OrderServiceInterface {
 
         for (OrderItemRequest it : req.getItems()) {
             Product product = productRepository.findById(it.getProductId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
-            // check inventory
             Inventory inv = inventoryRepository.findByProduct_Id(product.getId()).orElseThrow(() -> new EntityNotFoundException("Inventory not found for product"));
             if (inv.getStockQuantity() < it.getQuantity()) {
                 throw new IllegalArgumentException("Insufficient stock for product id: " + product.getId());
             }
-            // decrement
             inv.setStockQuantity(inv.getStockQuantity() - it.getQuantity());
             inventoryRepository.save(inv);
 
@@ -136,7 +153,6 @@ public class OrderService implements OrderServiceInterface {
         order.setItems(items);
 
         Orders saved = ordersRepository.save(order);
-        // Use mapper to convert saved entity to response (includes item -> itemResponse mapping)
         return ordersMapper.toResponse(saved);
     }
 

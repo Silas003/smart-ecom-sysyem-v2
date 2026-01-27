@@ -5,7 +5,6 @@ import com.amalitech.demo.dto.request.ProductRequest;
 import com.amalitech.demo.dto.response.ProductResponse;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.models.Product;
-import com.amalitech.demo.services.ProductService;
 import com.amalitech.demo.mapper.ProductMapper;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
 import jakarta.validation.Valid;
@@ -44,11 +43,10 @@ public class ProductController {
     })
     public ResponseDto<Page<ProductResponse>> getAllProducts(
             @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable
-    )
-    {
+    ) {
         Page<Product> products = productService.getAllProducts(pageable);
         Page<ProductResponse> resp = products.map(productMapper::toResponse);
-        return new ResponseDto<>(HttpStatus.OK,"products retrieved",resp);
+        return new ResponseDto<>(HttpStatus.OK, "products retrieved", resp);
 
 
     }
@@ -61,9 +59,9 @@ public class ProductController {
                     content = @Content(schema = @Schema(implementation = ProductResponse.class))),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
-    public ResponseDto<ProductResponse> getProductById(@Parameter(description = "ID of the product to retrieve", required = true) @PathVariable Long id){
+    public ResponseDto<ProductResponse> getProductById(@Parameter(description = "ID of the product to retrieve", required = true) @PathVariable Long id) {
         Product product = productService.getProductById(id);
-        return new ResponseDto<>(HttpStatus.OK,"product retrieved",productMapper.toResponse(product));
+        return new ResponseDto<>(HttpStatus.OK, "product retrieved", productMapper.toResponse(product));
 
     }
 
@@ -76,9 +74,9 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found"),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
-    public ResponseDto<ProductResponse> updateProduct(@Parameter(description = "ID of the product to update", required = true) @PathVariable Long id, @RequestBody @Valid ProductRequest productRequest){
+    public ResponseDto<ProductResponse> updateProduct(@Parameter(description = "ID of the product to update", required = true) @PathVariable Long id, @RequestBody @Valid ProductRequest productRequest) {
         Product updated = productService.updateProduct(id, productRequest);
-        return new ResponseDto<>(HttpStatus.OK,"product updated",productMapper.toResponse(updated));
+        return new ResponseDto<>(HttpStatus.OK, "product updated", productMapper.toResponse(updated));
     }
 
     @DeleteMapping("/{id}")
@@ -104,7 +102,22 @@ public class ProductController {
 
     public ResponseDto<ProductResponse> createProduct(@RequestBody @Valid ProductRequest productRequest) {
         Product newProduct = productService.createProduct(productRequest);
-        return new ResponseDto<>(HttpStatus.CREATED,"product created ",productMapper.toResponse(newProduct));
+        return new ResponseDto<>(HttpStatus.CREATED, "product created ", productMapper.toResponse(newProduct));
 
+    }
+
+    @GetMapping("/category/{categoryId}")
+    @Operation(summary = "Get products by category", description = "Retrieve products belonging to a specific category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class)))),
+            @ApiResponse(responseCode = "404", description = "Category not found")
+    })
+    public ResponseDto<Page<ProductResponse>> getProductsByCategory(
+            @Parameter(description = "ID of the category", required = true) @PathVariable Long categoryId,
+            @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        Page<ProductResponse> products = productService.getProductsByCategoryId(categoryId);
+        return new ResponseDto<>(HttpStatus.OK, "products retrieved", products);
     }
 }

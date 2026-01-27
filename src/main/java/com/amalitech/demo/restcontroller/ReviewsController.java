@@ -10,6 +10,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,7 +33,8 @@ public class ReviewsController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all reviews", description = "Retrieve all reviews")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Reviews retrieved")
+            @ApiResponse(responseCode = "200", description = "Reviews retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class))))
     })
     public ResponseDto<List<ReviewResponse>> getAllReviews( ){
         List<ReviewResponse> reviews = reviewsService.getAllReviews();
@@ -41,7 +45,8 @@ public class ReviewsController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create review", description = "Create a new review for a product. User is inferred from X-User-Id header")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Review created"),
+            @ApiResponse(responseCode = "201", description = "Review created",
+                    content = @Content(schema = @Schema(implementation = ReviewResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
     public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request, @Parameter(description = "ID of the user creating the review, from X-User-Id header", required = true) @RequestHeader("X-User-Id") Long userId){
@@ -54,7 +59,8 @@ public class ReviewsController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get review", description = "Retrieve a single review by id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Review retrieved"),
+            @ApiResponse(responseCode = "200", description = "Review retrieved",
+                    content = @Content(schema = @Schema(implementation = ReviewResponse.class))),
             @ApiResponse(responseCode = "404", description = "Review not found")
     })
     public ResponseDto<ReviewResponse> getReview(@Parameter(description = "ID of the review to retrieve", required = true) @PathVariable Long id){
@@ -67,7 +73,8 @@ public class ReviewsController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get reviews by product", description = "Retrieve reviews for a specific product")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Product reviews retrieved"),
+            @ApiResponse(responseCode = "200", description = "Product reviews retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class)))),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     public ResponseDto<List<ReviewResponse>> getReviewsByProduct(@Parameter(description = "ID of the product", required = true) @PathVariable Long productId){
@@ -80,7 +87,8 @@ public class ReviewsController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get reviews by user", description = "Retrieve reviews written by a specific user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User reviews retrieved"),
+            @ApiResponse(responseCode = "200", description = "User reviews retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class)))),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseDto<List<ReviewResponse>> getReviewsByUser(@Parameter(description = "ID of the user", required = true) @PathVariable Long userId){

@@ -10,6 +10,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +32,8 @@ public class InventoryController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all inventories", description = "Retrieve all inventory records")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Inventories retrieved")
+            @ApiResponse(responseCode = "200", description = "Inventories retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = InventoryResponse.class))))
     })
     public ResponseDto<List<InventoryResponse>> getAllInventories(){
         List<InventoryResponse> inventories = inventoryService.getAllInventories();
@@ -42,7 +46,8 @@ public class InventoryController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get inventory", description = "Retrieve a single inventory record by id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Inventory retrieved"),
+            @ApiResponse(responseCode = "200", description = "Inventory retrieved",
+                    content = @Content(schema = @Schema(implementation = InventoryResponse.class))),
             @ApiResponse(responseCode = "404", description = "Inventory not found")
     })
     public ResponseDto<InventoryResponse> getInventoryById(@Parameter(description = "ID of the inventory to retrieve", required = true) @PathVariable Long id){
@@ -55,7 +60,8 @@ public class InventoryController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update inventory", description = "Update inventory record by id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Inventory updated"),
+            @ApiResponse(responseCode = "200", description = "Inventory updated",
+                    content = @Content(schema = @Schema(implementation = InventoryResponse.class))),
             @ApiResponse(responseCode = "404", description = "Inventory not found"),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
@@ -81,7 +87,8 @@ public class InventoryController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create inventory", description = "Create a new inventory record")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Inventory created"),
+            @ApiResponse(responseCode = "201", description = "Inventory created",
+                    content = @Content(schema = @Schema(implementation = InventoryResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
     public ResponseDto<InventoryResponse> createInventory(@RequestBody @Valid InventoryRequest inventoryRequest) {

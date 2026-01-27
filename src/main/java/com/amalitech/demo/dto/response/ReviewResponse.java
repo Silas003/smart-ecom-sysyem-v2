@@ -1,8 +1,10 @@
 package com.amalitech.demo.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 
+@Schema(description = "Review response model")
 @Data
 public class ReviewResponse {
     private Long id;

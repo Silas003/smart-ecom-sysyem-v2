@@ -12,6 +12,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,7 +38,8 @@ public class OrderManagementController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(method = "GET",tags = "user Orders",description = "Get orders by userId")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User orders retrieved"),
+            @ApiResponse(responseCode = "200", description = "User orders retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class)))),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseDto<List<OrderResponse>> getOrdersByUserId(@Parameter(description = "ID of the user", required = true) @PathVariable @Valid Long userId){
@@ -46,7 +50,8 @@ public class OrderManagementController {
     @GetMapping("/{orderId}")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Order retrieved"),
+            @ApiResponse(responseCode = "200", description = "Order retrieved",
+                    content = @Content(schema = @Schema(implementation = OrderResponse.class))),
             @ApiResponse(responseCode = "404", description = "Order not found")
     })
     public ResponseDto<OrderResponse> getOrderById(@Parameter(description = "ID of the order to retrieve", required = true) @PathVariable Long orderId){
@@ -57,7 +62,8 @@ public class OrderManagementController {
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Orders retrieved")
+            @ApiResponse(responseCode = "200", description = "Orders retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class))))
     })
     public ResponseDto<Page<OrderResponse>> getAllOrder(@PageableDefault(
             size = 10,sort = "totalAmount",direction = Sort.Direction.DESC
@@ -80,7 +86,8 @@ public class OrderManagementController {
     @PatchMapping("/{orderId}")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Order updated"),
+            @ApiResponse(responseCode = "200", description = "Order updated",
+                    content = @Content(schema = @Schema(implementation = OrderResponse.class))),
             @ApiResponse(responseCode = "404", description = "Order not found"),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
@@ -93,7 +100,8 @@ public class OrderManagementController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create order", description = "Create a new order")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Order created"),
+            @ApiResponse(responseCode = "201", description = "Order created",
+                    content = @Content(schema = @Schema(implementation = OrderResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
     public ResponseDto<OrderResponse> createOrder( @RequestBody @Valid OrderRequest request){

@@ -5,6 +5,11 @@ import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -24,30 +29,53 @@ public class UserGraphqlController {
 
     @QueryMapping
     @Operation(summary = "List users (GraphQL)", description = "List all users via GraphQL query")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Users retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))))
+    })
     public List<UserResponse> users() {
         return userService.getAllUsers();
     }
 
     @QueryMapping
     @Operation(summary = "Get user by id (GraphQL)", description = "Retrieve a single user by id via GraphQL")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User retrieved",
+                    content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     public UserResponse userById(@Argument Long id) {
         return userService.getUserById(id);
     }
 
     @MutationMapping
     @Operation(summary = "Create user (GraphQL)", description = "Create a new user via GraphQL mutation")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User created",
+                    content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error")
+    })
     public UserResponse createUser(@Argument("input")  UserRequest request) {
         return userService.createUser(request);
     }
 
     @MutationMapping
     @Operation(summary = "Update user (GraphQL)", description = "Update an existing user via GraphQL mutation")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User updated",
+                    content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     public UserResponse updateUser(@Argument  Long id, @Argument("input") UserRequest request) {
         return userService.updateUser(id, request);
     }
 
     @MutationMapping
     @Operation(summary = "Delete user (GraphQL)", description = "Delete a user by id via GraphQL mutation")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User deleted"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     public Boolean deleteUser(@Argument Long id) {
         userService.deleteUser(id);
         return true;

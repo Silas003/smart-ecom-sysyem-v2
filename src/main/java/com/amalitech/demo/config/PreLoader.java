@@ -2,6 +2,7 @@ package com.amalitech.demo.config;
 
 
 import com.amalitech.demo.dto.OrderStatus;
+import com.amalitech.demo.dto.UserRole;
 import com.amalitech.demo.models.*;
 import com.amalitech.demo.repository.*;
 import org.springframework.boot.CommandLineRunner;
@@ -29,7 +30,7 @@ public class PreLoader {
                                 "AliceOp" + r,
                                 String.format("%dw@gmail.com", r),
                                 "password1",
-                                "customer"
+                                UserRole.customer
                         )
                 );
 

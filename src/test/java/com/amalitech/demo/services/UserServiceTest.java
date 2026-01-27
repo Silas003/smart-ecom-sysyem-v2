@@ -1,5 +1,6 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dto.UserRole;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.User;
@@ -79,7 +80,7 @@ public class UserServiceTest {
         User  user = new User();
         user.setUsername("username");
         user.setPassword("Testpassword");
-        user.setUserRole("USER");
+        user.setUserRole(UserRole.customer);
         user.setEmail("email@gmail.com");
 
         when(userRepository.findAll()).thenReturn(List.of(user));

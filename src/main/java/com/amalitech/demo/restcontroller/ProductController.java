@@ -23,6 +23,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @RestController
 @RequestMapping(value = "/api/v1/products")
@@ -36,7 +39,8 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "List products", description = "List products with pagination and sorting")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Products retrieved")
+            @ApiResponse(responseCode = "200", description = "Products retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class))))
     })
     public ResponseDto<Page<ProductResponse>> getAllProducts(
             @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable
@@ -53,7 +57,8 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get product", description = "Retrieve a single product by id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Product retrieved"),
+            @ApiResponse(responseCode = "200", description = "Product retrieved",
+                    content = @Content(schema = @Schema(implementation = ProductResponse.class))),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     public ResponseDto<ProductResponse> getProductById(@Parameter(description = "ID of the product to retrieve", required = true) @PathVariable Long id){
@@ -66,7 +71,8 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update product", description = "Update product details")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Product updated"),
+            @ApiResponse(responseCode = "200", description = "Product updated",
+                    content = @Content(schema = @Schema(implementation = ProductResponse.class))),
             @ApiResponse(responseCode = "404", description = "Product not found"),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
@@ -91,7 +97,8 @@ public class ProductController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create product", description = "Create a new product")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Product created"),
+            @ApiResponse(responseCode = "201", description = "Product created",
+                    content = @Content(schema = @Schema(implementation = ProductResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
 

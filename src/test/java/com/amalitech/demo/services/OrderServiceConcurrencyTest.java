@@ -1,5 +1,6 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dto.UserRole;
 import com.amalitech.demo.dto.request.OrderItemRequest;
 import com.amalitech.demo.dto.request.OrderRequest;
 import com.amalitech.demo.models.Category;
@@ -60,7 +61,7 @@ public class OrderServiceConcurrencyTest {
         u.setUsername("user1");
         u.setEmail("u1@example.com");
         u.setPassword("pass1234");
-        u.setUserRole("USER");
+        u.setUserRole(UserRole.customer);
         userRepository.save(u);
 
         OrderItemRequest item = new OrderItemRequest();

@@ -21,9 +21,8 @@ public class PasswordUtils {
     public static boolean verifyPassword(String plainPassword, String hashedPassword) {
         try {
             return BCrypt.checkpw(plainPassword, hashedPassword);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             return false;
         }
     }
 }
-

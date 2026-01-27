@@ -9,6 +9,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,7 +30,8 @@ public class CategoryController {
     @GetMapping("/")
     @Operation(summary = "Get all categories", description = "Retrieve all categories")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Categories retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "Categories retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Category.class))))
     })
     public ResponseDto<List<Category>> getAllCategories(){
         List<Category> categories = categoryService.getAllCategories();
@@ -39,7 +43,8 @@ public class CategoryController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get category", description = "Retrieve a category by id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Category retrieved"),
+            @ApiResponse(responseCode = "200", description = "Category retrieved",
+                    content = @Content(schema = @Schema(implementation = Category.class))),
             @ApiResponse(responseCode = "404", description = "Category not found")
     })
     public ResponseDto<Category> getCategoryById(@Parameter(description = "ID of the category to retrieve", required = true) @PathVariable Long id){
@@ -51,7 +56,8 @@ public class CategoryController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update category", description = "Update a category by id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Category updated"),
+            @ApiResponse(responseCode = "200", description = "Category updated",
+                    content = @Content(schema = @Schema(implementation = Category.class))),
             @ApiResponse(responseCode = "404", description = "Category not found"),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
@@ -76,7 +82,8 @@ public class CategoryController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create category", description = "Create a category")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Category created"),
+            @ApiResponse(responseCode = "201", description = "Category created",
+                    content = @Content(schema = @Schema(implementation = Category.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
     public ResponseDto<Category> createCategory(@RequestBody @Valid CategoryRequest categoryRequest) {

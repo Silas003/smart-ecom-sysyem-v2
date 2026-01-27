@@ -1,5 +1,6 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dto.UserRole;
 import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
@@ -60,7 +61,7 @@ public class UserService implements UserServiceInterface {
         existingUser.setUsername(userRequest.getUsername());
         existingUser.setEmail(userRequest.getEmail());
         existingUser.setPassword(password);
-        existingUser.setUserRole(userRequest.getUserRole());
+        existingUser.setUserRole(UserRole.valueOf(userRequest.getUserRole()));
         User resUser= userRepository.save(existingUser);
         return userMapper.toResponse(resUser);
     }

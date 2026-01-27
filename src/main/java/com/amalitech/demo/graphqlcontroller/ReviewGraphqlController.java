@@ -1,8 +1,7 @@
 package com.amalitech.demo.graphqlcontroller;
 
-import com.amalitech.demo.dto.ReviewRequest;
-import com.amalitech.demo.dto.ReviewResponse;
-import com.amalitech.demo.models.Reviews;
+import com.amalitech.demo.dto.request.ReviewRequest;
+import com.amalitech.demo.dto.response.ReviewResponse;
 import com.amalitech.demo.services.ReviewsService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;

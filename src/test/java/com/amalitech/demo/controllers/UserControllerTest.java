@@ -1,15 +1,14 @@
 package com.amalitech.demo.controllers;
 
 
-import com.amalitech.demo.dto.UserRequest;
-import com.amalitech.demo.dto.UserResponse;
+import com.amalitech.demo.dto.request.UserRequest;
+import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.restcontroller.UserController;
 import com.amalitech.demo.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;

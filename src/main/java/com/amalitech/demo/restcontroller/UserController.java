@@ -1,10 +1,10 @@
 package com.amalitech.demo.restcontroller;
 
 import com.amalitech.demo.dto.ResponseDto;
-import com.amalitech.demo.dto.UserRequest;
-import com.amalitech.demo.dto.UserResponse;
-import com.amalitech.demo.models.User;
+import com.amalitech.demo.dto.request.UserRequest;
+import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.services.UserService;
+import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/users")
 @AllArgsConstructor
 public class UserController {
-    private UserService userService;
+    private UserServiceInterface userService;
 
 
     @GetMapping("/")

@@ -1,7 +1,8 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dto.CartItemsReponse;
-import com.amalitech.demo.dto.CartResponse;
+import com.amalitech.demo.dto.CartStatus;
+import com.amalitech.demo.dto.response.CartItemsReponse;
+import com.amalitech.demo.dto.response.CartResponse;
 import com.amalitech.demo.mapper.CartMapper;
 import com.amalitech.demo.mapper.CartItemMapper;
 import com.amalitech.demo.models.Cart;
@@ -13,13 +14,14 @@ import com.amalitech.demo.repository.CartItemsRepository;
 import com.amalitech.demo.repository.CartRepository;
 import com.amalitech.demo.repository.ProductRepository;
 import com.amalitech.demo.repository.UserRepository;
+import com.amalitech.demo.services.interfaces.CartServiceInterface;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @AllArgsConstructor
 @Service
-public class CartService {
+public class CartService implements CartServiceInterface {
     private CartRepository cartRepository;
     private UserRepository userRepository;
     private CartItemsRepository cartItemsRepository;
@@ -27,13 +29,13 @@ public class CartService {
     private ProductRepository productRepository;
     private CartItemMapper cartItemMapper;
 
+    @Override
     public CartResponse createCart(Long userId){
         User user = userRepository.findById(userId).orElseThrow(
                 ()-> new EntityNotFoundException("User not found"));
-        boolean exists  = cartRepository.existsByUserIdAndStatus(user.getId(),"active");
-        System.out.println(exists);
+        boolean exists  = cartRepository.existsByUserIdAndStatus(user.getId(),CartStatus.active);
         if(exists){
-            Cart cart = cartRepository.findByUserIdAndStatus(user.getId(),"active").orElseThrow(
+            Cart cart = cartRepository.findByUserIdAndStatus(user.getId(),CartStatus.active).orElseThrow(
                     ()-> {throw new EntityNotFoundException("cart not found");}
             );
             return cartMapper.toResponse(cart);
@@ -44,15 +46,17 @@ public class CartService {
     }
 
 
+    @Override
     public CartResponse getCartByUserId(Long userId) {
-        Cart cart = cartRepository.findByUserIdAndStatus(userId,"active")
+        Cart cart = cartRepository.findByUserIdAndStatus(userId,CartStatus.active)
                 .orElseThrow(()-> new EntityNotFoundException("cart not found"));
         return cartMapper.toResponse(cart);
     }
 
     @Transactional
+    @Override
     public CartItemsReponse addItemToCart(Long userId, Long productId, int quantity) {
-        Cart cart = cartRepository.findByUserIdAndStatus(userId,"active")
+        Cart cart = cartRepository.findByUserIdAndStatus(userId,CartStatus.active)
                 .orElseThrow(()-> new EntityNotFoundException("cart not found"));
         if(cart != null){
             Product product = productRepository.findById(productId).orElseThrow(
@@ -71,15 +75,20 @@ public class CartService {
                 cartItems.setUnitPrice(product.getPrice());
                 cartItems.setTotalPrice(quantity*product.getPrice());
             }
-            CartItemsReponse  cartItemsReponse= cartItemMapper.toResponse(cartItemsRepository.save(cartItems));
-            return cartItemsReponse;
+            return cartItemMapper.toResponse(cartItemsRepository.save(cartItems));
         }else {
             throw new EntityNotFoundException("Cart not found");
         }
 
     }
 
-    public CartResponse updateCartStatus(Long cartId,String Status){
-        return new CartResponse(1L,1,"checkedout");
+    @Override
+    public CartResponse updateCartStatus(Long cartId, CartStatus Status){
+        Cart cart = cartRepository.findByUserIdAndStatus(cartId,CartStatus.active).orElseThrow(
+                ()-> new EntityNotFoundException("cart not found"));
+
+        cart.setStatus(Status);
+        Cart updatedCart = cartRepository.save(cart);
+        return cartMapper.toResponse(updatedCart);
     }
 }

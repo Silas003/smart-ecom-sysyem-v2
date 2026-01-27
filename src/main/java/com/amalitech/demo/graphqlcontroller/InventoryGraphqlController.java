@@ -1,7 +1,7 @@
 package com.amalitech.demo.graphqlcontroller;
 
-import com.amalitech.demo.dto.InventoryRequest;
-import com.amalitech.demo.dto.InventoryResponse;
+import com.amalitech.demo.dto.request.InventoryRequest;
+import com.amalitech.demo.dto.response.InventoryResponse;
 import com.amalitech.demo.services.InventoryService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;

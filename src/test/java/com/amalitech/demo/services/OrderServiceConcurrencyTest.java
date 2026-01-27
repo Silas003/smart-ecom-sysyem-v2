@@ -1,7 +1,7 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dto.OrderItemRequest;
-import com.amalitech.demo.dto.OrderRequest;
+import com.amalitech.demo.dto.request.OrderItemRequest;
+import com.amalitech.demo.dto.request.OrderRequest;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.models.Inventory;
 import com.amalitech.demo.models.Product;

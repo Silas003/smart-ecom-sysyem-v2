@@ -1,9 +1,12 @@
 package com.amalitech.demo.restcontroller;
-import com.amalitech.demo.dto.CartItemsReponse;
-import com.amalitech.demo.dto.CartResponse;
+import com.amalitech.demo.dto.CartStatus;
+import com.amalitech.demo.dto.OrderStatus;
+import com.amalitech.demo.dto.request.UpdateCartStatusRquest;
+import com.amalitech.demo.dto.response.CartItemsReponse;
+import com.amalitech.demo.dto.response.CartResponse;
 import com.amalitech.demo.dto.ResponseDto;
-import com.amalitech.demo.models.CartItems;
 import com.amalitech.demo.services.CartService;
+import com.amalitech.demo.services.interfaces.CartServiceInterface;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/v1/cart")
+@RequestMapping("/api/v1/carts")
 public class CartManagementController {
-    private CartService cartService;
+    private CartServiceInterface cartService;
 
 
     @PostMapping("/create_cart/{userId}")
@@ -39,9 +42,9 @@ public class CartManagementController {
 
     @PatchMapping("/{cardtId}/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<CartResponse> updateCartStatus(@RequestParam String status){
-//        cartService.
-        return new ResponseDto<>(HttpStatus.OK,"cart",null);
+    public ResponseDto<CartResponse> updateCartStatus(@PathVariable Long userId,@RequestBody UpdateCartStatusRquest status){
+        CartResponse cartResponse = cartService.updateCartStatus(userId,status.status());
+        return new ResponseDto<>(HttpStatus.OK,"cart status updated",cartResponse);
     }
 
 

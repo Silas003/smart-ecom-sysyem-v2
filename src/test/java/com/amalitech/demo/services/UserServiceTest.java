@@ -1,6 +1,6 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dto.UserResponse;
+import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.UserRepository;

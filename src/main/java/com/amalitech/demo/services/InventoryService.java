@@ -1,19 +1,20 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dto.InventoryRequest;
-import com.amalitech.demo.dto.InventoryResponse;
+import com.amalitech.demo.dto.request.InventoryRequest;
+import com.amalitech.demo.dto.response.InventoryResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.InventoryMapper;
 import com.amalitech.demo.models.Inventory;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.repository.InventoryRepository;
+import com.amalitech.demo.services.interfaces.InventoryServiceInterface;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class InventoryService {
+public class InventoryService implements InventoryServiceInterface {
 
     private final InventoryRepository inventoryRepository;
     private final ProductService productService;
@@ -25,6 +26,7 @@ public class InventoryService {
         this.inventoryMapper = inventoryMapper;
     }
 
+    @Override
     public InventoryResponse createInventory(InventoryRequest request) {
         Product product = productService.getProductById(request.getProductId());
         if( inventoryRepository.existsByProductId(product.getId())){
@@ -36,15 +38,18 @@ public class InventoryService {
         return inventoryMapper.toResponse(saved);
     }
 
+    @Override
     public InventoryResponse getInventoryById(Long id) {
         Inventory inv = inventoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
         return inventoryMapper.toResponse(inv);
     }
 
+    @Override
     public List<InventoryResponse> getAllInventories() {
         return inventoryRepository.findAll().stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
     }
 
+    @Override
     public InventoryResponse updateInventory(Long id, InventoryRequest request) {
         Inventory existingInventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
@@ -59,6 +64,7 @@ public class InventoryService {
         return inventoryMapper.toResponse(saved);
     }
 
+    @Override
     public void deleteInventory(Long id){
         Inventory inventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Inventory not found"));

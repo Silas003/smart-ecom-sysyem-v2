@@ -7,6 +7,7 @@ import org.springframework.aop.AopInvocationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -36,7 +37,7 @@ public class ExceptionHandlers {
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<?> handleAllExceptions(EntityNotFoundException ex,WebRequest request) {
+    public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException ex,WebRequest request) {
         Map<String,Object> errors= new HashMap<>();
         errors.put("timestamp",LocalDateTime.now());
         errors.put("message",ex.getMessage());
@@ -92,5 +93,11 @@ public class ExceptionHandlers {
         errors.put("message","Internal Server Error");
         errors.put("details",ex.getMessage());
         return new ResponseEntity<>(errors,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleAllExceptions(Exception ex){
+        return new ResponseEntity<>(Map.of("error", "internal server error"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

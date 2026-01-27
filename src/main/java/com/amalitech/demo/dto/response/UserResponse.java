@@ -1,7 +1,4 @@
-package com.amalitech.demo.dto;
-
-
-import lombok.Getter;
+package com.amalitech.demo.dto.response;
 
 
 public record UserResponse(

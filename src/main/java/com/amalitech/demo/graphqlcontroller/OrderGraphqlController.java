@@ -1,22 +1,16 @@
 package com.amalitech.demo.graphqlcontroller;
 
-import com.amalitech.demo.dto.OrderRequest;
-import com.amalitech.demo.dto.OrderResponse;
-import com.amalitech.demo.models.OrderItem;
-import com.amalitech.demo.models.Product;
+import com.amalitech.demo.dto.request.OrderRequest;
+import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.services.OrderService;
 import com.amalitech.demo.services.ProductService;
-import org.dataloader.DataLoader;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
-import graphql.schema.DataFetchingEnvironment;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Controller
 public class OrderGraphqlController {

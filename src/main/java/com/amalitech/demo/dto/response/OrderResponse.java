@@ -1,4 +1,4 @@
-package com.amalitech.demo.dto;
+package com.amalitech.demo.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.amalitech.demo.dto;
+package com.amalitech.demo.dto.response;
 
 import lombok.Data;
 

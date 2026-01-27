@@ -1,4 +1,4 @@
-package com.amalitech.demo.dto;
+package com.amalitech.demo.dto.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

@@ -1,6 +1,6 @@
 package com.amalitech.demo.mapper;
 
-import com.amalitech.demo.dto.CategoryRequest;
+import com.amalitech.demo.dto.request.CategoryRequest;
 import com.amalitech.demo.models.Category;
 import org.mapstruct.Mapper;
 

@@ -1,5 +1,6 @@
 package com.amalitech.demo.repository;
 
+import com.amalitech.demo.dto.CartStatus;
 import com.amalitech.demo.models.Cart;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,9 +14,9 @@ public interface CartRepository extends JpaRepository<Cart,Long> {
    FROM Cart c 
    WHERE c.user.id = :userId AND c.status = :status
     """)
-    boolean existsByUserIdAndStatus(Long userId, String status);
+    boolean existsByUserIdAndStatus(Long userId, CartStatus status);
 
 
     @Query("SELECT c FROM Cart c WHERE c.user.id = :userId and c.status = 'active'")
-    Optional<Cart> findByUserIdAndStatus(Long userId, String status);
+    Optional<Cart> findByUserIdAndStatus(Long userId, CartStatus status);
 }

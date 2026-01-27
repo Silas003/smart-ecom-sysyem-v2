@@ -1,8 +1,10 @@
 package com.amalitech.demo.restcontroller;
 
-import com.amalitech.demo.dto.InventoryResponse;
+import com.amalitech.demo.dto.response.InventoryResponse;
 import com.amalitech.demo.dto.ResponseDto;
+import com.amalitech.demo.dto.request.InventoryRequest;
 import com.amalitech.demo.services.InventoryService;
+import com.amalitech.demo.services.interfaces.InventoryServiceInterface;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,7 +17,7 @@ import java.util.List;
 @RequestMapping("/api/v1/inventories")
 @AllArgsConstructor
 public class InventoryController {
-    private final InventoryService inventoryService;
+    private final InventoryServiceInterface inventoryService;
 
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
@@ -36,7 +38,7 @@ public class InventoryController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<InventoryResponse> updateInventory(@PathVariable Long id, @RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest){
+    public ResponseDto<InventoryResponse> updateInventory(@PathVariable Long id, @RequestBody @Valid InventoryRequest inventoryRequest){
         InventoryResponse updatedInventory = inventoryService.updateInventory(id, inventoryRequest);
         return new ResponseDto<>(HttpStatus.ACCEPTED,"inventory updated",updatedInventory);
 
@@ -51,7 +53,7 @@ public class InventoryController {
 
     @PostMapping("/create_inventory")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<InventoryResponse> createInventory(@RequestBody @Valid com.amalitech.demo.dto.InventoryRequest inventoryRequest) {
+    public ResponseDto<InventoryResponse> createInventory(@RequestBody @Valid InventoryRequest inventoryRequest) {
         InventoryResponse newInventory = inventoryService.createInventory(inventoryRequest);
         return new ResponseDto<>(HttpStatus.CREATED,"inventory created",newInventory);
 

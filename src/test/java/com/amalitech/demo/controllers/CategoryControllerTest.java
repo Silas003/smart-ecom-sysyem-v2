@@ -1,6 +1,6 @@
 package com.amalitech.demo.controllers;
 
-import com.amalitech.demo.dto.CategoryRequest;
+import com.amalitech.demo.dto.request.CategoryRequest;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.restcontroller.CategoryController;
 import com.amalitech.demo.services.CategoryService;

@@ -1,9 +1,10 @@
 package com.amalitech.demo.restcontroller;
 
-import com.amalitech.demo.dto.CategoryRequest;
+import com.amalitech.demo.dto.request.CategoryRequest;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.services.CategoryService;
+import com.amalitech.demo.services.interfaces.CategoryServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @RequestMapping(value = "/api/v1/categories")
 public class CategoryController {
-    private final CategoryService categoryService;
+    private final CategoryServiceInterface categoryService;
 
     @GetMapping("/")
     @Operation(summary = "Get all categories", description = "Retrieve all categories")

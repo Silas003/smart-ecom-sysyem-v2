@@ -1,12 +1,13 @@
 package com.amalitech.demo.restcontroller;
 
 
-import com.amalitech.demo.dto.ProductRequest;
-import com.amalitech.demo.dto.ProductResponse;
+import com.amalitech.demo.dto.request.ProductRequest;
+import com.amalitech.demo.dto.response.ProductResponse;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.services.ProductService;
 import com.amalitech.demo.mapper.ProductMapper;
+import com.amalitech.demo.services.interfaces.ProductServiceInterface;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,8 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -27,7 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @AllArgsConstructor
 @Tag(name = "Products", description = "APIs to manage products")
 public class ProductController {
-    private final ProductService productService;
+    private final ProductServiceInterface productService;
     private final ProductMapper productMapper;
 
     @GetMapping("/")

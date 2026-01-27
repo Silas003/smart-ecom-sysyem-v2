@@ -1,7 +1,7 @@
 package com.amalitech.demo.mapper;
 
-import com.amalitech.demo.dto.InventoryRequest;
-import com.amalitech.demo.dto.InventoryResponse;
+import com.amalitech.demo.dto.request.InventoryRequest;
+import com.amalitech.demo.dto.response.InventoryResponse;
 import com.amalitech.demo.models.Inventory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

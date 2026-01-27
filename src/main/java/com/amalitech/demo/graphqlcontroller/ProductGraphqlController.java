@@ -1,7 +1,7 @@
 package com.amalitech.demo.graphqlcontroller;
 
 
-import com.amalitech.demo.dto.ProductRequest;
+import com.amalitech.demo.dto.request.ProductRequest;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.services.ProductService;
 import org.springframework.data.domain.Page;

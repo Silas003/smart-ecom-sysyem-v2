@@ -1,9 +1,10 @@
 package com.amalitech.demo.restcontroller;
 
 import com.amalitech.demo.dto.ResponseDto;
-import com.amalitech.demo.dto.ReviewRequest;
-import com.amalitech.demo.dto.ReviewResponse;
+import com.amalitech.demo.dto.request.ReviewRequest;
+import com.amalitech.demo.dto.response.ReviewResponse;
 import com.amalitech.demo.services.ReviewsService;
+import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.List;
 @RequestMapping("/api/v1/reviews")
 @AllArgsConstructor
 public class ReviewsController {
-    private final ReviewsService reviewsService;
+    private final ReviewsServiceInterface reviewsService;
 
 
     @GetMapping("/")

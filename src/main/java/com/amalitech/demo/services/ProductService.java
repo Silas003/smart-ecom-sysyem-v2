@@ -1,11 +1,12 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dto.ProductRequest;
+import com.amalitech.demo.dto.request.ProductRequest;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.ProductMapper;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.repository.ProductRepository;
+import com.amalitech.demo.services.interfaces.ProductServiceInterface;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class ProductService {
+public class ProductService implements ProductServiceInterface {
 
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
@@ -25,6 +26,7 @@ public class ProductService {
         this.productMapper = productMapper;
     }
 
+    @Override
     public Product createProduct(ProductRequest request) {
         if( productRepository.findByName(request.getName()) != null){
             throw new IllegalArgumentException("Product with given name already exists");
@@ -35,14 +37,17 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    @Override
     public Product getProductById(Long id) {
         return productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
 
+    @Override
     public Page<Product> getAllProducts(Pageable pageable) {
         return productRepository.findAll(pageable);
     }
 
+    @Override
     public Product updateProduct(Long id, ProductRequest request) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
@@ -58,6 +63,7 @@ public class ProductService {
         return productRepository.save(existingProduct);
     }
 
+    @Override
     public void deleteProduct(Long id) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("product not found"));
@@ -65,13 +71,5 @@ public class ProductService {
         productRepository.delete(existingProduct);
     }
 
-    // Bulk loader used by DataLoader to preserve input order
-    public List<Product> loadProductsByIds(List<Long> ids) {
-        List<Product> products = productRepository.findAllById(ids);
-        Map<Long, Product> map = new HashMap<>();
-        for (Product p : products) map.put(p.getId(), p);
-        List<Product> ordered = new ArrayList<>();
-        for (Long id : ids) ordered.add(map.get(id));
-        return ordered;
-    }
+
 }

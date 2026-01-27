@@ -1,11 +1,12 @@
 package com.amalitech.demo.restcontroller;
 
 
-import com.amalitech.demo.dto.OrderRequest;
-import com.amalitech.demo.dto.OrderResponse;
+import com.amalitech.demo.dto.request.OrderRequest;
+import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.dto.ResponseDto;
-import com.amalitech.demo.dto.UpdateOrderRequest;
+import com.amalitech.demo.dto.request.UpdateOrderRequest;
 import com.amalitech.demo.services.OrderService;
+import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,7 +26,7 @@ import java.util.List;
 @AllArgsConstructor
 @Tag(name = "Order management",description = "Endpoints to streamline order processing")
 public class OrderManagementController {
-    private OrderService orderService;
+    private OrderServiceInterface orderService;
 
     @GetMapping("/user/{userId}")
     @ResponseStatus(HttpStatus.OK)

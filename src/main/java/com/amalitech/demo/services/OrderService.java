@@ -1,10 +1,14 @@
 package com.amalitech.demo.services;
 
 import com.amalitech.demo.dto.*;
+import com.amalitech.demo.dto.request.OrderItemRequest;
+import com.amalitech.demo.dto.request.OrderRequest;
+import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.OrdersMapper;
 import com.amalitech.demo.models.*;
 import com.amalitech.demo.repository.*;
+import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,11 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class OrderService {
+public class OrderService implements OrderServiceInterface {
 
     private final OrdersRepository ordersRepository;
     private final OrdersMapper ordersMapper;
@@ -33,6 +36,7 @@ public class OrderService {
                     OrderStatus.cancelled, Set.of()
             );
 
+    @Override
     public List<OrderResponse> getOrderByUserId(Long userId){
         List<Orders> orders = ordersRepository.findByUser_IdWithItemsAndProducts(userId).orElseThrow(
                 ()-> new EntityNotFoundException("user does not have any orders")
@@ -41,11 +45,13 @@ public class OrderService {
         return ordersMapper.toResponse(orders);
     }
 
+    @Override
     public OrderResponse getOrderById(Long id){
         Orders order = ordersRepository.findByIdWithItemsAndProducts(id).orElseThrow(()-> new EntityNotFoundException("order not found"));
         return ordersMapper.toResponse(order);
     }
 
+    @Override
     public Page<OrderResponse> getAllOrders(Pageable pageable) {
         Page<Orders> orders = ordersRepository.findAll(pageable);
         // Ensure items and products are fetched for each order before mapping to DTOs
@@ -57,6 +63,7 @@ public class OrderService {
         return new org.springframework.data.domain.PageImpl<>(content, pageable, orders.getTotalElements());
     }
 
+    @Override
     public void deleteOrder(Long orderId) {
         Orders order = ordersRepository.findById(orderId)
                 .orElseThrow(()-> new EntityNotFoundException("order not found"));
@@ -64,6 +71,7 @@ public class OrderService {
     }
 
     @Transactional
+    @Override
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
         Orders order = ordersRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
@@ -88,7 +96,8 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse createOrder( OrderRequest req) {
+    @Override
+    public OrderResponse createOrder(OrderRequest req) {
         Long userId = req.getUserId();
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
         if (req.getItems() == null || req.getItems().isEmpty()) {
@@ -129,25 +138,6 @@ public class OrderService {
         Orders saved = ordersRepository.save(order);
         // Use mapper to convert saved entity to response (includes item -> itemResponse mapping)
         return ordersMapper.toResponse(saved);
-    }
-
-    /**
-     * Restore inventory quantities for all items in the given order.
-     * This method will look up the Inventory by product id and add back the ordered quantity.
-     * It is transactional and will throw EntityNotFoundException if an Inventory for a product is missing.
-     */
-    private void restoreInventory(Orders order) {
-        if (order.getItems() == null || order.getItems().isEmpty()) return;
-
-        for (OrderItem item : order.getItems()) {
-            Long productId = item.getProduct().getId();
-            Inventory inv = inventoryRepository.findByProduct_Id(productId)
-                    .orElseThrow(() -> new EntityNotFoundException("Inventory not found for product id: " + productId));
-
-            int newStock = inv.getStockQuantity() + (item.getQuantity() == null ? 0 : item.getQuantity());
-            inv.setStockQuantity(newStock);
-            inventoryRepository.save(inv);
-        }
     }
 
 }

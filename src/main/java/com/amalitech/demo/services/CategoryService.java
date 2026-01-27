@@ -6,6 +6,10 @@ import com.amalitech.demo.mapper.CategoryMapper;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.repository.CategoryRepository;
 import com.amalitech.demo.services.interfaces.CategoryServiceInterface;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +23,7 @@ public class CategoryService implements CategoryServiceInterface {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
     }
-
+    @Cacheable(value="category",key="#id")
     @Override
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id).orElseThrow(
@@ -28,6 +32,7 @@ public class CategoryService implements CategoryServiceInterface {
     }
 
     @Override
+    @CachePut(value="category",key ="result.id")
     public Category createCategory(CategoryRequest request) {
         if(categoryRepository.findByName(request.getName()) != null){
             throw new IllegalArgumentException("category with given name already exists");
@@ -36,12 +41,14 @@ public class CategoryService implements CategoryServiceInterface {
         return categoryRepository.save(category);
     }
 
-
+    @Cacheable(value = "allcategories")
     @Override
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
 
+
+    @CachePut(value = "category",key = "#id")
     @Override
     public Category updateCategory(Long id, CategoryRequest request) {
         Category existingCategory = categoryRepository.findById(id)
@@ -51,6 +58,14 @@ public class CategoryService implements CategoryServiceInterface {
 
         return categoryRepository.save(existingCategory);
     }
+
+    @Caching(
+            evict ={
+                    @CacheEvict(value = "category",key = "#id",allEntries = true),
+                    @CacheEvict(value = "allcategories",allEntries = true)
+
+            }
+    )
     @Override
     public void deleteCategory(Long id) {
         Category existingCategory = categoryRepository.findById(id)

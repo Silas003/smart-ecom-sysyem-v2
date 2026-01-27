@@ -9,6 +9,10 @@ import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.ReviewsRepository;
 import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +38,7 @@ public class ReviewsService implements ReviewsServiceInterface {
         return reviewsRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @CachePut(value = "review",key = "result.id")
     @Transactional
     @Override
     public ReviewResponse createReview(ReviewRequest request, Long userId) {
@@ -46,24 +51,33 @@ public class ReviewsService implements ReviewsServiceInterface {
 
     }
 
+    @Cacheable(value = "review",key = "#id")
     @Override
     public ReviewResponse getReview(Long id) {
         Reviews review = reviewsRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Review not found"));
         return toResponse(review);
     }
 
+    @Cacheable(value = "reviewbyproduct",key = "#productId")
     @Override
     public List<ReviewResponse> getReviewsByProduct(Long productId) {
         productService.getProductById(productId); // validate exists
         return reviewsRepository.findByProduct_IdOrderByIdDesc(productId).stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Cacheable(value = "reviewbyuser",key = "#userId")
     @Override
     public List<ReviewResponse> getReviewsByUser(Long userId) {
         userService.getUserByIdForReview(userId); // validate exists
         return reviewsRepository.findByUser_IdOrderByIdDesc(userId).stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "reviewbyuser",allEntries = true),
+                    @CacheEvict(value = "reviewbyproduct",allEntries = true)
+            }
+    )
     @Transactional
     @Override
     public void deleteReview(Long id) {

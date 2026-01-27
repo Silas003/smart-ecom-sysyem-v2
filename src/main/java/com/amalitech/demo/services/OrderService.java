@@ -15,6 +15,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,7 +67,7 @@ public class OrderService implements OrderServiceInterface {
             return ordersMapper.toResponse(full);
         }).toList();
 
-        return new org.springframework.data.domain.PageImpl<>(content, pageable, orders.getTotalElements());
+        return new PageImpl<>(content, pageable, orders.getTotalElements());
     }
 
     @Override

@@ -17,7 +17,10 @@ import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.services.interfaces.CartServiceInterface;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 @AllArgsConstructor
 @Service
@@ -29,6 +32,8 @@ public class CartService implements CartServiceInterface {
     private ProductRepository productRepository;
     private CartItemMapper cartItemMapper;
 
+    @CachePut(value = "activeUserCart",key="result.id + #userId")
+    @Transactional
     @Override
     public CartResponse createCart(Long userId){
         User user = userRepository.findById(userId).orElseThrow(
@@ -45,7 +50,7 @@ public class CartService implements CartServiceInterface {
         return cartMapper.toResponse(cart);
     }
 
-
+    @Cacheable(value = "cart",key = "#userId")
     @Override
     public CartResponse getCartByUserId(Long userId) {
         Cart cart = cartRepository.findByUserIdAndStatus(userId,CartStatus.active)
@@ -82,6 +87,8 @@ public class CartService implements CartServiceInterface {
 
     }
 
+    @CachePut(value="activeUserCart",key = "#cartId + result.userId")
+    @Transactional
     @Override
     public CartResponse updateCartStatus(Long cartId, CartStatus Status){
         Cart cart = cartRepository.findByUserIdAndStatus(cartId,CartStatus.active).orElseThrow(

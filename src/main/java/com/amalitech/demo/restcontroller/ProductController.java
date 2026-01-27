@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 
 @RestController
 @RequestMapping(value = "/api/v1/products")
@@ -32,6 +35,9 @@ public class ProductController {
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "List products", description = "List products with pagination and sorting")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved")
+    })
     public ResponseDto<Page<ProductResponse>> getAllProducts(
             @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable
     )
@@ -46,7 +52,11 @@ public class ProductController {
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get product", description = "Retrieve a single product by id")
-    public ResponseDto<ProductResponse> getProductById(@PathVariable Long id){
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product retrieved"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    public ResponseDto<ProductResponse> getProductById(@Parameter(description = "ID of the product to retrieve", required = true) @PathVariable Long id){
         Product product = productService.getProductById(id);
         return new ResponseDto<>(HttpStatus.OK,"product retrieved",productMapper.toResponse(product));
 
@@ -55,7 +65,12 @@ public class ProductController {
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update product", description = "Update product details")
-    public ResponseDto<ProductResponse> updateProduct(@PathVariable Long id, @RequestBody @Valid ProductRequest productRequest){
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product updated"),
+            @ApiResponse(responseCode = "404", description = "Product not found"),
+            @ApiResponse(responseCode = "400", description = "Validation error")
+    })
+    public ResponseDto<ProductResponse> updateProduct(@Parameter(description = "ID of the product to update", required = true) @PathVariable Long id, @RequestBody @Valid ProductRequest productRequest){
         Product updated = productService.updateProduct(id, productRequest);
         return new ResponseDto<>(HttpStatus.OK,"product updated",productMapper.toResponse(updated));
     }
@@ -63,7 +78,11 @@ public class ProductController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete product", description = "Delete a product by id")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Product deleted"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    public ResponseEntity<Void> deleteProduct(@Parameter(description = "ID of the product to delete", required = true) @PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
@@ -71,6 +90,10 @@ public class ProductController {
     @PostMapping("/create_product")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create product", description = "Create a new product")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Product created"),
+            @ApiResponse(responseCode = "400", description = "Validation error")
+    })
 
     public ResponseDto<ProductResponse> createProduct(@RequestBody @Valid ProductRequest productRequest) {
         Product newProduct = productService.createProduct(productRequest);

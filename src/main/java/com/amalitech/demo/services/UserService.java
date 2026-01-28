@@ -1,5 +1,6 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dao.implementations.UserDao;
 import com.amalitech.demo.dto.UserRole;
 import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.UserResponse;
@@ -9,30 +10,30 @@ import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 public class UserService implements UserServiceInterface {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-
-    public UserService(UserRepository userRepository, UserMapper userMapper){
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-    }
+    private final UserDao userDao;
 
     @Override
-    public UserResponse createUser(UserRequest userRequest) {
-        if( userRepository.findByEmail(userRequest.getEmail()) != null || userRepository.findByUsername(userRequest.getUsername()) != null){
-            throw new IllegalArgumentException("User with given email or username already exists");
-        }
-        User user = userMapper.toEntity(userRequest);
-        String password = PasswordUtils.hashPassword(user.getPassword());
-        user.setPassword(password);
-        return userMapper.toResponse(userRepository.save(user));
+    public void createUser(UserRequest userRequest) {
+//        if( userRepository.findByEmail(userRequest.getEmail()) != null || userRepository.findByUsername(userRequest.getUsername()) != null){
+//            throw new IllegalArgumentException("User with given email or username already exists");
+//        }
+//        User user = userMapper.toEntity(userRequest);
+//        String password = PasswordUtils.hashPassword(user.getPassword());
+//        user.setPassword(password);
+//        return userMapper.toResponse(userRepository.save(user));
+        userDao.create(userRequest);
+//        return new UserResponse();
     }
 
     @Override

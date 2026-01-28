@@ -97,8 +97,8 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
     public ResponseDto<UserResponse> createUser(@RequestBody @Valid UserRequest userRequest) {
-        UserResponse newUser = userService.createUser(userRequest);
-        return new ResponseDto<>(HttpStatus.CREATED,"user retrieved",newUser);
+        userService.createUser(userRequest);
+        return new ResponseDto<>(HttpStatus.CREATED,"user created",null);
     }
 
     @PostMapping("/login")

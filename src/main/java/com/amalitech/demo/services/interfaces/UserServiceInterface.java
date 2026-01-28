@@ -7,7 +7,7 @@ import com.amalitech.demo.models.User;
 import java.util.List;
 
 public interface UserServiceInterface {
-    UserResponse createUser(UserRequest userRequest);
+    void createUser(UserRequest userRequest);
 
     UserResponse getUserById(Long id);
 

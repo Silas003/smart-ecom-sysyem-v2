@@ -27,7 +27,6 @@ public class OrderService implements OrderServiceInterface {
 
     private final OrdersRepository ordersRepository;
     private final OrdersMapper ordersMapper;
-    private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
     private final UserRepository userRepository;

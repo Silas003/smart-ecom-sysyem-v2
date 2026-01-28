@@ -55,8 +55,8 @@ public class UserGraphqlController {
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
-    public UserResponse createUser(@Argument("input")  UserRequest request) {
-        return userService.createUser(request);
+    public void createUser(@Argument("input")  UserRequest request) {
+        userService.createUser(request);
     }
 
     @MutationMapping

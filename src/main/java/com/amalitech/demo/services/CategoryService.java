@@ -1,6 +1,7 @@
 package com.amalitech.demo.services;
 
 import com.amalitech.demo.dto.request.CategoryRequest;
+import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.CategoryMapper;
 import com.amalitech.demo.models.Category;
@@ -19,37 +20,39 @@ public class CategoryService implements CategoryServiceInterface {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
     }
-
+//    fix category service methods
     @Override
-    public Category getCategoryById(Long id) {
-        return categoryRepository.findById(id).orElseThrow(
+    public CategoryResponse getCategoryById(Long id) {
+        Category category = categoryRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Category not found with id: " + id)
         );
+        return categoryMapper.toResponse(category);
     }
 
     @Override
-    public Category createCategory(CategoryRequest request) {
+    public CategoryResponse createCategory(CategoryRequest request) {
         if(categoryRepository.findByName(request.getName()) != null){
             throw new IllegalArgumentException("category with given name already exists");
         }
         Category category = categoryMapper.toEntity(request);
-        return categoryRepository.save(category);
+        return categoryMapper.toResponse(categoryRepository.save(category));
     }
 
 
     @Override
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    public List<CategoryResponse> getAllCategories() {
+        List<Category> categories = categoryRepository.findAll();
+        return  categories.stream().map(categoryMapper::toResponse).toList();
     }
 
     @Override
-    public Category updateCategory(Long id, CategoryRequest request) {
+    public CategoryResponse updateCategory(Long id, CategoryRequest request) {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("category not found"));
 
         existingCategory.setName(request.getName());
 
-        return categoryRepository.save(existingCategory);
+        return categoryMapper.toResponse(categoryRepository.save(existingCategory));
     }
     @Override
     public void deleteCategory(Long id) {

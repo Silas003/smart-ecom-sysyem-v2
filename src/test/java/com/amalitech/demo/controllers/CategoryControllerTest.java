@@ -1,6 +1,7 @@
 package com.amalitech.demo.controllers;
 
 import com.amalitech.demo.dto.request.CategoryRequest;
+import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.restcontroller.CategoryController;
 import com.amalitech.demo.services.CategoryService;
@@ -30,8 +31,7 @@ public class CategoryControllerTest {
 
     @Test
     void shouldReturnAllCategories() throws Exception {
-        Category category = new Category();
-        category.setName("Category 1");
+        CategoryResponse category = new CategoryResponse(1L,"category");
         when(categoryService.getAllCategories()).thenReturn(List.of(category,category,category));
         mockMvc.perform(get("/api/v1/categories/"))
                 .andDo(print())
@@ -44,7 +44,7 @@ public class CategoryControllerTest {
     void shouldReturnCategory() throws Exception {
         Category category = new Category();
         category.setName("Category 1");
-        when(categoryService.getCategoryById(anyLong())).thenReturn(category);
+        when(categoryService.getCategoryById(anyLong())).thenReturn(new CategoryResponse(1L,"Category 1"));
 
         mockMvc.perform(get("/api/v1/categories/5"))
                 .andExpect(status().isOk())
@@ -56,7 +56,7 @@ public class CategoryControllerTest {
         CategoryRequest category = new CategoryRequest();
         category.setName("Category 1");
 
-        when(categoryService.createCategory(category)).thenReturn(new Category());
+        when(categoryService.createCategory(category)).thenReturn(new CategoryResponse(1L,"category"));
 
         String categoryJson = """
                 {

@@ -1,18 +1,19 @@
 package com.amalitech.demo.services.interfaces;
 
 import com.amalitech.demo.dto.request.CategoryRequest;
+import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.models.Category;
 
 import java.util.List;
 
 public interface CategoryServiceInterface {
-    Category getCategoryById(Long id);
+    CategoryResponse getCategoryById(Long id);
 
-    Category createCategory(CategoryRequest request);
+    CategoryResponse createCategory(CategoryRequest request);
 
-    List<Category> getAllCategories();
+    List<CategoryResponse> getAllCategories();
 
-    Category updateCategory(Long id, CategoryRequest request);
+    CategoryResponse updateCategory(Long id, CategoryRequest request);
 
     void deleteCategory(Long id);
 }

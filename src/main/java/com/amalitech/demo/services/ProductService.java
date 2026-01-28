@@ -1,6 +1,7 @@
 package com.amalitech.demo.services;
 
 import com.amalitech.demo.dto.request.ProductRequest;
+import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.dto.response.ProductResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.ProductMapper;
@@ -37,7 +38,7 @@ public class ProductService implements ProductServiceInterface {
         if( productRepository.findByName(request.getName()) != null){
             throw new IllegalArgumentException("Product with given name already exists");
         }
-        Category category = categoryService.getCategoryById(request.getCategoryId());
+        CategoryResponse category = categoryService.getCategoryById(request.getCategoryId());
         Product product = productMapper.toEntity(request);
         product.setCategory(category);
         return productRepository.save(product);

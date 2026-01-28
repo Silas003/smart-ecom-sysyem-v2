@@ -9,6 +9,7 @@ import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class UserService implements UserServiceInterface {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
     }
-
+    @Transactional
     @Override
     public UserResponse createUser(UserRequest userRequest) {
         if( userRepository.findByEmail(userRequest.getEmail()) != null || userRepository.findByUsername(userRequest.getUsername()) != null){

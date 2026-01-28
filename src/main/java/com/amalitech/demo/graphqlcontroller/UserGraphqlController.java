@@ -1,5 +1,6 @@
 package com.amalitech.demo.graphqlcontroller;
 
+import com.amalitech.demo.dto.request.PaginationInput;
 import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.services.UserService;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
+import org.springframework.data.domain.Page;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -33,8 +35,8 @@ public class UserGraphqlController {
             @ApiResponse(responseCode = "200", description = "Users retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))))
     })
-    public List<UserResponse> users() {
-        return userService.getAllUsers();
+    public Page<UserResponse> users(@Argument int page, @Argument int size) {
+        return userService.getAllUsers(page,size);
     }
 
     @QueryMapping
@@ -66,7 +68,7 @@ public class UserGraphqlController {
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public UserResponse updateUser(@Argument  Long id, @Argument("input") UserRequest request) {
+        public UserResponse updateUser(@Argument  Long id, @Argument("input") UserRequest request) {
         return userService.updateUser(id, request);
     }
 

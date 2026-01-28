@@ -7,7 +7,7 @@ import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.OrdersMapper;
 import com.amalitech.demo.models.*;
-import com.amalitech.demo.repository.*;
+import com.amalitech.demo.dao.interfaces.*;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -15,6 +15,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,11 +26,12 @@ import java.util.*;
 @AllArgsConstructor
 public class OrderService implements OrderServiceInterface {
 
-    private final OrdersRepository ordersRepository;
+    private final OrdersDao ordersDao;
     private final OrdersMapper ordersMapper;
-    private final ProductRepository productRepository;
-    private final InventoryRepository inventoryRepository;
-    private final UserRepository userRepository;
+    private final ProductDao productDao;
+    private final InventoryDao inventoryDao;
+    private final UserDao userDao;
+    private final OrderItemDao orderItemDao;
 
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS =
             Map.of(
@@ -42,30 +44,29 @@ public class OrderService implements OrderServiceInterface {
     @Override
     @Cacheable(value="ordersByUser", key="#userId", sync = true)
     public List<OrderResponse> getOrderByUserId(Long userId){
-        List<Orders> orders = ordersRepository.findByUser_IdWithItemsAndProducts(userId).orElseThrow(
-                ()-> new EntityNotFoundException("user does not have any orders")
-        );
-        // Use OrdersMapper to convert entities to DTOs (ensures productId is populated)
+        List<Orders> orders = ordersDao.findByUserId(userId);
+        if(orders == null || orders.isEmpty()){
+            throw new EntityNotFoundException("user does not have any orders");
+        }
         return ordersMapper.toResponse(orders);
     }
 
     @Override
     @Cacheable(value = "order", key = "#id")
     public OrderResponse getOrderById(Long id){
-        Orders order = ordersRepository.findByIdWithItemsAndProducts(id).orElseThrow(()-> new EntityNotFoundException("order not found"));
+        Orders order = ordersDao.findById(id).orElseThrow(()-> new EntityNotFoundException("order not found"));
         return ordersMapper.toResponse(order);
     }
 
     @Override
     public Page<OrderResponse> getAllOrders(Pageable pageable) {
-        Page<Orders> orders = ordersRepository.findAll(pageable);
-        // Ensure items and products are fetched for each order before mapping to DTOs
-        List<OrderResponse> content = orders.getContent().stream().map(o -> {
-            Orders full = ordersRepository.findByIdWithItemsAndProducts(o.getId()).orElse(o);
-            return ordersMapper.toResponse(full);
-        }).toList();
-
-        return new org.springframework.data.domain.PageImpl<>(content, pageable, orders.getTotalElements());
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPageNumber();
+        int offset = pageNumber * pageSize;
+        List<Orders> orders = ordersDao.findAll(pageSize, offset);
+        List<OrderResponse> content = orders.stream().map(ordersMapper::toResponse).toList();
+        long total = content.size();
+        return new PageImpl<>(content, pageable, total);
     }
 
     @Override
@@ -76,9 +77,13 @@ public class OrderService implements OrderServiceInterface {
             }
     )
     public void deleteOrder(Long orderId) {
-        Orders order = ordersRepository.findById(orderId)
+        Orders order = ordersDao.findById(orderId)
                 .orElseThrow(()-> new EntityNotFoundException("order not found"));
-        ordersRepository.delete(order);
+        try {
+            ordersDao.deleteById(orderId);
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
     @Caching(
@@ -90,7 +95,7 @@ public class OrderService implements OrderServiceInterface {
     @Transactional
     @Override
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
-        Orders order = ordersRepository.findById(orderId)
+        Orders order = ordersDao.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
         OrderStatus currentStatus = order.getStatus();
@@ -107,9 +112,13 @@ public class OrderService implements OrderServiceInterface {
         }
 
         order.setStatus(newStatus);
-        Orders updated = ordersRepository.save(order);
+        try {
+            ordersDao.update(order);
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
 
-        return ordersMapper.toResponse(updated);
+        return ordersMapper.toResponse(order);
     }
 
     @CachePut(value = "orderByUser",key="#result.userId")
@@ -117,7 +126,7 @@ public class OrderService implements OrderServiceInterface {
     @Override
     public OrderResponse createOrder(OrderRequest req) {
         Long userId = req.getUserId();
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userDao.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
         if (req.getItems() == null || req.getItems().isEmpty()) {
             throw new IllegalArgumentException("Order must contain at least one item");
         }
@@ -130,13 +139,13 @@ public class OrderService implements OrderServiceInterface {
         double total = 0.0;
 
         for (OrderItemRequest it : req.getItems()) {
-            Product product = productRepository.findById(it.getProductId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
-            Inventory inv = inventoryRepository.findByProduct_Id(product.getId()).orElseThrow(() -> new EntityNotFoundException("Inventory not found for product"));
+            Product product = productDao.findById(it.getProductId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
+            Inventory inv = inventoryDao.findByProductId(product.getId()).orElseThrow(() -> new EntityNotFoundException("Inventory not found for product"));
             if (inv.getStockQuantity() < it.getQuantity()) {
                 throw new IllegalArgumentException("Insufficient stock for product id: " + product.getId());
             }
             inv.setStockQuantity(inv.getStockQuantity() - it.getQuantity());
-            inventoryRepository.save(inv);
+            inventoryDao.update(inv);
 
             OrderItem oi = new OrderItem();
             oi.setOrder(order);
@@ -151,8 +160,24 @@ public class OrderService implements OrderServiceInterface {
         order.setTotalAmount(total);
         order.setItems(items);
 
-        Orders saved = ordersRepository.save(order);
-        return ordersMapper.toResponse(saved);
+        try {
+            long id = ordersDao.save(order);
+            order.setId(id);
+            return ordersMapper.toResponse(order);
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void restoreInventory(Orders order) {
+        if (order.getItems() == null) return;
+        for (OrderItem item : order.getItems()) {
+            Inventory inv = inventoryDao.findByProductId(item.getProduct().getId()).orElse(null);
+            if (inv != null) {
+                inv.setStockQuantity(inv.getStockQuantity() + item.getQuantity());
+                inventoryDao.update(inv);
+            }
+        }
     }
 
 }

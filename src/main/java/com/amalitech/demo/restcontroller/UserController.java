@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,8 +38,8 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Users retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))))
     })
-    public ResponseDto<List<UserResponse>> getAllUsers(){
-        List<UserResponse> users = userService.getAllUsers();
+    public ResponseDto<Page<UserResponse>> getAllUsers(@RequestParam int page,@RequestParam int size){
+        Page<UserResponse> users = userService.getAllUsers(page,size);
         return new ResponseDto<>(HttpStatus.OK,"users retrieved",users);
     }
 

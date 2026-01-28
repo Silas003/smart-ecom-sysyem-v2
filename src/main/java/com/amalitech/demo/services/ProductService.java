@@ -6,27 +6,28 @@ import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.ProductMapper;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.models.Product;
-import com.amalitech.demo.repository.ProductRepository;
+import com.amalitech.demo.dao.interfaces.ProductDao;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
 
 @Service
 public class ProductService implements ProductServiceInterface {
 
-    private final ProductRepository productRepository;
+    private final ProductDao productDao;
     private final CategoryService categoryService;
     private final ProductMapper productMapper;
 
-    public ProductService(ProductRepository productRepository, CategoryService categoryService, ProductMapper productMapper){
-        this.productRepository = productRepository;
+    public ProductService(ProductDao productDao, CategoryService categoryService, ProductMapper productMapper){
+        this.productDao = productDao;
         this.categoryService = categoryService;
         this.productMapper = productMapper;
     }
@@ -34,24 +35,30 @@ public class ProductService implements ProductServiceInterface {
     @Override
     @CachePut(value="productsByCategory", key="#request.categoryId")
     public Product createProduct(ProductRequest request) {
-        if( productRepository.findByName(request.getName()) != null){
+        if( productDao.findByName(request.getName()).isPresent()){
             throw new IllegalArgumentException("Product with given name already exists");
         }
         Category category = categoryService.getCategoryById(request.getCategoryId());
         Product product = productMapper.toEntity(request);
         product.setCategory(category);
-        return productRepository.save(product);
+        productDao.save(product);
+        return product;
     }
 
     @Override
     @Cacheable(value="product", key="#id",sync = true)
     public Product getProductById(Long id) {
-        return productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
+        return productDao.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
 
     @Override
     public Page<Product> getAllProducts(Pageable pageable) {
-        return productRepository.findAll(pageable);
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPageNumber();
+        int offset = pageNumber * pageSize;
+        List<Product> content = productDao.findAll(pageSize, offset);
+        long total = content.size();
+        return new PageImpl<>(content, pageable, total);
     }
 
     @Override
@@ -62,7 +69,7 @@ public class ProductService implements ProductServiceInterface {
             }
     )
     public Product updateProduct(Long id, ProductRequest request) {
-        Product existingProduct = productRepository.findById(id)
+        Product existingProduct = productDao.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
         existingProduct.setName(request.getName());
@@ -73,7 +80,8 @@ public class ProductService implements ProductServiceInterface {
             existingProduct.setCategory(newCat);
         }
 
-        return productRepository.save(existingProduct);
+        productDao.update(existingProduct);
+        return existingProduct;
     }
 
     @Caching(
@@ -84,18 +92,19 @@ public class ProductService implements ProductServiceInterface {
     )
     @Override
     public void deleteProduct(Long id) {
-        Product existingProduct = productRepository.findById(id)
+        Product existingProduct = productDao.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("product not found"));
 
-        productRepository.delete(existingProduct);
+        productDao.deleteById(existingProduct.getId());
     }
 
     @Cacheable(value="productsByCategory", key="#categoryId",sync = true)
     @Override
     public Page<ProductResponse> getProductsByCategoryId(Long categoryId){
         Category category = categoryService.getCategoryById(categoryId);
-        Page<Product> products = productRepository.findByCategory_Id(categoryId,Pageable.unpaged());
-        return products.map(productMapper::toResponse);
+        int limit = Integer.MAX_VALUE; // simple approach; for real paging use count+limit/offset
+        List<Product> products = productDao.findByCategoryId(categoryId, Integer.MAX_VALUE, 0);
+        return new PageImpl<>(products.stream().map(productMapper::toResponse).toList());
     }
 
 }

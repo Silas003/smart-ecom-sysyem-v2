@@ -1,10 +1,10 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dao.interfaces.CategoryDao;
 import com.amalitech.demo.dto.request.CategoryRequest;
-import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.CategoryMapper;
 import com.amalitech.demo.models.Category;
-import com.amalitech.demo.repository.CategoryRepository;
+import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.services.interfaces.CategoryServiceInterface;
 import org.springframework.stereotype.Service;
 
@@ -12,50 +12,46 @@ import java.util.List;
 
 @Service
 public class CategoryService implements CategoryServiceInterface {
-    private final CategoryRepository categoryRepository;
+    private final CategoryDao categoryDao;
     private final CategoryMapper categoryMapper;
 
-    public CategoryService(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
-        this.categoryRepository = categoryRepository;
+    public CategoryService(CategoryDao categoryDao, CategoryMapper categoryMapper) {
+        this.categoryDao = categoryDao;
         this.categoryMapper = categoryMapper;
     }
 
     @Override
     public Category getCategoryById(Long id) {
-        return categoryRepository.findById(id).orElseThrow(
+        return categoryDao.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Category not found with id: " + id)
         );
     }
 
     @Override
     public Category createCategory(CategoryRequest request) {
-        if(categoryRepository.findByName(request.getName()) != null){
+        if(categoryDao.findByName(request.getName()).isPresent()){
             throw new IllegalArgumentException("category with given name already exists");
         }
         Category category = categoryMapper.toEntity(request);
-        return categoryRepository.save(category);
+        categoryDao.save(category);
+        return category;
     }
 
 
     @Override
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+        return categoryDao.findAll();
     }
 
     @Override
     public Category updateCategory(Long id, CategoryRequest request) {
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("category not found"));
-
-        existingCategory.setName(request.getName());
-
-        return categoryRepository.save(existingCategory);
+        Category existing = categoryDao.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found"));
+        existing.setName(request.getName());
+        categoryDao.update(existing);
+        return existing;
     }
     @Override
     public void deleteCategory(Long id) {
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("category not found"));
-
-        categoryRepository.delete(existingCategory);
+        categoryDao.deleteById(id);
     }
 }

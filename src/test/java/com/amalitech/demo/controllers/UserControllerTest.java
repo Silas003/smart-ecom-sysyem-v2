@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -59,9 +62,10 @@ public class UserControllerTest {
 
         UserResponse userResponse =
                 new UserResponse(1L, "Alice", "a@gmail.com", "customer");
-
+        int pageNumber = 1;
+        int pageSize = 10;
         List<UserResponse> userResponses = new ArrayList<>(Arrays.asList(userResponse, userResponse, userResponse));
-        when(userService.getAllUsers()).thenReturn(userResponses);
+        when(userService.getAllUsers(pageNumber,pageSize)).thenReturn((Page<UserResponse>) userResponses);
 
         mockMvc.perform(get("/api/v1/users/"))
                 .andExpect(status().isOk())

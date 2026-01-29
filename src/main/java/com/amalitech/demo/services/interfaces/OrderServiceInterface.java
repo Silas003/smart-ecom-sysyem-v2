@@ -10,7 +10,6 @@ import com.amalitech.demo.models.Orders;
 import com.amalitech.demo.repository.InventoryRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

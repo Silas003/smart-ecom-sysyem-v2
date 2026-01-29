@@ -9,6 +9,8 @@ import com.amalitech.demo.models.Product;
 import com.amalitech.demo.repository.InventoryRepository;
 import com.amalitech.demo.services.interfaces.InventoryServiceInterface;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,6 +30,7 @@ public class InventoryService implements InventoryServiceInterface {
     }
 
     @Override
+    @CachePut(value="inventory", key="#result.id")
     public InventoryResponse createInventory(InventoryRequest request) {
         Product product = productService.getProductById(request.getProductId());
         if( inventoryRepository.existsByProductId(product.getId())){
@@ -40,6 +43,7 @@ public class InventoryService implements InventoryServiceInterface {
     }
 
     @Override
+    @Cacheable(value="inventory", key="#id",sync = true)
     public InventoryResponse getInventoryById(Long id) {
         Inventory inv = inventoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
         return inventoryMapper.toResponse(inv);
@@ -51,6 +55,7 @@ public class InventoryService implements InventoryServiceInterface {
     }
 
     @Override
+    @CachePut(value = "inventory",key = "#id")
     public InventoryResponse updateInventory(Long id, InventoryRequest request) {
         Inventory existingInventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
@@ -66,6 +71,7 @@ public class InventoryService implements InventoryServiceInterface {
     }
 
     @Override
+    @CachePut(value = "inventory",key = "#id")
     public void deleteInventory(Long id){
         Inventory inventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Inventory not found"));

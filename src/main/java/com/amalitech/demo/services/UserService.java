@@ -10,7 +10,10 @@ import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
 import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.List;
 
@@ -24,7 +27,8 @@ public class UserService implements UserServiceInterface {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
     }
-    @Transactional
+
+
     @Override
     public UserResponse createUser(UserRequest userRequest) {
         if( userRepository.findByEmail(userRequest.getEmail()) != null || userRepository.findByUsername(userRequest.getUsername()) != null){
@@ -37,11 +41,13 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
+    @Cacheable(value = "user",key="#id",sync = true)
     public UserResponse getUserById(Long id) {
        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
        return userMapper.toResponse(user);
     }
     @Override
+    @Cacheable(value = "userForReview",key="#id + result.id")
     public User getUserByIdForReview(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
@@ -53,6 +59,7 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
+    @CachePut(value = "user",key="#id")
     public UserResponse updateUser(Long id, UserRequest userRequest) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -68,6 +75,7 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
+    @CachePut(value = "user",key="#id")
     public void deleteUser(Long id) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("user not found"));

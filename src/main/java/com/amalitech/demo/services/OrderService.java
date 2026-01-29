@@ -18,6 +18,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -42,7 +44,7 @@ public class OrderService implements OrderServiceInterface {
             );
 
     @Override
-    @Cacheable(value="ordersByUser", key="#userId", sync = true)
+    @Cacheable(value="orderByUser", key="#userId", sync = true)
     public List<OrderResponse> getOrderByUserId(Long userId){
         List<Orders> orders = ordersRepository.findByUser_IdWithItemsAndProducts(userId).orElseThrow(
                 ()-> new EntityNotFoundException("user does not have any orders")
@@ -74,7 +76,7 @@ public class OrderService implements OrderServiceInterface {
     @Caching(
             evict = {
                     @CacheEvict(value = "order", key = "#orderId"),
-                    @CacheEvict(value = "ordersByUser", allEntries = true)
+                    @CacheEvict(value = "orderByUser", allEntries = true)
             }
     )
     public void deleteOrder(Long orderId) {
@@ -86,10 +88,10 @@ public class OrderService implements OrderServiceInterface {
     @Caching(
             evict = {
                     @CacheEvict(value = "order", key = "#orderId"),
-                    @CacheEvict(value = "ordersByUser", allEntries = true)
+                    @CacheEvict(value = "orderByUser", allEntries = true)
             }
     )
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.READ_COMMITTED)
     @Override
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
         Orders order = ordersRepository.findById(orderId)
@@ -103,7 +105,6 @@ public class OrderService implements OrderServiceInterface {
             );
         }
 
-        // If transitioning into cancelled from a non-cancelled state, restore inventory
         if (currentStatus != OrderStatus.cancelled && newStatus == OrderStatus.cancelled) {
             restoreInventory(order);
         }
@@ -115,7 +116,7 @@ public class OrderService implements OrderServiceInterface {
     }
 
     @CachePut(value = "orderByUser",key="#result.userId")
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.READ_COMMITTED)
     @Override
     public OrderResponse createOrder(OrderRequest req) {
         Long userId = req.getUserId();

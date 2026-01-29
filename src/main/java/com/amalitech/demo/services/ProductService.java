@@ -16,6 +16,8 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -62,6 +64,7 @@ public class ProductService implements ProductServiceInterface {
                     @CacheEvict(value = "product", key = "#id")
             }
     )
+    @Transactional(propagation = Propagation.MANDATORY)
     public Product updateProduct(Long id, ProductRequest request) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));

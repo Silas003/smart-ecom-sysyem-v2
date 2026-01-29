@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 
@@ -18,4 +19,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @EntityGraph(value = "product-with-category", type = EntityGraph.EntityGraphType.FETCH)
     Page<Product> findAll(Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.price BETWEEN :minPrice AND :maxPrice")
+    Page<Product> findByPriceBetween(Double minPrice, Double maxPrice, Pageable pageable);
+
+    @Query("SELECT p from Product p JOIN p.category c WHERE c.name = :categoryName")
+    Page<Product> findByCategory_Name(String categoryName, Pageable pageable);
 }

@@ -41,8 +41,12 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Products retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class))))
     })
+
+//    todo:work on price filtering
     public ResponseDto<Page<ProductResponse>> getAllProducts(
-            @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false,defaultValue = "0") Integer minPrice,
+            @RequestParam(required = false,defaultValue = "0") Integer maxPrice
     ) {
         Page<Product> products = productService.getAllProducts(pageable);
         Page<ProductResponse> resp = products.map(productMapper::toResponse);

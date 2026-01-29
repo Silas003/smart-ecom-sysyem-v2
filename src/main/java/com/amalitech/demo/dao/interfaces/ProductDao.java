@@ -1,4 +1,3 @@
-// ...existing code...
 package com.amalitech.demo.dao.interfaces;
 
 import com.amalitech.demo.models.Product;
@@ -15,6 +14,7 @@ public interface ProductDao {
     List<Product> findByCategoryId(Long categoryId, int limit, int offset);
     long countByCategoryId(Long categoryId);
     List<Product> findAll(int limit, int offset);
+    long countAll();
     long save(Product product);
     void update(Product product);
     void deleteById(Long id);

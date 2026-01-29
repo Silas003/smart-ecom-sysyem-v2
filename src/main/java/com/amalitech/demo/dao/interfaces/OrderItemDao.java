@@ -1,4 +1,3 @@
-// ...existing code...
 package com.amalitech.demo.dao.interfaces;
 
 import com.amalitech.demo.models.OrderItem;
@@ -11,6 +10,7 @@ import java.util.Optional;
 public interface OrderItemDao {
     Optional<OrderItem> findById(Long id);
     List<OrderItem> findByOrderId(Long orderId);
+    List<OrderItem> findByOrderId(Long orderId, String sortBy, String direction);
     long save(OrderItem item);
     void saveAll(List<OrderItem> items);
     void update(OrderItem item);

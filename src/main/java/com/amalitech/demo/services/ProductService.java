@@ -57,7 +57,7 @@ public class ProductService implements ProductServiceInterface {
         int pageNumber = pageable.getPageNumber();
         int offset = pageNumber * pageSize;
         List<Product> content = productDao.findAll(pageSize, offset);
-        long total = content.size();
+        long total = productDao.countAll();
         return new PageImpl<>(content, pageable, total);
     }
 
@@ -101,10 +101,11 @@ public class ProductService implements ProductServiceInterface {
     @Cacheable(value="productsByCategory", key="#categoryId",sync = true)
     @Override
     public Page<ProductResponse> getProductsByCategoryId(Long categoryId){
-        Category category = categoryService.getCategoryById(categoryId);
-        int limit = Integer.MAX_VALUE; // simple approach; for real paging use count+limit/offset
+        // default page 0, size = count; we will return all if no paging requested
+        int limit = Integer.MAX_VALUE; // fallback
         List<Product> products = productDao.findByCategoryId(categoryId, Integer.MAX_VALUE, 0);
-        return new PageImpl<>(products.stream().map(productMapper::toResponse).toList());
+        long total = productDao.countByCategoryId(categoryId);
+        return new PageImpl<>(products.stream().map(productMapper::toResponse).toList(), Pageable.ofSize(products.size()), total);
     }
 
 }

@@ -15,7 +15,6 @@ public class LoggingAspect {
 
     private static final Logger log = LoggerFactory.getLogger(LoggingAspect.class);
 
-
     @Pointcut("within(com.amalitech.demo.services..*)")
     public void serviceLayer() {}
 
@@ -48,6 +47,7 @@ public class LoggingAspect {
             Object result = pjp.proceed();
             long durationMs = (System.nanoTime() - start) / 1_000_000;
             log.info("[AROUND] {}.{}() returned ({} ms)", sig.getDeclaringTypeName(), sig.getName(), durationMs);
+
             return result;
         } catch (Throwable t) {
             long durationMs = (System.nanoTime() - start) / 1_000_000;

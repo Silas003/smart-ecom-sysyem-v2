@@ -1,12 +1,13 @@
 package com.amalitech.demo.dao.implementations;
 
-import com.amalitech.demo.config.DatabaseConfig;
 import com.amalitech.demo.dao.interfaces.UserDao;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.dto.UserRole;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +16,12 @@ import java.util.Optional;
 @AllArgsConstructor
 @Repository
 public class JdbcUserDao implements UserDao {
-    private final DatabaseConfig databaseConfig;
+    private final DataSource dataSource;
 
     @Override
     public Optional<User> findById(Long id) {
         String sql = "SELECT id, username, email, password, userrole FROM users WHERE id = ?";
-        try (Connection conn = databaseConfig.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -28,7 +29,7 @@ public class JdbcUserDao implements UserDao {
                     return Optional.of(mapRow(rs));
                 }
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return Optional.empty();
@@ -38,8 +39,7 @@ public class JdbcUserDao implements UserDao {
     public List<User> findAll(int pageNumber, int pageSize) {
         String sql = "SELECT id, username, email, password, userrole FROM users limit ? offset ?";
         List<User> users = new ArrayList<>();
-        try (Connection conn = databaseConfig.getConnection();
-            ) {
+        try (Connection conn = DataSourceUtils.getConnection(dataSource)) {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, pageNumber);
             ps.setInt(2, pageSize);
@@ -47,7 +47,7 @@ public class JdbcUserDao implements UserDao {
             while (rs.next()) {
                 users.add(mapRow(rs));
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return users;
@@ -56,7 +56,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public Optional<User> findByUsername(String username) {
         String sql = "SELECT id, username, email, password, userrole FROM users WHERE username = ?";
-        try (Connection conn = databaseConfig.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
@@ -64,7 +64,7 @@ public class JdbcUserDao implements UserDao {
                     return Optional.of(mapRow(rs));
                 }
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return Optional.empty();
@@ -73,7 +73,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public Optional<User> findByEmail(String email) {
         String sql = "SELECT id, username, email, password, userrole FROM users WHERE email = ?";
-        try (Connection conn = databaseConfig.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
@@ -81,7 +81,7 @@ public class JdbcUserDao implements UserDao {
                     return Optional.of(mapRow(rs));
                 }
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return Optional.empty();
@@ -90,13 +90,13 @@ public class JdbcUserDao implements UserDao {
     @Override
     public boolean existsByUsername(String username) {
         String sql = "SELECT 1 FROM users WHERE username = ? LIMIT 1";
-        try (Connection conn = databaseConfig.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -104,13 +104,13 @@ public class JdbcUserDao implements UserDao {
     @Override
     public boolean existsByEmail(String email) {
         String sql = "SELECT 1 FROM users WHERE email = ? LIMIT 1";
-        try (Connection conn = databaseConfig.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -118,7 +118,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public long save(User user) {
         String sql = "INSERT INTO users(username, email, password, userrole) VALUES (?, ?, ?, ?)";
-        try (Connection conn = databaseConfig.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getEmail());
@@ -130,7 +130,7 @@ public class JdbcUserDao implements UserDao {
                     return keys.getLong(1);
                 }
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return -1;
@@ -139,7 +139,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public void update(User user) {
         String sql = "UPDATE users SET username = ?, email = ?, password = ?, userrole = ? WHERE id = ?";
-        try (Connection conn = databaseConfig.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getEmail());
@@ -147,7 +147,7 @@ public class JdbcUserDao implements UserDao {
             ps.setString(4, user.getUserRole() == null ? null : user.getUserRole().name());
             ps.setLong(5, user.getId());
             ps.executeUpdate();
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -155,11 +155,11 @@ public class JdbcUserDao implements UserDao {
     @Override
     public void deleteById(Long id) {
         String sql = "DELETE FROM users WHERE id = ?";
-        try (Connection conn = databaseConfig.getConnection();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

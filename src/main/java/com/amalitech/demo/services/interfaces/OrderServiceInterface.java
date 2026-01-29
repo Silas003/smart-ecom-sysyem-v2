@@ -36,17 +36,5 @@ public interface OrderServiceInterface {
      * This method will look up the Inventory by product id and add back the ordered quantity.
      * It is transactional and will throw EntityNotFoundException if an Inventory for a product is missing.
      */
-    default void restoreInventory(Orders order) {
-        if (order.getItems() == null || order.getItems().isEmpty()) return;
 
-        for (OrderItem item : order.getItems()) {
-            Long productId = item.getProduct().getId();
-            Inventory inv = inventoryRepository.findByProduct_Id(productId)
-                    .orElseThrow(() -> new EntityNotFoundException("Inventory not found for product id: " + productId));
-
-            int newStock = inv.getStockQuantity() + (item.getQuantity() == null ? 0 : item.getQuantity());
-            inv.setStockQuantity(newStock);
-            inventoryRepository.save(inv);
-        }
-    }
 }

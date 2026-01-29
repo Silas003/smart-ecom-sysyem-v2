@@ -36,7 +36,7 @@ public class CategoryController {
     })
     public ResponseDto<List<CategoryResponse>> getAllCategories(){
         List<CategoryResponse> categories = categoryService.getAllCategories();
-        return new ResponseDto<List<Category>>(HttpStatus.OK,"categories retrieved",categories);
+        return new ResponseDto<>(HttpStatus.OK,"categories retrieved",categories);
 
     }
 

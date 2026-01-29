@@ -5,10 +5,7 @@ import com.amalitech.demo.dto.response.CartItemsReponse;
 import com.amalitech.demo.dto.response.CartResponse;
 import com.amalitech.demo.mapper.CartMapper;
 import com.amalitech.demo.mapper.CartItemMapper;
-import com.amalitech.demo.models.Cart;
-import com.amalitech.demo.models.CartItems;
-import com.amalitech.demo.models.Product;
-import com.amalitech.demo.models.User;
+import com.amalitech.demo.models.*;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.repository.CartItemsRepository;
 import com.amalitech.demo.repository.CartRepository;
@@ -98,4 +95,5 @@ public class CartService implements CartServiceInterface {
         Cart updatedCart = cartRepository.save(cart);
         return cartMapper.toResponse(updatedCart);
     }
+
 }

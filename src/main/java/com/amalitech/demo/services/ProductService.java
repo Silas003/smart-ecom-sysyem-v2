@@ -38,7 +38,7 @@ public class ProductService implements ProductServiceInterface {
         if( productRepository.findByName(request.getName()) != null){
             throw new IllegalArgumentException("Product with given name already exists");
         }
-        CategoryResponse category = categoryService.getCategoryById(request.getCategoryId());
+        Category category = categoryService.getProductCategoryById(request.getCategoryId());
         Product product = productMapper.toEntity(request);
         product.setCategory(category);
         return productRepository.save(product);
@@ -70,7 +70,7 @@ public class ProductService implements ProductServiceInterface {
         existingProduct.setPrice(request.getPrice());
         existingProduct.setStockQuantity(request.getStockQuantity());
         if (existingProduct.getCategory() == null || !existingProduct.getCategory().getId().equals(request.getCategoryId())){
-            Category newCat = categoryService.getCategoryById(request.getCategoryId());
+            Category newCat = categoryService.getProductCategoryById(request.getCategoryId());
             existingProduct.setCategory(newCat);
         }
 
@@ -94,7 +94,7 @@ public class ProductService implements ProductServiceInterface {
     @Cacheable(value="productsByCategory", key="#categoryId",sync = true)
     @Override
     public Page<ProductResponse> getProductsByCategoryId(Long categoryId){
-        Category category = categoryService.getCategoryById(categoryId);
+        Category category = categoryService.getProductCategoryById(categoryId);
         Page<Product> products = productRepository.findByCategory_Id(categoryId,Pageable.unpaged());
         return products.map(productMapper::toResponse);
     }

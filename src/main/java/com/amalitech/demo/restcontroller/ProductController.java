@@ -34,7 +34,7 @@ public class ProductController {
     private final ProductServiceInterface productService;
     private final ProductMapper productMapper;
 
-    @GetMapping("/")
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "List products", description = "List products with pagination and sorting")
     @ApiResponses(value = {
@@ -95,7 +95,7 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/create_product")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create product", description = "Create a new product")
     @ApiResponses(value = {

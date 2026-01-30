@@ -28,7 +28,7 @@ import java.util.List;
 public class CategoryController {
     private final CategoryServiceInterface categoryService;
 
-    @GetMapping("/")
+    @GetMapping("")
     @Operation(summary = "Get all categories", description = "Retrieve all categories")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categories retrieved",
@@ -79,7 +79,7 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PostMapping("/create_category")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create category", description = "Create a category")
     @ApiResponses(value = {

@@ -28,7 +28,7 @@ public class CartManagementController {
     private CartServiceInterface cartService;
 
 
-    @PostMapping("/create_cart/{userId}")
+    @PostMapping("/{userId}")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create cart", description = "Create a new cart for a user")
     @ApiResponses(value = {
@@ -40,7 +40,7 @@ public class CartManagementController {
         return new ResponseDto<>(HttpStatus.CREATED,"cart created",cart);
     }
 
-    @GetMapping("/get_cart/{userId}")
+    @GetMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get cart by user", description = "Retrieve the active cart for a user")
     @ApiResponses(value = {

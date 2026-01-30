@@ -59,7 +59,7 @@ public class OrderManagementController {
         return new ResponseDto<>(HttpStatus.OK,"order retrieved",orderResponse);
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Orders retrieved",
@@ -96,7 +96,7 @@ public class OrderManagementController {
         return new ResponseDto<>(HttpStatus.OK,"order updated",orderService.updateOrderStatus(orderId, request.status()));
     }
 
-    @PostMapping("/")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create order", description = "Create a new order")
     @ApiResponses(value = {

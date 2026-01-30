@@ -28,7 +28,7 @@ import java.util.List;
 public class InventoryController {
     private final InventoryServiceInterface  inventoryService;
 
-    @GetMapping("/")
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all inventories", description = "Retrieve all inventory records")
     @ApiResponses(value = {
@@ -83,7 +83,7 @@ public class InventoryController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/create_inventory")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create inventory", description = "Create a new inventory record")
     @ApiResponses(value = {

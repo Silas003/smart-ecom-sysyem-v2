@@ -29,7 +29,7 @@ public class ReviewsController {
     private final ReviewsServiceInterface reviewsService;
 
 
-    @GetMapping("/")
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all reviews", description = "Retrieve all reviews")
     @ApiResponses(value = {
@@ -41,7 +41,7 @@ public class ReviewsController {
         return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",reviews);
 
     }
-    @PostMapping("/")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create review", description = "Create a new review for a product. User is inferred from X-User-Id header")
     @ApiResponses(value = {

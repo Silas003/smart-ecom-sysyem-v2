@@ -30,7 +30,7 @@ public class UserController {
     private UserServiceInterface userService;
 
 
-    @GetMapping("/")
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all users", description = "Retrieve a list of all users")
     @ApiResponses(value = {
@@ -89,7 +89,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PostMapping("/create_user")
+    @PostMapping("")
     @Operation(summary = "Create user", description = "Create a new user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User created",

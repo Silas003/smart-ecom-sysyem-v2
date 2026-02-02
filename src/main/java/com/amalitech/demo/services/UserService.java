@@ -5,15 +5,11 @@ import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.UserMapper;
-import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.dao.interfaces.UserDao;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
 import lombok.AllArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -29,7 +25,6 @@ public class UserService implements UserServiceInterface {
     private final UserDao userDao;
     private final UserMapper userMapper;
 
-    @CachePut(value = "user", key = "#result.id")
     @Override
     public void createUser(UserRequest userRequest) {
         // perform uniqueness checks using DAO
@@ -42,7 +37,6 @@ public class UserService implements UserServiceInterface {
         userDao.save(user);
     }
 
-    @Cacheable(value="user",key = "#id")
     @Override
     public UserResponse getUserById(Long id) {
        User user = userDao.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -65,7 +59,6 @@ public class UserService implements UserServiceInterface {
         return new PageImpl<>(userMapper.toResponse(content), pageable, total);
     }
 
-    @CachePut(value = "user", key = "#id")
     @Override
     public UserResponse updateUser(Long id, UserRequest userRequest) {
         User existingUser = userDao.findById(id)
@@ -81,7 +74,6 @@ public class UserService implements UserServiceInterface {
         return userMapper.toResponse(existingUser);
     }
 
-    @CacheEvict(value = "user", key = "#id")
     @Override
     public void deleteUser(Long id) {
         User existingUser = userDao.findById(id)

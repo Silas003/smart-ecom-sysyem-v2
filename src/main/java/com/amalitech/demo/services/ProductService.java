@@ -8,10 +8,6 @@ import com.amalitech.demo.models.Category;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.dao.interfaces.ProductDao;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +29,6 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
-    @CachePut(value="productsByCategory", key="#request.categoryId")
     public Product createProduct(ProductRequest request) {
         if( productDao.findByName(request.getName()).isPresent()){
             throw new IllegalArgumentException("Product with given name already exists");
@@ -46,7 +41,6 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
-    @Cacheable(value="product", key="#id",sync = true)
     public Product getProductById(Long id) {
         return productDao.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
@@ -62,12 +56,6 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
-    @Caching(
-            evict ={
-                    @CacheEvict(value = "productsByCategory", allEntries = true),
-                    @CacheEvict(value = "product", key = "#id")
-            }
-    )
     public Product updateProduct(Long id, ProductRequest request) {
         Product existingProduct = productDao.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
@@ -84,12 +72,7 @@ public class ProductService implements ProductServiceInterface {
         return existingProduct;
     }
 
-    @Caching(
-            evict = {
-                    @CacheEvict(value = "productsByCategory", allEntries = true),
-                    @CacheEvict(value = "product", key = "#id")
-            }
-    )
+
     @Override
     public void deleteProduct(Long id) {
         Product existingProduct = productDao.findById(id)
@@ -98,7 +81,6 @@ public class ProductService implements ProductServiceInterface {
         productDao.deleteById(existingProduct.getId());
     }
 
-    @Cacheable(value="productsByCategory", key="#categoryId",sync = true)
     @Override
     public Page<ProductResponse> getProductsByCategoryId(Long categoryId){
         // default page 0, size = count; we will return all if no paging requested

@@ -10,10 +10,6 @@ import com.amalitech.demo.models.*;
 import com.amalitech.demo.dao.interfaces.*;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import lombok.AllArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -42,7 +38,6 @@ public class OrderService implements OrderServiceInterface {
             );
 
     @Override
-    @Cacheable(value="ordersByUser", key="#userId", sync = true)
     public List<OrderResponse> getOrderByUserId(Long userId){
         List<Orders> orders = ordersDao.findByUserId(userId);
         if(orders == null || orders.isEmpty()){
@@ -52,7 +47,6 @@ public class OrderService implements OrderServiceInterface {
     }
 
     @Override
-    @Cacheable(value = "order", key = "#id")
     public OrderResponse getOrderById(Long id){
         Orders order = ordersDao.findById(id).orElseThrow(()-> new EntityNotFoundException("order not found"));
         return ordersMapper.toResponse(order);
@@ -70,12 +64,6 @@ public class OrderService implements OrderServiceInterface {
     }
 
     @Override
-    @Caching(
-            evict = {
-                    @CacheEvict(value = "order", key = "#orderId"),
-                    @CacheEvict(value = "ordersByUser", allEntries = true)
-            }
-    )
     public void deleteOrder(Long orderId) {
         Orders order = ordersDao.findById(orderId)
                 .orElseThrow(()-> new EntityNotFoundException("order not found"));
@@ -86,12 +74,7 @@ public class OrderService implements OrderServiceInterface {
         }
     }
 
-    @Caching(
-            evict = {
-                    @CacheEvict(value = "order", key = "#orderId"),
-                    @CacheEvict(value = "ordersByUser", allEntries = true)
-            }
-    )
+
     @Transactional
     @Override
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
@@ -121,7 +104,6 @@ public class OrderService implements OrderServiceInterface {
         return ordersMapper.toResponse(order);
     }
 
-    @CachePut(value = "orderByUser",key="#result.userId")
     @Transactional
     @Override
     public OrderResponse createOrder(OrderRequest req) {

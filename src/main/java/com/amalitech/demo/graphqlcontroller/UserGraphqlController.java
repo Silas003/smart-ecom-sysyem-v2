@@ -1,6 +1,5 @@
 package com.amalitech.demo.graphqlcontroller;
 
-import com.amalitech.demo.dto.request.PaginationInput;
 import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.services.UserService;

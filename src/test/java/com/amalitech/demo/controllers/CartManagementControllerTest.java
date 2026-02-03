@@ -1,0 +1,56 @@
+package com.amalitech.demo.controllers;
+
+import com.amalitech.demo.dto.response.CartItemsReponse;
+import com.amalitech.demo.dto.response.CartResponse;
+import com.amalitech.demo.restcontroller.CartManagementController;
+import com.amalitech.demo.services.CartService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(CartManagementController.class)
+public class CartManagementControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private CartService cartService;
+
+    @Test
+    void shouldCreateCart() throws Exception {
+        CartResponse resp = new CartResponse(1L, 1L, "OPEN");
+        when(cartService.createCart(5L)).thenReturn(resp);
+
+        mockMvc.perform(post("/api/v1/carts/create_cart/5"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("cart created"));
+    }
+
+    @Test
+    void shouldAddItemToCart() throws Exception {
+        // construct with required fields: id, cartId, productId, unitPrice, totalPrice, quantity
+        CartItemsReponse r = new CartItemsReponse(7L, 1L, 2L, 2.0, 6.0, 3);
+        when(cartService.addItemToCart(1L,2L,3)).thenReturn(r);
+
+        mockMvc.perform(post("/api/v1/carts/1/add_item").param("productId","2").param("quantity","3"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("item added"));
+    }
+
+    @Test
+    void shouldGetCart() throws Exception {
+        CartResponse resp = new CartResponse(1L, 5L, "OPEN");
+        when(cartService.getCartByUserId(5L)).thenReturn(resp);
+
+        mockMvc.perform(get("/api/v1/carts/get_cart/5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("cart fetched"));
+    }
+}

@@ -98,6 +98,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<UserResponse> createUser(@RequestBody @Valid UserRequest userRequest) {
         userService.createUser(userRequest);
         return new ResponseDto<>(HttpStatus.CREATED,"user created",null);

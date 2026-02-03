@@ -9,8 +9,10 @@ import com.amalitech.demo.models.Product;
 import com.amalitech.demo.dao.interfaces.InventoryDao;
 import com.amalitech.demo.services.interfaces.InventoryServiceInterface;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
+import com.amalitech.demo.utils.Sorter;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,11 +22,13 @@ public class InventoryService implements InventoryServiceInterface {
     private final InventoryDao inventoryDao;
     private final ProductServiceInterface productService;
     private final InventoryMapper inventoryMapper;
+    private final Sorter<Inventory> sorter;
 
-    public InventoryService(InventoryDao inventoryDao, ProductServiceInterface productService, InventoryMapper inventoryMapper){
+    public InventoryService(InventoryDao inventoryDao, ProductServiceInterface productService, InventoryMapper inventoryMapper, Sorter<Inventory> sorter){
         this.inventoryDao = inventoryDao;
         this.productService = productService;
         this.inventoryMapper = inventoryMapper;
+        this.sorter = sorter;
     }
 
     @Override
@@ -47,7 +51,10 @@ public class InventoryService implements InventoryServiceInterface {
 
     @Override
     public List<InventoryResponse> getAllInventories() {
-        return inventoryDao.findAll().stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+        List<Inventory> list = inventoryDao.findAll();
+        if (list == null || list.isEmpty()) return List.of();
+        List<Inventory> sorted = sorter.sort(list, Comparator.comparing(i -> i.getProduct() == null ? null : i.getProduct().getId(), Comparator.nullsLast(Long::compareTo)));
+        return sorted.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
     }
 
     @Override

@@ -20,7 +20,7 @@ public class JdbcCartItemsDao implements CartItemsDao {
     @Override
     public Optional<CartItems> findById(Long id) {
         String sql = "SELECT id, quantity, cart_id, product_id, unit_price, total_price FROM cart_items WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {

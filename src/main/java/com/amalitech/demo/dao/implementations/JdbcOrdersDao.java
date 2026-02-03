@@ -8,7 +8,6 @@ import com.amalitech.demo.models.User;
 import com.amalitech.demo.dto.OrderStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -23,7 +22,7 @@ public class JdbcOrdersDao implements OrdersDao {
     @Override
     public Optional<Orders> findById(Long id) {
         String sql = "SELECT id, user_id, total_amount, status, created_at FROM orders WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -44,7 +43,7 @@ public class JdbcOrdersDao implements OrdersDao {
     public List<Orders> findByUserId(Long userId) {
         String sql = "SELECT id, user_id, total_amount, status, created_at FROM orders WHERE user_id = ?";
         List<Orders> list = new ArrayList<>();
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -65,7 +64,7 @@ public class JdbcOrdersDao implements OrdersDao {
     public List<Orders> findAll(int limit, int offset) {
         String sql = "SELECT id, user_id, total_amount, status, created_at FROM orders ORDER BY id LIMIT ? OFFSET ?";
         List<Orders> list = new ArrayList<>();
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, limit);
             ps.setInt(2, offset);
@@ -85,7 +84,7 @@ public class JdbcOrdersDao implements OrdersDao {
 
     @Override
     public long save(Orders orders) throws SQLException {
-        try (Connection conn = DataSourceUtils.getConnection(dataSource)) {
+        try (Connection conn = dataSource.getConnection()) {
             try {
                 conn.setAutoCommit(false);
                 long id = save(orders, conn);
@@ -131,7 +130,7 @@ public class JdbcOrdersDao implements OrdersDao {
     @Override
     public void update(Orders orders) throws SQLException {
         String sql = "UPDATE orders SET user_id = ?, total_amount = ?, status = ? WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, orders.getUser().getId());
             ps.setDouble(2, orders.getTotalAmount());
@@ -146,7 +145,7 @@ public class JdbcOrdersDao implements OrdersDao {
     @Override
     public void deleteById(Long id) throws SQLException {
         String sql = "DELETE FROM orders WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();

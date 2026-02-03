@@ -6,7 +6,6 @@ import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -22,7 +21,7 @@ public class JdbcReviewsDao implements ReviewsDao {
     @Override
     public Optional<Reviews> findById(Long id) {
         String sql = "SELECT id, stars, description, user_id, product_id FROM reviews WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -38,7 +37,7 @@ public class JdbcReviewsDao implements ReviewsDao {
     public List<Reviews> findAll() {
         String sql = "SELECT id, stars, description, user_id, product_id FROM reviews ORDER BY id DESC";
         List<Reviews> list = new ArrayList<>();
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) list.add(mapRow(rs));
@@ -52,7 +51,7 @@ public class JdbcReviewsDao implements ReviewsDao {
     public List<Reviews> findByProductIdOrderByIdDesc(Long productId) {
         String sql = "SELECT id, stars, description, user_id, product_id FROM reviews WHERE product_id = ? ORDER BY id DESC";
         List<Reviews> list = new ArrayList<>();
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -68,7 +67,7 @@ public class JdbcReviewsDao implements ReviewsDao {
     public List<Reviews> findByUserIdOrderByIdDesc(Long userId) {
         String sql = "SELECT id, stars, description, user_id, product_id FROM reviews WHERE user_id = ? ORDER BY id DESC";
         List<Reviews> list = new ArrayList<>();
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -83,7 +82,7 @@ public class JdbcReviewsDao implements ReviewsDao {
     @Override
     public long save(Reviews reviews) {
         String sql = "INSERT INTO reviews(stars, description, user_id, product_id) VALUES(?, ?, ?, ?)";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, reviews.getRating());
             ps.setString(2, reviews.getDescription());
@@ -102,7 +101,7 @@ public class JdbcReviewsDao implements ReviewsDao {
     @Override
     public void deleteById(Long id) {
         String sql = "DELETE FROM reviews WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();

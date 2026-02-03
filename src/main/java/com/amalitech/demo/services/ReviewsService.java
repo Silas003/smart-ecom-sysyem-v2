@@ -3,15 +3,16 @@ package com.amalitech.demo.services;
 import com.amalitech.demo.dto.request.ReviewRequest;
 import com.amalitech.demo.dto.response.ReviewResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
-import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.dao.interfaces.ReviewsDao;
 import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
+import com.amalitech.demo.utils.Sorter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,17 +22,23 @@ public class ReviewsService implements ReviewsServiceInterface {
 
     private final ProductService productService;
     private final UserService userService;
+    private final Sorter<Reviews> sorter;
 
     public ReviewsService(ReviewsDao reviewsDao,ProductService productService,UserService userService,
-                          UserMapper userMapper) {
+                          Sorter<Reviews> sorter) {
         this.reviewsDao = reviewsDao;
         this.userService = userService;
         this.productService = productService;
+        this.sorter = sorter;
     }
 
     @Override
     public List<ReviewResponse> getAllReviews() {
-        return reviewsDao.findAll().stream().map(this::toResponse).collect(Collectors.toList());
+        List<Reviews> list = reviewsDao.findAll();
+        if (list == null || list.isEmpty()) return List.of();
+        // ReviewsDao often returns id DESC via SQL; ensure stable sorting by id DESC
+        List<Reviews> sorted = sorter.sort(list, Comparator.comparing(Reviews::getId, Comparator.nullsLast(Long::compareTo)).reversed());
+        return sorted.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional
@@ -67,7 +74,7 @@ public class ReviewsService implements ReviewsServiceInterface {
     @Transactional
     @Override
     public void deleteReview(Long id) {
-        Reviews review = reviewsDao.findById(id).orElseThrow(() -> new EntityNotFoundException("Review not found"));
+        if (reviewsDao.findById(id).isEmpty()) throw new EntityNotFoundException("Review not found");
         reviewsDao.deleteById(id);
     }
 

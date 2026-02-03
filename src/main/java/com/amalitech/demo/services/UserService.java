@@ -9,6 +9,7 @@ import com.amalitech.demo.models.User;
 import com.amalitech.demo.dao.interfaces.UserDao;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
+import com.amalitech.demo.utils.Sorter;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @AllArgsConstructor
@@ -24,6 +26,7 @@ public class UserService implements UserServiceInterface {
 
     private final UserDao userDao;
     private final UserMapper userMapper;
+    private final Sorter<User> sorter;
 
     @Override
     public void createUser(UserRequest userRequest) {
@@ -49,12 +52,19 @@ public class UserService implements UserServiceInterface {
     }
 
 
-
     @Override
     public Page<UserResponse> getAllUsers(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         int offset = pageNumber * pageSize;
         List<User> content = userDao.findAll(pageSize, offset);
+        if (content == null) content = List.of();
+
+        // apply merge-sort by username (default)
+        if (!content.isEmpty()) {
+            Comparator<User> cmp = Comparator.comparing(User::getUsername, Comparator.nullsLast(String::compareToIgnoreCase));
+            content = sorter.sort(content, cmp);
+        }
+
         long total = content.size();
         return new PageImpl<>(userMapper.toResponse(content), pageable, total);
     }

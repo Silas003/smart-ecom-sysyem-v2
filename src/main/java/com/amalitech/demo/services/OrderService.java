@@ -9,10 +9,12 @@ import com.amalitech.demo.mapper.OrdersMapper;
 import com.amalitech.demo.models.*;
 import com.amalitech.demo.dao.interfaces.*;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
+import com.amalitech.demo.utils.Sorter;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +29,9 @@ public class OrderService implements OrderServiceInterface {
     private final ProductDao productDao;
     private final InventoryDao inventoryDao;
     private final UserDao userDao;
-    private final OrderItemDao orderItemDao;
+
+    // use injected merge-sorter bean
+    private final Sorter<Orders> sorter;
 
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS =
             Map.of(
@@ -43,6 +47,7 @@ public class OrderService implements OrderServiceInterface {
         if(orders == null || orders.isEmpty()){
             throw new EntityNotFoundException("user does not have any orders");
         }
+        // default: keep DB order unless caller wants sorting; expose service-level sort methods later
         return ordersMapper.toResponse(orders);
     }
 
@@ -58,15 +63,39 @@ public class OrderService implements OrderServiceInterface {
         int pageNumber = pageable.getPageNumber();
         int offset = pageNumber * pageSize;
         List<Orders> orders = ordersDao.findAll(pageSize, offset);
-        List<OrderResponse> content = orders.stream().map(ordersMapper::toResponse).toList();
+        if (orders == null) orders = List.of();
+
+        // Apply in-memory merge sort if pageable requests sorting
+        Sort sort = pageable.getSort();
+        if (sort.isSorted() && !orders.isEmpty()) {
+            Sort.Order order = sort.iterator().next();
+            Comparator<Orders> cmp = buildOrdersComparator(order.getProperty());
+            if (cmp != null) {
+                if (order.isDescending()) cmp = cmp.reversed();
+                orders = sorter.sort(orders, cmp);
+            }
+        }
+
+        List<Orders> safeOrders = orders == null ? List.of() : orders;
+        List<OrderResponse> content = safeOrders.stream().map(ordersMapper::toResponse).toList();
         long total = content.size();
         return new PageImpl<>(content, pageable, total);
     }
 
+    private Comparator<Orders> buildOrdersComparator(String prop) {
+        if (prop == null) return null;
+        return switch (prop) {
+            case "totalAmount", "total_amount" -> Comparator.comparing(Orders::getTotalAmount, Comparator.nullsLast(Double::compareTo));
+            case "createdAt", "created_at" -> Comparator.comparing(Orders::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "status" -> Comparator.comparing(Orders::getStatus, Comparator.nullsLast(Comparator.comparing(Enum::name)));
+            case "id" -> Comparator.comparing(Orders::getId, Comparator.nullsLast(Long::compareTo));
+            default -> Comparator.comparing(Orders::getId, Comparator.nullsLast(Long::compareTo));
+        };
+    }
+
     @Override
     public void deleteOrder(Long orderId) {
-        Orders order = ordersDao.findById(orderId)
-                .orElseThrow(()-> new EntityNotFoundException("order not found"));
+        ordersDao.findById(orderId).orElseThrow(() -> new EntityNotFoundException("order not found"));
         try {
             ordersDao.deleteById(orderId);
         } catch (Exception e){

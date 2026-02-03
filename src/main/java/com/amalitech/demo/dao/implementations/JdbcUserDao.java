@@ -5,7 +5,6 @@ import com.amalitech.demo.models.User;
 import com.amalitech.demo.dto.UserRole;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -21,7 +20,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public Optional<User> findById(Long id) {
         String sql = "SELECT id, username, email, password, userrole FROM users WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -39,7 +38,7 @@ public class JdbcUserDao implements UserDao {
     public List<User> findAll(int pageNumber, int pageSize) {
         String sql = "SELECT id, username, email, password, userrole FROM users limit ? offset ?";
         List<User> users = new ArrayList<>();
-        try (Connection conn = DataSourceUtils.getConnection(dataSource)) {
+        try (Connection conn = dataSource.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, pageNumber);
             ps.setInt(2, pageSize);
@@ -56,7 +55,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public Optional<User> findByUsername(String username) {
         String sql = "SELECT id, username, email, password, userrole FROM users WHERE username = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
@@ -73,7 +72,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public Optional<User> findByEmail(String email) {
         String sql = "SELECT id, username, email, password, userrole FROM users WHERE email = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
@@ -90,7 +89,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public boolean existsByUsername(String username) {
         String sql = "SELECT 1 FROM users WHERE username = ? LIMIT 1";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
@@ -104,7 +103,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public boolean existsByEmail(String email) {
         String sql = "SELECT 1 FROM users WHERE email = ? LIMIT 1";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
@@ -118,7 +117,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public long save(User user) {
         String sql = "INSERT INTO users(username, email, password, userrole) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getEmail());
@@ -139,7 +138,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public void update(User user) {
         String sql = "UPDATE users SET username = ?, email = ?, password = ?, userrole = ? WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getEmail());
@@ -155,7 +154,7 @@ public class JdbcUserDao implements UserDao {
     @Override
     public void deleteById(Long id) {
         String sql = "DELETE FROM users WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();

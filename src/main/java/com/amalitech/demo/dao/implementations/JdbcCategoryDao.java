@@ -3,7 +3,6 @@ package com.amalitech.demo.dao.implementations;
 import com.amalitech.demo.dao.interfaces.CategoryDao;
 import com.amalitech.demo.models.Category;
 import lombok.AllArgsConstructor;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -20,7 +19,7 @@ public class JdbcCategoryDao implements CategoryDao {
     @Override
     public Optional<Category> findById(Long id) {
         String sql = "SELECT id, name FROM categories WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -35,7 +34,7 @@ public class JdbcCategoryDao implements CategoryDao {
     @Override
     public Optional<Category> findByName(String name) {
         String sql = "SELECT id, name FROM categories WHERE name = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, name);
             try (ResultSet rs = ps.executeQuery()) {
@@ -50,7 +49,7 @@ public class JdbcCategoryDao implements CategoryDao {
     @Override
     public boolean existsByName(String name) {
         String sql = "SELECT 1 FROM categories WHERE name = ? LIMIT 1";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, name);
             try (ResultSet rs = ps.executeQuery()) {
@@ -65,7 +64,7 @@ public class JdbcCategoryDao implements CategoryDao {
     public List<Category> findAll() {
         String sql = "SELECT id, name FROM categories";
         List<Category> list = new ArrayList<>();
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) list.add(mapRow(rs));
@@ -78,7 +77,7 @@ public class JdbcCategoryDao implements CategoryDao {
     @Override
     public long save(Category category) {
         String sql = "INSERT INTO categories(name) VALUES(?)";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, category.getName());
             ps.executeUpdate();
@@ -94,7 +93,7 @@ public class JdbcCategoryDao implements CategoryDao {
     @Override
     public void update(Category category) {
         String sql = "UPDATE categories SET name = ? WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, category.getName());
             ps.setLong(2, category.getId());
@@ -107,7 +106,7 @@ public class JdbcCategoryDao implements CategoryDao {
     @Override
     public void deleteById(Long id) {
         String sql = "DELETE FROM categories WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();

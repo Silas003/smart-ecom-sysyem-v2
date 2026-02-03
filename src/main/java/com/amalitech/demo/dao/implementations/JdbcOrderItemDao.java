@@ -77,13 +77,13 @@ public class JdbcOrderItemDao implements OrderItemDao {
         Comparator<OrderItem> cmp;
         switch (normalizedKey) {
             case "quantity":
-                cmp = Comparator.comparing(o -> o.getQuantity(), Comparator.nullsLast(Integer::compareTo));
+                cmp = Comparator.comparing(OrderItem::getQuantity, Comparator.nullsLast(Integer::compareTo));
                 break;
             case "unit_price":
-                cmp = Comparator.comparing(o -> o.getUnitPrice(), Comparator.nullsLast(Double::compareTo));
+                cmp = Comparator.comparing(OrderItem::getUnitPrice, Comparator.nullsLast(Double::compareTo));
                 break;
             case "total_price":
-                cmp = Comparator.comparing(o -> o.getTotalPrice(), Comparator.nullsLast(Double::compareTo));
+                cmp = Comparator.comparing(OrderItem::getTotalPrice, Comparator.nullsLast(Double::compareTo));
                 break;
             case "product":
                 cmp = Comparator.comparing(o -> {
@@ -93,13 +93,12 @@ public class JdbcOrderItemDao implements OrderItemDao {
                 break;
             case "id":
             default:
-                cmp = Comparator.comparing(o -> o.getId(), Comparator.nullsLast(Long::compareTo));
+                cmp = Comparator.comparing(OrderItem::getId, Comparator.nullsLast(Long::compareTo));
                 break;
         }
 
         if (desc) cmp = cmp.reversed();
 
-        // perform merge sort using the comparator
         return mergeSort(list, cmp);
     }
 

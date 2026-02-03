@@ -5,7 +5,6 @@ import com.amalitech.demo.models.Inventory;
 import com.amalitech.demo.models.Product;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -21,7 +20,7 @@ public class JdbcInventoryDao implements InventoryDao {
     @Override
     public Optional<Inventory> findById(Long id) {
         String sql = "SELECT inventory_id, product_id, quantity_in_stock, quantity_reserved, stock_status, version FROM inventory WHERE inventory_id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -36,7 +35,7 @@ public class JdbcInventoryDao implements InventoryDao {
     @Override
     public Optional<Inventory> findByProductId(Long productId) {
         String sql = "SELECT inventory_id, product_id, quantity_in_stock, quantity_reserved, stock_status, version FROM inventory WHERE product_id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -51,7 +50,7 @@ public class JdbcInventoryDao implements InventoryDao {
     @Override
     public boolean existsByProductId(Long productId) {
         String sql = "SELECT 1 FROM inventory WHERE product_id = ? LIMIT 1";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -66,7 +65,7 @@ public class JdbcInventoryDao implements InventoryDao {
     public List<Inventory> findAll() {
         String sql = "SELECT inventory_id, product_id, quantity_in_stock, quantity_reserved, stock_status, version FROM inventory";
         List<Inventory> list = new ArrayList<>();
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) list.add(mapRow(rs));
@@ -79,7 +78,7 @@ public class JdbcInventoryDao implements InventoryDao {
     @Override
     public long save(Inventory inventory) {
         String sql = "INSERT INTO inventory(product_id, quantity_in_stock, quantity_reserved, stock_status, version) VALUES(?, ?, ?, ?, ?)";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, inventory.getProduct().getId());
             ps.setInt(2, inventory.getStockQuantity());
@@ -99,7 +98,7 @@ public class JdbcInventoryDao implements InventoryDao {
     @Override
     public void update(Inventory inventory) {
         String sql = "UPDATE inventory SET quantity_in_stock = ?, quantity_reserved = ?, stock_status = ?, version = ? WHERE inventory_id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, inventory.getStockQuantity());
             ps.setInt(2, inventory.getReservedQuantity());
@@ -115,7 +114,7 @@ public class JdbcInventoryDao implements InventoryDao {
     @Override
     public void deleteById(Long id) {
         String sql = "DELETE FROM inventory WHERE inventory_id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();

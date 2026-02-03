@@ -5,7 +5,6 @@ import com.amalitech.demo.models.Cart;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.dto.CartStatus;
 import lombok.AllArgsConstructor;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -24,7 +23,7 @@ public class JdbcCartDao implements CartDao {
     @Override
     public Optional<Cart> findById(Long id) {
         String sql = "SELECT id, user_id, status FROM carts WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -39,7 +38,7 @@ public class JdbcCartDao implements CartDao {
     @Override
     public Optional<Cart> findByUserIdAndStatus(Long userId, CartStatus status) {
         String sql = "SELECT id, user_id, status FROM carts WHERE user_id = ? AND status = ? LIMIT 1";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, userId);
             ps.setString(2, status == null ? null : status.name());
@@ -55,7 +54,7 @@ public class JdbcCartDao implements CartDao {
     @Override
     public boolean existsByUserIdAndStatus(Long userId, CartStatus status) {
         String sql = "SELECT 1 FROM carts WHERE user_id = ? AND status = ? LIMIT 1";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, userId);
             ps.setString(2, status == null ? null : status.name());
@@ -70,7 +69,7 @@ public class JdbcCartDao implements CartDao {
     @Override
     public long save(Cart cart) {
         String sql = "INSERT INTO carts(user_id, status) VALUES(?, ?)";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, cart.getUser().getId());
             ps.setString(2, cart.getStatus() == null ? null : cart.getStatus().name());
@@ -87,7 +86,7 @@ public class JdbcCartDao implements CartDao {
     @Override
     public void update(Cart cart) {
         String sql = "UPDATE carts SET user_id = ?, status = ? WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, cart.getUser().getId());
             ps.setString(2, cart.getStatus() == null ? null : cart.getStatus().name());
@@ -101,7 +100,7 @@ public class JdbcCartDao implements CartDao {
     @Override
     public void deleteById(Long id) {
         String sql = "DELETE FROM carts WHERE id = ?";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();

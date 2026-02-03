@@ -82,7 +82,6 @@ public class ProductService implements ProductServiceInterface {
             case "name" -> Comparator.comparing(Product::getName, Comparator.nullsLast(String::compareToIgnoreCase));
             case "stockQuantity", "stock_quantity" -> Comparator.comparing(Product::getStockQuantity, Comparator.nullsLast(Integer::compareTo));
             case "category", "categoryId" -> Comparator.comparing(p -> p.getCategory() == null ? null : p.getCategory().getId(), Comparator.nullsLast(Long::compareTo));
-            case "id" -> Comparator.comparing(Product::getId, Comparator.nullsLast(Long::compareTo));
             default -> Comparator.comparing(Product::getId, Comparator.nullsLast(Long::compareTo));
         };
     }

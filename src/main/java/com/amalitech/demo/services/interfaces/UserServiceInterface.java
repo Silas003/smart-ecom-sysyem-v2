@@ -1,5 +1,6 @@
 package com.amalitech.demo.services.interfaces;
 
+import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.models.User;
@@ -21,5 +22,5 @@ public interface UserServiceInterface {
 
     void deleteUser(Long id);
 
-    UserResponse loginUser(UserRequest userRequest);
+    UserResponse loginUser(UserLoginRequest userRequest);
 }

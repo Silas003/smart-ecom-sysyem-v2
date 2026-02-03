@@ -1,6 +1,7 @@
 package com.amalitech.demo.services;
 
 import com.amalitech.demo.dto.UserRole;
+import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
@@ -93,9 +94,9 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    public UserResponse loginUser(UserRequest userRequest) {
-        String email = userRequest.getEmail();
-        String password = userRequest.getPassword();
+    public UserResponse loginUser(UserLoginRequest userRequest) {
+        String email = userRequest.email();
+        String password = userRequest.password();
         User user = userDao.findByEmail(email).orElse(null);
         if(user != null){
           boolean authenticated =   PasswordUtils.verifyPassword(password, user.getPassword());

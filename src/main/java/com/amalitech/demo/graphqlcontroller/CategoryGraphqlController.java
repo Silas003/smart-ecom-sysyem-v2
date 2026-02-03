@@ -1,6 +1,7 @@
 package com.amalitech.demo.graphqlcontroller;
 
 import com.amalitech.demo.dto.request.CategoryRequest;
+import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.services.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +34,7 @@ public class CategoryGraphqlController {
             @ApiResponse(responseCode = "200", description = "Categories retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Category.class))))
     })
-    public List<Category> categories() {
+    public List<CategoryResponse> categories() {
         return categoryService.getAllCategories();
     }
 
@@ -44,7 +45,7 @@ public class CategoryGraphqlController {
                     content = @Content(schema = @Schema(implementation = Category.class))),
             @ApiResponse(responseCode = "404", description = "Category not found")
     })
-    public Category categoryById(@Argument Long id) {
+    public CategoryResponse categoryById(@Argument Long id) {
         return categoryService.getCategoryById(id);
     }
 
@@ -55,7 +56,7 @@ public class CategoryGraphqlController {
                     content = @Content(schema = @Schema(implementation = Category.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
-    public Category createCategory(@Argument("input") CategoryRequest request) {
+    public CategoryResponse createCategory(@Argument("input") CategoryRequest request) {
         return categoryService.createCategory(request);
     }
 
@@ -66,7 +67,7 @@ public class CategoryGraphqlController {
                     content = @Content(schema = @Schema(implementation = Category.class))),
             @ApiResponse(responseCode = "404", description = "Category not found")
     })
-    public Category updateCategory(@Argument Long id,@Argument("input")  CategoryRequest categoryRequest) {
+    public CategoryResponse updateCategory(@Argument Long id,@Argument("input")  CategoryRequest categoryRequest) {
         return categoryService.updateCategory(id, categoryRequest);
     }
 

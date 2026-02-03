@@ -39,7 +39,7 @@ public class ProductService implements ProductServiceInterface {
         if( productDao.findByName(request.getName()).isPresent()){
             throw new IllegalArgumentException("Product with given name already exists");
         }
-        Category category = categoryService.getCategoryById(request.getCategoryId());
+        Category category = categoryService.getCategoryByIdForProduct(request.getCategoryId());
         Product product = productMapper.toEntity(request);
         product.setCategory(category);
         productDao.save(product);
@@ -95,7 +95,7 @@ public class ProductService implements ProductServiceInterface {
         existingProduct.setPrice(request.getPrice());
         existingProduct.setStockQuantity(request.getStockQuantity());
         if (existingProduct.getCategory() == null || !existingProduct.getCategory().getId().equals(request.getCategoryId())){
-            Category newCat = categoryService.getCategoryById(request.getCategoryId());
+            Category newCat = categoryService.getCategoryByIdForProduct(request.getCategoryId());
             existingProduct.setCategory(newCat);
         }
 

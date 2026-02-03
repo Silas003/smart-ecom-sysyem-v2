@@ -2,6 +2,7 @@ package com.amalitech.demo.restcontroller;
 
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.request.UpdateUserRequest;
+import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.services.UserService;
@@ -110,8 +111,8 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    public ResponseDto<UserResponse> loginUser(@RequestBody UserRequest user) {
-        UserResponse userResponse = userService.loginUser(user);
+    public ResponseDto<UserResponse> loginUser(@RequestBody UserLoginRequest request) {
+        UserResponse userResponse = userService.loginUser(request);
 
         return new ResponseDto<>(HttpStatus.OK,"user login successful",userResponse);
     }

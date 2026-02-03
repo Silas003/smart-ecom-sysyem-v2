@@ -2,6 +2,7 @@ package com.amalitech.demo.services;
 
 import com.amalitech.demo.dao.interfaces.CategoryDao;
 import com.amalitech.demo.dto.request.CategoryRequest;
+import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.mapper.CategoryMapper;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
@@ -25,35 +26,43 @@ public class CategoryService implements CategoryServiceInterface {
     }
 
     @Override
-    public Category getCategoryById(Long id) {
+    public CategoryResponse getCategoryById(Long id) {
+        Category category = categoryDao.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("Category not found with id: " + id)
+        );
+        return  categoryMapper.toDto(category);
+    }
+    public Category getCategoryByIdForProduct(Long id) {
         return categoryDao.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Category not found with id: " + id)
         );
+
     }
 
     @Override
-    public Category createCategory(CategoryRequest request) {
+    public CategoryResponse createCategory(CategoryRequest request) {
         if(categoryDao.findByName(request.getName()).isPresent()){
             throw new IllegalArgumentException("category with given name already exists");
         }
         Category category = categoryMapper.toEntity(request);
         categoryDao.save(category);
-        return category;
+        return categoryMapper.toDto(category);
     }
 
     @Override
-    public List<Category> getAllCategories() {
+    public List<CategoryResponse> getAllCategories() {
         List<Category> list = categoryDao.findAll();
-        if (list == null || list.isEmpty()) return list;
-        return sorter.sort(list, Comparator.comparing(Category::getName, Comparator.nullsLast(String::compareToIgnoreCase)));
+        if (list == null || list.isEmpty()) return List.of();
+        List<Category> sorted = sorter.sort(list, Comparator.comparing(Category::getName, Comparator.nullsLast(String::compareToIgnoreCase)));
+        return categoryMapper.toDto(sorted);
     }
 
     @Override
-    public Category updateCategory(Long id, CategoryRequest request) {
+    public CategoryResponse updateCategory(Long id, CategoryRequest request) {
         Category existing = categoryDao.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found"));
         existing.setName(request.getName());
         categoryDao.update(existing);
-        return existing;
+        return categoryMapper.toDto(existing);
     }
     @Override
     public void deleteCategory(Long id) {

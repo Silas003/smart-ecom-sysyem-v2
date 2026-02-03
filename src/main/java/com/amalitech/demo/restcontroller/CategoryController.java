@@ -2,6 +2,7 @@ package com.amalitech.demo.restcontroller;
 
 import com.amalitech.demo.dto.request.CategoryRequest;
 import com.amalitech.demo.dto.ResponseDto;
+import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.services.interfaces.CategoryServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,9 +34,9 @@ public class CategoryController {
             @ApiResponse(responseCode = "200", description = "Categories retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Category.class))))
     })
-    public ResponseDto<List<Category>> getAllCategories(){
-        List<Category> categories = categoryService.getAllCategories();
-        return new ResponseDto<List<Category>>(HttpStatus.OK,"categories retrieved",categories);
+    public ResponseDto<List<CategoryResponse>> getAllCategories(){
+        List<CategoryResponse> categories = categoryService.getAllCategories();
+        return new ResponseDto<>(HttpStatus.OK,"categories retrieved",categories);
 
     }
 
@@ -47,8 +48,8 @@ public class CategoryController {
                     content = @Content(schema = @Schema(implementation = Category.class))),
             @ApiResponse(responseCode = "404", description = "Category not found")
     })
-    public ResponseDto<Category> getCategoryById(@Parameter(description = "ID of the category to retrieve", required = true) @PathVariable Long id){
-        Category category = categoryService.getCategoryById(id);
+    public ResponseDto<CategoryResponse> getCategoryById(@Parameter(description = "ID of the category to retrieve", required = true) @PathVariable Long id){
+        CategoryResponse category = categoryService.getCategoryById(id);
         return new ResponseDto<>(HttpStatus.OK,"category retrieved",category);
     }
 
@@ -61,8 +62,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Category not found"),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
-    public ResponseDto<Category> updateCategory(@Parameter(description = "ID of the category to update", required = true) @PathVariable Long id, @RequestBody @Valid CategoryRequest categoryRequest){
-        Category updatedCategory = categoryService.updateCategory(id, categoryRequest);
+    public ResponseDto<CategoryResponse> updateCategory(@Parameter(description = "ID of the category to update", required = true) @PathVariable Long id, @RequestBody @Valid CategoryRequest categoryRequest){
+        CategoryResponse updatedCategory = categoryService.updateCategory(id, categoryRequest);
         return new ResponseDto<>(HttpStatus.OK,"category updated",updatedCategory);
 
     }
@@ -86,8 +87,8 @@ public class CategoryController {
                     content = @Content(schema = @Schema(implementation = Category.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
-    public ResponseDto<Category> createCategory(@RequestBody @Valid CategoryRequest categoryRequest) {
-        Category newCategory = categoryService.createCategory(categoryRequest);
+    public ResponseDto<CategoryResponse> createCategory(@RequestBody @Valid CategoryRequest categoryRequest) {
+        CategoryResponse newCategory = categoryService.createCategory(categoryRequest);
         return new ResponseDto<>(HttpStatus.CREATED,"category created",newCategory);
 
     }

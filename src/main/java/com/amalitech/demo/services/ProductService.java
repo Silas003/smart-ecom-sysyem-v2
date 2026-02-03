@@ -115,6 +115,11 @@ public class ProductService implements ProductServiceInterface {
     @Override
     public Page<ProductResponse> getProductsByCategoryId(Long categoryId){
         List<Product> products = productDao.findByCategoryId(categoryId, Integer.MAX_VALUE, 0);
+        if (products == null) products = List.of();
+        // apply stable, service-level sorting by product name before mapping
+        if (!products.isEmpty()) {
+            products = sorter.sort(products, Comparator.comparing(Product::getName, Comparator.nullsLast(String::compareToIgnoreCase)));
+        }
         long total = productDao.countByCategoryId(categoryId);
         return new PageImpl<>(products.stream().map(productMapper::toResponse).toList(), Pageable.ofSize(products.size()), total);
     }

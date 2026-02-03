@@ -1,7 +1,7 @@
 package com.amalitech.demo.mapper;
 
-import com.amalitech.demo.dto.ProductRequest;
-import com.amalitech.demo.dto.ProductResponse;
+import com.amalitech.demo.dto.request.ProductRequest;
+import com.amalitech.demo.dto.response.ProductResponse;
 import com.amalitech.demo.models.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

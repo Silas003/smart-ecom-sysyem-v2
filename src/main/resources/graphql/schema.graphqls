@@ -6,7 +6,6 @@ type Product {
   category: Category
 }
 
-
 input ProductInput {
   name: String!
   price: Float!
@@ -81,7 +80,7 @@ input InventoryInput {
 extend type Query {
   categories: [Category!]!
   categoryById(id: ID!): Category
-  users: [User!]!
+  users(page:Int!,size:Int!): [User!]!
   userById(id: ID!): User
   reviews: [Review!]!
   reviewById(id: ID!): Review

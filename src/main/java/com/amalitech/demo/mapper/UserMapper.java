@@ -1,10 +1,8 @@
 package com.amalitech.demo.mapper;
 
-import com.amalitech.demo.dto.UserRequest;
-import com.amalitech.demo.dto.UserResponse;
+import com.amalitech.demo.dto.request.UserRequest;
+import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.models.User;
-import jakarta.validation.constraints.NotNull;
-import org.mapstruct.MapMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

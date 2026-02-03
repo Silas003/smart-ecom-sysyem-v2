@@ -1,6 +1,6 @@
 package com.amalitech.demo.mapper;
 
-import com.amalitech.demo.dto.CartResponse;
+import com.amalitech.demo.dto.response.CartResponse;
 import com.amalitech.demo.models.Cart;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

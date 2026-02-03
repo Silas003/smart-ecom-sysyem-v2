@@ -2,8 +2,6 @@ package com.amalitech.demo.services;
 
 import com.amalitech.demo.dao.interfaces.ReviewsDao;
 import com.amalitech.demo.dto.request.ReviewRequest;
-import com.amalitech.demo.dto.response.ReviewResponse;
-import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.models.User;

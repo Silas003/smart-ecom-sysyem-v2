@@ -1,8 +1,6 @@
 package com.amalitech.demo.controllers;
 
 import com.amalitech.demo.dto.request.OrderRequest;
-import com.amalitech.demo.dto.request.UpdateOrderRequest;
-import com.amalitech.demo.dto.response.OrderItemResponse;
 import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.restcontroller.OrderManagementController;
 import com.amalitech.demo.services.OrderService;

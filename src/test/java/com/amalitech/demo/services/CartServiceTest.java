@@ -13,7 +13,6 @@ import com.amalitech.demo.models.Cart;
 import com.amalitech.demo.models.CartItems;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.User;
-import com.amalitech.demo.utils.Sorter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

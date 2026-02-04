@@ -1,11 +1,8 @@
 package com.amalitech.demo.restcontroller;
-import com.amalitech.demo.dto.CartStatus;
-import com.amalitech.demo.dto.OrderStatus;
 import com.amalitech.demo.dto.request.UpdateCartStatusRquest;
 import com.amalitech.demo.dto.response.CartItemsReponse;
 import com.amalitech.demo.dto.response.CartResponse;
 import com.amalitech.demo.dto.ResponseDto;
-import com.amalitech.demo.services.CartService;
 import com.amalitech.demo.services.interfaces.CartServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

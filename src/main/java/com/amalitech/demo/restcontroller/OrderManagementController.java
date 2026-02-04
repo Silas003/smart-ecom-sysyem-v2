@@ -5,7 +5,6 @@ import com.amalitech.demo.dto.request.OrderRequest;
 import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.request.UpdateOrderRequest;
-import com.amalitech.demo.services.OrderService;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -78,7 +77,7 @@ public class OrderManagementController {
             @ApiResponse(responseCode = "204", description = "Order deleted"),
             @ApiResponse(responseCode = "404", description = "Order not found")
     })
-    public ResponseEntity deleteOrder(@Parameter(description = "ID of the order to delete", required = true) @PathVariable Long orderId){
+    public ResponseEntity<Void> deleteOrder(@Parameter(description = "ID of the order to delete", required = true) @PathVariable Long orderId){
         orderService.deleteOrder(orderId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

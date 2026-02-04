@@ -1,6 +1,7 @@
 package com.amalitech.demo.graphqlcontroller;
 
 import com.amalitech.demo.dto.request.OrderRequest;
+import com.amalitech.demo.dto.response.OrderPageResponse;
 import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.services.OrderService;
 import com.amalitech.demo.services.ProductService;
@@ -37,9 +38,11 @@ public class OrderGraphqlController {
             @ApiResponse(responseCode = "200", description = "Orders retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class))))
     })
-    public List<OrderResponse> orders(@Argument Integer page, @Argument Integer size) {
-        return orderService.getAllOrders(PageRequest.of(page, size)).getContent();
-    }
+        public OrderPageResponse orders(@Argument Integer page, @Argument Integer size) {
+                var p = orderService.getAllOrders(PageRequest.of(page, size));
+                var items = p.getContent();
+                return new OrderPageResponse(items, p.getTotalElements());
+        }
 
     @QueryMapping
     @Operation(summary = "Get order by id (GraphQL)", description = "Retrieve a single order by id via GraphQL")

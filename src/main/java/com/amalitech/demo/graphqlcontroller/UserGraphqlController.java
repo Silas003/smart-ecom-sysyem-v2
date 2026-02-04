@@ -1,6 +1,7 @@
 package com.amalitech.demo.graphqlcontroller;
 
 import com.amalitech.demo.dto.request.UserRequest;
+import com.amalitech.demo.dto.response.UserPageResponse;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
-import org.springframework.data.domain.Page;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -22,11 +22,11 @@ import java.util.List;
 @Tag(name = "GraphQL - Users", description = "GraphQL queries and mutations for users")
 public class UserGraphqlController {
 
-    private final UserService userService;
+        private final UserService userService;
 
-    public UserGraphqlController(UserService userService) {
-        this.userService = userService;
-    }
+        public UserGraphqlController(UserService userService) {
+                this.userService = userService;
+        }
 
     @QueryMapping
     @Operation(summary = "List users (GraphQL)", description = "List all users via GraphQL query")
@@ -34,9 +34,11 @@ public class UserGraphqlController {
             @ApiResponse(responseCode = "200", description = "Users retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))))
     })
-    public Page<UserResponse> users(@Argument int page, @Argument int size) {
-        return userService.getAllUsers(page,size);
-    }
+        public UserPageResponse users(@Argument int page, @Argument int size) {
+                var p = userService.getAllUsers(page,size);
+                var items = p.getContent();
+                return new UserPageResponse(items, p.getTotalElements());
+        }
 
     @QueryMapping
     @Operation(summary = "Get user by id (GraphQL)", description = "Retrieve a single user by id via GraphQL")

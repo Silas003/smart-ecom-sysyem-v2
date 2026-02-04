@@ -3,7 +3,6 @@ package com.amalitech.demo.restcontroller;
 import com.amalitech.demo.dto.response.InventoryResponse;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.request.InventoryRequest;
-import com.amalitech.demo.services.InventoryService;
 import com.amalitech.demo.services.interfaces.InventoryServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

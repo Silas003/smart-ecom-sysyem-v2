@@ -3,7 +3,9 @@ package com.amalitech.demo.graphqlcontroller;
 
 import com.amalitech.demo.dto.request.ProductRequest;
 import com.amalitech.demo.dto.response.ProductResponse;
+import com.amalitech.demo.dto.response.ProductPageResponse;
 import com.amalitech.demo.models.Product;
+import com.amalitech.demo.mapper.ProductMapper;
 import com.amalitech.demo.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,11 +25,13 @@ import org.springframework.stereotype.Controller;
 @Tag(name = "GraphQL - Products", description = "GraphQL queries and mutations for products")
 public class ProductGraphqlController {
 
-    private final ProductService productService;
+        private final ProductService productService;
+        private final ProductMapper productMapper;
 
-    public ProductGraphqlController(ProductService productService) {
-        this.productService = productService;
-    }
+        public ProductGraphqlController(ProductService productService, ProductMapper productMapper) {
+                this.productService = productService;
+                this.productMapper = productMapper;
+        }
 
     @QueryMapping
     @Operation(summary = "List products (GraphQL)", description = "List products with pagination via GraphQL query")
@@ -35,9 +39,11 @@ public class ProductGraphqlController {
             @ApiResponse(responseCode = "200", description = "Products retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class))))
     })
-    public Page<Product> products(@Argument Integer page, @Argument Integer size) {
-        return productService.getAllProducts(PageRequest.of(page,size));
-    }
+        public ProductPageResponse products(@Argument Integer page, @Argument Integer size) {
+                Page<Product> p = productService.getAllProducts(PageRequest.of(page,size));
+                var items = p.getContent().stream().map(productMapper::toResponse).toList();
+                return new ProductPageResponse(items, p.getTotalElements());
+        }
 
     @QueryMapping
     @Operation(summary = "Get product by id (GraphQL)", description = "Retrieve a single product by id via GraphQL")
@@ -46,9 +52,9 @@ public class ProductGraphqlController {
                     content = @Content(schema = @Schema(implementation = ProductResponse.class))),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
-    public Product productById(@Argument Long id) {
-        return productService.getProductById(id);
-    }
+        public ProductResponse productById(@Argument Long id) {
+                return productMapper.toResponse(productService.getProductById(id));
+        }
 
     @MutationMapping
     @Operation(summary = "Create product (GraphQL)", description = "Create a new product using a GraphQL mutation")
@@ -57,9 +63,9 @@ public class ProductGraphqlController {
                     content = @Content(schema = @Schema(implementation = ProductResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
-    public Product createProduct(@Argument("input")  ProductRequest request) {
-        return productService.createProduct(request);
-    }
+        public ProductResponse createProduct(@Argument("input")  ProductRequest request) {
+                return productMapper.toResponse(productService.createProduct(request));
+        }
 
     @MutationMapping
     @Operation(summary = "Update product (GraphQL)", description = "Update product by id using GraphQL mutation")
@@ -68,9 +74,9 @@ public class ProductGraphqlController {
                     content = @Content(schema = @Schema(implementation = ProductResponse.class))),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
-    public Product updateProduct(@Argument Long id, @Argument("input")  ProductRequest request) {
-        return productService.updateProduct(id, request);
-    }
+        public ProductResponse updateProduct(@Argument Long id, @Argument("input")  ProductRequest request) {
+                return productMapper.toResponse(productService.updateProduct(id, request));
+        }
 
     @MutationMapping
     @Operation(summary = "Delete product (GraphQL)", description = "Delete a product by id using GraphQL mutation")
@@ -78,8 +84,8 @@ public class ProductGraphqlController {
             @ApiResponse(responseCode = "200", description = "Product deleted"),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
-    public Boolean deleteProduct(@Argument Long id) {
-        productService.deleteProduct(id);
-        return true;
-    }
+        public Boolean deleteProduct(@Argument Long id) {
+                productService.deleteProduct(id);
+                return true;
+        }
 }

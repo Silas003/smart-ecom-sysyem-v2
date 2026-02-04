@@ -3,7 +3,6 @@ package com.amalitech.demo.restcontroller;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.request.ReviewRequest;
 import com.amalitech.demo.dto.response.ReviewResponse;
-import com.amalitech.demo.services.ReviewsService;
 import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

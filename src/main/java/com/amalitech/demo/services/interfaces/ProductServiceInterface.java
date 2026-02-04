@@ -5,9 +5,6 @@ import com.amalitech.demo.dto.response.ProductResponse;
 import com.amalitech.demo.models.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 
 public interface ProductServiceInterface {

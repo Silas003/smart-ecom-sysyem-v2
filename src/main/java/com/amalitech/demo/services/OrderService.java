@@ -30,7 +30,6 @@ public class OrderService implements OrderServiceInterface {
     private final InventoryDao inventoryDao;
     private final UserDao userDao;
 
-    // use injected merge-sorter bean
     private final Sorter<Orders> sorter;
 
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS =
@@ -47,7 +46,6 @@ public class OrderService implements OrderServiceInterface {
         if(orders == null || orders.isEmpty()){
             throw new EntityNotFoundException("user does not have any orders");
         }
-        // default: keep DB order unless caller wants sorting; expose service-level sort methods later
         return ordersMapper.toResponse(orders);
     }
 

@@ -4,7 +4,6 @@ package com.amalitech.demo.dao.interfaces;
 import com.amalitech.demo.models.Cart;
 import com.amalitech.demo.dto.CartStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 

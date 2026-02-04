@@ -65,9 +65,9 @@ Typical PostgreSQL example (application-dev.properties):
 
 ```properties
 spring.profiles.active=dev
-spring.datasource.url=jdbc:postgresql://localhost:5432/smart_ecom
-spring.datasource.username=postgres
-spring.datasource.password=postgres
+spring.datasource.url=jdbc:postgresql://localhost:5432/smart_ecom_db
+spring.datasource.username=useername
+spring.datasource.password=password
 spring.jpa.hibernate.ddl-auto=update
 ```
 

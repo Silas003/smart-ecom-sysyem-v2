@@ -5,7 +5,6 @@ import com.amalitech.demo.dto.request.UpdateUserRequest;
 import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.UserResponse;
-import com.amalitech.demo.services.UserService;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,7 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+ 
 
 @RestController
 @RequestMapping(value = "/api/v1/users")

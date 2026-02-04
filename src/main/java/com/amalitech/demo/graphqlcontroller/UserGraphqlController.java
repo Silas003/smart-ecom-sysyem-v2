@@ -1,7 +1,6 @@
 package com.amalitech.demo.graphqlcontroller;
 
 import com.amalitech.demo.dto.request.UserRequest;
-import com.amalitech.demo.dto.response.UserPageResponse;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,16 +27,16 @@ public class UserGraphqlController {
                 this.userService = userService;
         }
 
-    @QueryMapping
+        @QueryMapping
     @Operation(summary = "List users (GraphQL)", description = "List all users via GraphQL query")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))))
     })
-        public UserPageResponse users(@Argument int page, @Argument int size) {
+        public List<UserResponse> users(@Argument int page, @Argument int size) {
                 var p = userService.getAllUsers(page,size);
                 var items = p.getContent();
-                return new UserPageResponse(items, p.getTotalElements());
+                return items;
         }
 
     @QueryMapping

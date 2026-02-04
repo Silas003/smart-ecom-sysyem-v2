@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SortConfig {
     @Bean
-    public Sorter mergeSorter() {
+    public Sorter<?> mergeSorter() {
         // expose a raw Sorter bean backed by MergeSorter; services will inject with their specific generics
-        return new MergeSorter();
+        return new MergeSorter<>();
     }
 }

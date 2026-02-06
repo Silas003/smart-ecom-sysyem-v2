@@ -13,11 +13,8 @@ public interface OrderItemDao {
     List<OrderItem> findByOrderId(Long orderId);
     List<OrderItem> findByOrderId(Long orderId, String sortBy, String direction);
     long save(OrderItem item);
-    void saveAll(List<OrderItem> items);
     void update(OrderItem item);
     void deleteById(Long id);
-
     // Connection-aware variants for transactional callers (e.g. OrdersDao.save)
     long save(OrderItem item, Connection conn);
-    void saveAll(List<OrderItem> items, Connection conn);
 }

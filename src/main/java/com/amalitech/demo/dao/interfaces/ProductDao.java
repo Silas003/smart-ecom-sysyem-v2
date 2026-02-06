@@ -12,7 +12,6 @@ import java.util.Optional;
 public interface ProductDao {
     Optional<Product> findById(Long id);
     Optional<Product> findByName(String name);
-    boolean existsByName(String name);
     List<Product> findByCategoryId(Long categoryId, int limit, int offset);
     long countByCategoryId(Long categoryId);
     List<Product> findAll(int limit, int offset);

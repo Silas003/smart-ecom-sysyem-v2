@@ -1,4 +1,6 @@
 package com.amalitech.demo.restcontroller;
+
+import com.amalitech.demo.dto.request.AddItemToCartRequest;
 import com.amalitech.demo.dto.request.UpdateCartStatusRquest;
 import com.amalitech.demo.dto.response.CartItemsReponse;
 import com.amalitech.demo.dto.response.CartResponse;
@@ -11,69 +13,116 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 
+@Slf4j
+@Validated
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/carts")
 @Tag(name = "Carts", description = "Shopping cart management")
 public class CartManagementController {
-    private CartServiceInterface cartService;
+    private final CartServiceInterface cartService;
 
-
-    @PostMapping("/create_cart/")
-    @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Create cart", description = "Create a new cart for a user")
+    @GetMapping("/users/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Get or create cart",
+        description = "Retrieve the active cart for a user, or create one if it doesn't exist"
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Cart created",
-                    content = @Content(schema = @Schema(implementation = CartResponse.class)))
+            @ApiResponse(responseCode = "200", description = "Cart retrieved or created successfully",
+                    content = @Content(schema = @Schema(implementation = CartResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid user ID"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseDto<CartResponse> createCart(@Parameter(description = "ID of the user to create a cart for", required = true) @RequestBody Long userId) {
+    public ResponseDto<CartResponse> getOrCreateCart(
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable @Positive Long userId) {
         CartResponse cart = cartService.createCart(userId);
-        return new ResponseDto<>(HttpStatus.CREATED,"cart created",cart);
+        return new ResponseDto<>(HttpStatus.OK, "Cart retrieved successfully", cart);
     }
 
-    @GetMapping("/get_cart/{userId}")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get cart by user", description = "Retrieve the active cart for a user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cart fetched",
-                    content = @Content(schema = @Schema(implementation = CartResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Cart not found")
-    })
-    public ResponseDto<CartResponse> getCartByUserId(@Parameter(description = "ID of the user", required = true) @PathVariable Long userId) {
-        CartResponse cart = cartService.getCartByUserId(userId);
-        return new ResponseDto<>(HttpStatus.OK, "cart fetched", cart);
-    }
-
-    @PostMapping("/{cartId}/add_item")
+    @PostMapping("/users/{userId}/items")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Add item to cart", description = "Add a product to a user's cart")
+    @Operation(
+        summary = "Add item to cart",
+        description = "Add a product to user's cart or update quantity if already exists. Validates stock availability."
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Item added to cart",
+            @ApiResponse(responseCode = "201", description = "Item added to cart successfully",
                     content = @Content(schema = @Schema(implementation = CartItemsReponse.class))),
-            @ApiResponse(responseCode = "400", description = "Validation error or insufficient stock")
+            @ApiResponse(responseCode = "400", description = "Invalid request or insufficient stock"),
+            @ApiResponse(responseCode = "404", description = "Cart, user, or product not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseDto<CartItemsReponse> addItemToCart(@Parameter(description = "ID of the cart", required = true) @PathVariable Long cartId, @Parameter(description = "ID of the product to add", required = true) @RequestParam Long productId, @Parameter(description = "Quantity to add", required = true) @RequestParam int quantity) {
-        CartItemsReponse cartItems = cartService.addItemToCart(cartId, productId, quantity);
-        return new ResponseDto<>(HttpStatus.CREATED, "item added", cartItems);
+    public ResponseDto<CartItemsReponse> addItemToCart(
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable @Positive Long userId,
+            @Parameter(description = "Product and quantity to add", required = true)
+            @Valid @RequestBody AddItemToCartRequest request) {
+
+        CartItemsReponse cartItems = cartService.addItemToCart(
+                userId,
+                request.productId(),
+                request.quantity()
+        );
+
+        return new ResponseDto<>(HttpStatus.CREATED, "Item added to cart successfully", cartItems);
     }
 
-    @PatchMapping("/{cardtId}/{userId}")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Update cart status", description = "Update the status of a user's cart")
+    @DeleteMapping("/users/{userId}/items/{cartItemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+        summary = "Remove item from cart",
+        description = "Remove a specific item from the user's cart. Validates ownership before removal."
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cart status updated",
-                    content = @Content(schema = @Schema(implementation = CartResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Cart or user not found")
+            @ApiResponse(responseCode = "204", description = "Item removed successfully (no content)"),
+            @ApiResponse(responseCode = "400", description = "Invalid request or unauthorized access"),
+            @ApiResponse(responseCode = "404", description = "Cart item not found"),
+            @ApiResponse(responseCode = "409", description = "Cannot remove item from non-active cart"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseDto<CartResponse> updateCartStatus(@Parameter(description = "ID of the user", required = true) @PathVariable Long userId,@RequestBody UpdateCartStatusRquest status){
-        CartResponse cartResponse = cartService.updateCartStatus(userId,status.status());
-        return new ResponseDto<>(HttpStatus.OK,"cart status updated",cartResponse);
+    public ResponseDto<Void> removeItemFromCart(
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable @Positive Long userId,
+            @Parameter(description = "ID of the cart item to remove", required = true)
+            @PathVariable @Positive Long cartItemId) {
+
+        cartService.removeItemFromCart(userId, cartItemId);
+
+        return new ResponseDto<>(HttpStatus.NO_CONTENT, "Item removed from cart successfully", null);
+    }
+
+    @PatchMapping("/{cartId}/status")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Update cart status",
+        description = "Update the status of a cart (e.g., active, abandoned, completed)"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cart status updated successfully",
+                    content = @Content(schema = @Schema(implementation = CartResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid status value"),
+            @ApiResponse(responseCode = "404", description = "Cart not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseDto<CartResponse> updateCartStatus(
+            @Parameter(description = "ID of the cart", required = true)
+            @PathVariable @Positive Long cartId,
+            @Parameter(description = "New cart status", required = true)
+            @Valid @RequestBody UpdateCartStatusRquest status) {
+        CartResponse cartResponse = cartService.updateCartStatus(cartId, status.status());
+        return new ResponseDto<>(HttpStatus.OK, "Cart status updated successfully", cartResponse);
     }
 
 }

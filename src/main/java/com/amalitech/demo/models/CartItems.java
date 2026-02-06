@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @AllArgsConstructor
-//@Table(name = "cart_item")
 public class CartItems{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

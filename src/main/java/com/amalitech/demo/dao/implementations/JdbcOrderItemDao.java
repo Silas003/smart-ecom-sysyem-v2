@@ -126,24 +126,7 @@ public class JdbcOrderItemDao implements OrderItemDao {
         return -1;
     }
 
-    @Override
-    public void saveAll(List<OrderItem> items) {
-        String sql = "INSERT INTO order_items(order_id, product_id, quantity, unit_price, total_price) VALUES(?, ?, ?, ?, ?)";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            for (OrderItem i : items) {
-                ps.setLong(1, i.getOrder().getId());
-                ps.setLong(2, i.getProduct().getId());
-                ps.setInt(3, i.getQuantity());
-                ps.setDouble(4, i.getUnitPrice());
-                ps.setDouble(5, i.getTotalPrice());
-                ps.addBatch();
-            }
-            ps.executeBatch();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
     @Override
     public void update(OrderItem item) {
@@ -195,23 +178,7 @@ public class JdbcOrderItemDao implements OrderItemDao {
     }
 
     // Connection-aware saveAll: uses provided Connection, does not close it
-    @Override
-    public void saveAll(List<OrderItem> items, Connection conn) {
-        String sql = "INSERT INTO order_items(order_id, product_id, quantity, unit_price, total_price) VALUES(?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            for (OrderItem i : items) {
-                ps.setLong(1, i.getOrder().getId());
-                ps.setLong(2, i.getProduct().getId());
-                ps.setInt(3, i.getQuantity());
-                ps.setDouble(4, i.getUnitPrice());
-                ps.setDouble(5, i.getTotalPrice());
-                ps.addBatch();
-            }
-            ps.executeBatch();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
     private OrderItem mapRow(ResultSet rs) throws SQLException {
         OrderItem oi = new OrderItem();
@@ -228,7 +195,6 @@ public class JdbcOrderItemDao implements OrderItemDao {
         return oi;
     }
 
-    // replace internal mergeSort with call to sorter.sort
     private List<OrderItem> mergeSort(List<OrderItem> input, Comparator<OrderItem> cmp) {
         return sorter.sort(input, cmp);
     }

@@ -47,20 +47,6 @@ public class JdbcCategoryDao implements CategoryDao {
     }
 
     @Override
-    public boolean existsByName(String name) {
-        String sql = "SELECT 1 FROM categories WHERE name = ? LIMIT 1";
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, name);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
     public List<Category> findAll() {
         String sql = "SELECT id, name FROM categories";
         List<Category> list = new ArrayList<>();

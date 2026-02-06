@@ -22,7 +22,7 @@ public class Cart{
 
     @JoinColumn(name = "user_id" , referencedColumnName = "id")
     @NotNull
-    @ManyToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private User user;
 
 @Enumerated(EnumType.STRING)

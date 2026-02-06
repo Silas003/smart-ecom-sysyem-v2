@@ -48,20 +48,6 @@ public class JdbcProductDao implements ProductDao {
     }
 
     @Override
-    public boolean existsByName(String name) {
-        String sql = "SELECT 1 FROM products WHERE name = ? LIMIT 1";
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, name);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
     public List<Product> findByCategoryId(Long categoryId, int limit, int offset) {
         String sql = "SELECT id, name, price, stock_quantity, category_id FROM products WHERE category_id = ? ORDER BY id LIMIT ? OFFSET ?";
         List<Product> list = new ArrayList<>();

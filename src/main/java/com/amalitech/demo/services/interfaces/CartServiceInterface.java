@@ -10,8 +10,11 @@ public interface CartServiceInterface {
 
     CartResponse getCartByUserId(Long userId);
 
-    @Transactional
+
     CartItemsReponse addItemToCart(Long userId, Long productId, int quantity);
 
     CartResponse updateCartStatus(Long cartId, CartStatus Status);
+
+    @Transactional
+    void removeItemFromCart(Long userId, Long cartItemId);
 }

@@ -9,15 +9,18 @@ import com.amalitech.demo.models.Cart;
 import com.amalitech.demo.models.CartItems;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.User;
+import com.amalitech.demo.models.Inventory;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.dao.interfaces.CartItemsDao;
 import com.amalitech.demo.dao.interfaces.CartDao;
 import com.amalitech.demo.dao.interfaces.ProductDao;
 import com.amalitech.demo.dao.interfaces.UserDao;
+import com.amalitech.demo.dao.interfaces.InventoryDao;
 import com.amalitech.demo.services.interfaces.CartServiceInterface;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @AllArgsConstructor
 @Service
@@ -28,6 +31,7 @@ public class CartService implements CartServiceInterface {
     private final CartMapper cartMapper;
     private final ProductDao productDao;
     private final CartItemMapper cartItemMapper;
+    private final InventoryDao inventoryDao;
 
     @Override
     public CartResponse createCart(Long userId){
@@ -36,15 +40,15 @@ public class CartService implements CartServiceInterface {
         boolean exists  = cartDao.existsByUserIdAndStatus(user.getId(),CartStatus.active);
         if(exists){
             Cart cart = cartDao.findByUserIdAndStatus(user.getId(),CartStatus.active).orElseThrow(
-                    ()-> {throw new EntityNotFoundException("cart not found");}
+                    ()-> new EntityNotFoundException("cart not found")
             );
-            return cartMapper.toResponse(cart);
+            return buildCartResponse(cart);
         }
         Cart cart = new Cart(user,"active");
         long id = cartDao.save(cart);
         cart.setId(id);
 
-        return cartMapper.toResponse(cart);
+        return buildCartResponse(cart);
     }
 
 
@@ -52,39 +56,59 @@ public class CartService implements CartServiceInterface {
     public CartResponse getCartByUserId(Long userId) {
         Cart cart = cartDao.findByUserIdAndStatus(userId,CartStatus.active)
                 .orElseThrow(()-> new EntityNotFoundException("cart not found"));
-        return cartMapper.toResponse(cart);
+        return buildCartResponse(cart);
     }
 
-    @Transactional
+
     @Override
     public CartItemsReponse addItemToCart(Long userId, Long productId, int quantity) {
-        Cart cart = cartDao.findByUserIdAndStatus(userId,CartStatus.active)
-                .orElseThrow(()-> new EntityNotFoundException("cart not found"));
-        if(cart != null){
-            Product product = productDao.findById(productId).orElseThrow(
-                    ()-> new EntityNotFoundException("Product not found"));
-            CartItems cartItems = cartItemsDao.findByProductIdAndCartId(productId,cart.getId()).orElse(null);
-            if(cartItems != null){
-                int newQuantity = cartItems.getQuantity() + quantity;
-                cartItems.setQuantity(newQuantity);
-                cartItems.setTotalPrice(newQuantity*product.getPrice());
-                cartItemsDao.update(cartItems);
+        // 1. Validate and get cart
+        Cart cart = cartDao.findByUserIdAndStatus(userId, CartStatus.active)
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
 
-            }else{
-                cartItems = new CartItems();
-                cartItems.setCart(cart);
-                cartItems.setProduct(product);
-                cartItems.setQuantity(quantity);
-                cartItems.setUnitPrice(product.getPrice());
-                cartItems.setTotalPrice(quantity*product.getPrice());
-                long newId = cartItemsDao.save(cartItems);
-                cartItems.setId(newId);
-            }
-            return cartItemMapper.toResponse(cartItems);
-        }else {
-            throw new EntityNotFoundException("Cart not found");
+        // 2. Validate product exists
+        Product product = productDao.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+        // 3. VALIDATE INVENTORY AVAILABILITY - CRITICAL!
+        Inventory inventory = inventoryDao.findByProductId(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Inventory not found for product"));
+
+        // 4. Check if product already in cart
+        CartItems cartItems = cartItemsDao.findByProductIdAndCartId(productId, cart.getId())
+                .orElse(null);
+
+        int newQuantity = quantity;
+        if (cartItems != null) {
+            newQuantity = cartItems.getQuantity() + quantity;
         }
 
+        // 5. Validate sufficient stock for new total quantity
+        if (inventory.getStockQuantity() < newQuantity) {
+            throw new IllegalArgumentException(
+                "Insufficient stock for product: " + product.getName()
+                + ". Available: " + inventory.getStockQuantity()
+                + ", Requested: " + newQuantity
+            );
+        }
+
+        // 6. Update existing item or create new one
+        if (cartItems != null) {
+            cartItems.setQuantity(newQuantity);
+            cartItems.setTotalPrice(newQuantity * product.getPrice());
+            cartItemsDao.update(cartItems);
+        } else {
+            cartItems = new CartItems();
+            cartItems.setCart(cart);
+            cartItems.setProduct(product);
+            cartItems.setQuantity(newQuantity);
+            cartItems.setUnitPrice(product.getPrice());
+            cartItems.setTotalPrice(newQuantity * product.getPrice());
+            long newId = cartItemsDao.save(cartItems);
+            cartItems.setId(newId);
+        }
+
+        return cartItemMapper.toResponse(cartItems);
     }
 
     @Override
@@ -94,6 +118,38 @@ public class CartService implements CartServiceInterface {
 
         cart.setStatus(Status);
         cartDao.update(cart);
-        return cartMapper.toResponse(cart);
+        return buildCartResponse(cart);
+    }
+
+
+    @Override
+    public void removeItemFromCart(Long userId, Long cartItemId) {
+        User user = userDao.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        CartItems cartItem = cartItemsDao.findById(cartItemId)
+                .orElseThrow(() -> new EntityNotFoundException("Cart item not found"));
+
+        Long cartId = cartItem.getCart().getId();
+
+        Cart cart = cartDao.findById(cartId)
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+        if (!cart.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("Cannot remove item from another user's cart");
+        }
+
+        // 3. Verify cart is active (cannot remove items from completed/abandoned carts)
+        if (cart.getStatus() != CartStatus.active) {
+            throw new IllegalStateException("Cannot remove items from a " + cart.getStatus() + " cart");
+        }
+
+        // 4. Delete the cart item
+        cartItemsDao.deleteById(cartItemId);
+    }
+
+    private CartResponse buildCartResponse(Cart cart) {
+        List<CartItemsReponse> items = cartItemsDao.findByCartId(cart.getId()).stream()
+                .map(cartItemMapper::toResponse)
+                .toList();
+        return cartMapper.toResponse(cart, items);
     }
 }

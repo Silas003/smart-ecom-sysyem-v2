@@ -19,7 +19,7 @@ public class JdbcUserDao implements UserDao {
 
     @Override
     public Optional<User> findById(Long id) {
-        String sql = "SELECT id, username, email, password, userrole FROM users WHERE id = ?";
+        String sql = "SELECT id, username, email, password, user_role FROM users WHERE id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -36,7 +36,7 @@ public class JdbcUserDao implements UserDao {
 
     @Override
     public List<User> findAll(int pageNumber, int pageSize) {
-        String sql = "SELECT id, username, email, password, userrole FROM users limit ? offset ?";
+        String sql = "SELECT id, username, email, password, user_role FROM users limit ? offset ?";
         List<User> users = new ArrayList<>();
         try (Connection conn = dataSource.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -54,7 +54,7 @@ public class JdbcUserDao implements UserDao {
 
     @Override
     public Optional<User> findByUsername(String username) {
-        String sql = "SELECT id, username, email, password, userrole FROM users WHERE username = ?";
+        String sql = "SELECT id, username, email, password, user_role FROM users WHERE username = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
@@ -71,7 +71,7 @@ public class JdbcUserDao implements UserDao {
 
     @Override
     public Optional<User> findByEmail(String email) {
-        String sql = "SELECT id, username, email, password, userrole FROM users WHERE email = ?";
+        String sql = "SELECT id, username, email, password, user_role FROM users WHERE email = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
@@ -116,7 +116,7 @@ public class JdbcUserDao implements UserDao {
 
     @Override
     public long save(User user) {
-        String sql = "INSERT INTO users(username, email, password, userrole) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO users(username, email, password, user_role) VALUES (?, ?, ?, ?)";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getUsername());
@@ -137,7 +137,7 @@ public class JdbcUserDao implements UserDao {
 
     @Override
     public void update(User user) {
-        String sql = "UPDATE users SET username = ?, email = ?, password = ?, userrole = ? WHERE id = ?";
+        String sql = "UPDATE users SET username = ?, email = ?, password = ?, user_role = ? WHERE id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
@@ -169,7 +169,7 @@ public class JdbcUserDao implements UserDao {
         u.setUsername(rs.getString("username"));
         u.setEmail(rs.getString("email"));
         u.setPassword(rs.getString("password"));
-        String role = rs.getString("userrole");
+        String role = rs.getString("user_role");
         if(role != null) u.setUserRole(UserRole.valueOf(role));
         return u;
     }

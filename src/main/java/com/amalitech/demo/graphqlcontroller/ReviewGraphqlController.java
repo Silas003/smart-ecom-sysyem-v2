@@ -31,7 +31,7 @@ public class  ReviewGraphqlController {
 
     @MutationMapping
     public ReviewResponse createReview(@Argument("input")  ReviewRequest request, @Argument Long userId) {
-        return reviewsService.createReview(request, userId);
+        return reviewsService.createReview(request);
     }
 
     @MutationMapping

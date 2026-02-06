@@ -47,6 +47,10 @@ public class JdbcOrderItemDao implements OrderItemDao {
 
     @Override
     public List<OrderItem> findByOrderId(Long orderId, String sortBy, String direction) {
+        if (orderId == null) {
+            return List.of();
+        }
+
         // whitelist logical keys -> actual DB columns (for reference)
         Map<String, String> allowed = Map.of(
                 "id", "id",
@@ -114,7 +118,7 @@ public class JdbcOrderItemDao implements OrderItemDao {
             ps.setDouble(5, item.getTotalPrice());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) return keys.getLong(1);
+                if (keys.next()) return keys.getLong(4);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -122,24 +126,7 @@ public class JdbcOrderItemDao implements OrderItemDao {
         return -1;
     }
 
-    @Override
-    public void saveAll(List<OrderItem> items) {
-        String sql = "INSERT INTO order_items(order_id, product_id, quantity, unit_price, total_price) VALUES(?, ?, ?, ?, ?)";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            for (OrderItem i : items) {
-                ps.setLong(1, i.getOrder().getId());
-                ps.setLong(2, i.getProduct().getId());
-                ps.setInt(3, i.getQuantity());
-                ps.setDouble(4, i.getUnitPrice());
-                ps.setDouble(5, i.getTotalPrice());
-                ps.addBatch();
-            }
-            ps.executeBatch();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
     @Override
     public void update(OrderItem item) {
@@ -170,6 +157,29 @@ public class JdbcOrderItemDao implements OrderItemDao {
         }
     }
 
+    // Connection-aware save: uses provided Connection, does not close it
+    @Override
+    public long save(OrderItem item, Connection conn) {
+        String sql = "INSERT INTO order_items(order_id, product_id, quantity, unit_price, total_price) VALUES(?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setLong(1, item.getOrder().getId());
+            ps.setLong(2, item.getProduct().getId());
+            ps.setInt(3, item.getQuantity());
+            ps.setDouble(4, item.getUnitPrice());
+            ps.setDouble(5, item.getTotalPrice());
+            ps.executeUpdate();
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) return keys.getLong(1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return -1;
+    }
+
+    // Connection-aware saveAll: uses provided Connection, does not close it
+
+
     private OrderItem mapRow(ResultSet rs) throws SQLException {
         OrderItem oi = new OrderItem();
         oi.setId(rs.getLong("id"));
@@ -185,7 +195,6 @@ public class JdbcOrderItemDao implements OrderItemDao {
         return oi;
     }
 
-    // replace internal mergeSort with call to sorter.sort
     private List<OrderItem> mergeSort(List<OrderItem> input, Comparator<OrderItem> cmp) {
         return sorter.sort(input, cmp);
     }

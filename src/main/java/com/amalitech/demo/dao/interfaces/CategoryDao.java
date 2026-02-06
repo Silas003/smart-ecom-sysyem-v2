@@ -11,7 +11,6 @@ import java.util.Optional;
 public interface CategoryDao {
     Optional<Category> findById(Long id);
     Optional<Category> findByName(String name);
-    boolean existsByName(String name);
     List<Category> findAll();
     long save(Category category);
     void update(Category category);

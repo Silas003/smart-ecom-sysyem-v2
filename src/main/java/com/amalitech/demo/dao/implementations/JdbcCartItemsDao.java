@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @AllArgsConstructor
@@ -32,20 +34,7 @@ public class JdbcCartItemsDao implements CartItemsDao {
         return Optional.empty();
     }
 
-    @Override
-    public boolean existsByProductIdAndCartId(Long productId, Long cartId) {
-        String sql = "SELECT 1 FROM cart_items WHERE product_id = ? AND cart_id = ? LIMIT 1";
-        try (Connection conn = DataSourceUtils.getConnection(dataSource);
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, productId);
-            ps.setLong(2, cartId);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
     @Override
     public Optional<CartItems> findByProductIdAndCartId(Long productId, Long cartId) {
@@ -64,6 +53,24 @@ public class JdbcCartItemsDao implements CartItemsDao {
     }
 
     @Override
+    public List<CartItems> findByCartId(Long cartId) {
+        String sql = "SELECT id, quantity, cart_id, product_id, unit_price, total_price FROM cart_items WHERE cart_id = ?";
+        List<CartItems> items = new ArrayList<>();
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, cartId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    items.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return items;
+    }
+
+    @Override
     public long save(CartItems cartItems) {
         String sql = "INSERT INTO cart_items(quantity, cart_id, product_id, unit_price, total_price) VALUES(?, ?, ?, ?, ?)";
         try (Connection conn = DataSourceUtils.getConnection(dataSource);
@@ -75,7 +82,7 @@ public class JdbcCartItemsDao implements CartItemsDao {
             ps.setDouble(5, cartItems.getTotalPrice());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) return keys.getLong(1);
+                if (keys.next()) return keys.getLong(5);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

@@ -6,6 +6,8 @@ import com.amalitech.demo.models.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
     // category will be set in the service after resolving the id
@@ -16,4 +18,5 @@ public interface ProductMapper {
 
     @Mapping(source = "category.id", target = "categoryId")
     ProductResponse toResponse(Product product);
+
 }

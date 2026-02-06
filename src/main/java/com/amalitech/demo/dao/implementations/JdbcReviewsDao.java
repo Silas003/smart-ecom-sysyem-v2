@@ -90,7 +90,7 @@ public class JdbcReviewsDao implements ReviewsDao {
             ps.setLong(4, reviews.getProduct().getId());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) return keys.getLong(1);
+                if (keys.next()) return keys.getLong(2);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

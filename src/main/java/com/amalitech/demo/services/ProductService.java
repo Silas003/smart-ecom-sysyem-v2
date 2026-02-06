@@ -42,7 +42,8 @@ public class ProductService implements ProductServiceInterface {
         Category category = categoryService.getCategoryByIdForProduct(request.getCategoryId());
         Product product = productMapper.toEntity(request);
         product.setCategory(category);
-        productDao.save(product);
+        long id = productDao.save(product);
+        product.setId(id);
         return product;
     }
 

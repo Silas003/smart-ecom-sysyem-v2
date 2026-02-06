@@ -16,6 +16,10 @@ public class ReviewRequest {
     private Long productId;
 
     @NotNull
+    @Schema(description = "user id", example = "12")
+    private Long userId;
+
+    @NotNull
     @Min(1)
     @Max(10)
     @Schema(description = "Rating between 1 and 10", example = "8")

@@ -76,7 +76,7 @@ public class ReviewsServiceTest {
         User su = new User(); su.setId(2L); su.setUsername("tester");
         saved.setProduct(sp); saved.setUser(su);
         when(reviewsDao.findById(11L)).thenReturn(Optional.of(saved));
-        var resp = reviewsService.createReview(req, 2L);
+        var resp = reviewsService.createReview(req);
         assertNotNull(resp);
         assertEquals(11L, resp.getId());
     }

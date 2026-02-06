@@ -112,6 +112,19 @@ public class JdbcInventoryDao implements InventoryDao {
     }
 
     @Override
+    public void update(Inventory inventory, Connection conn) throws SQLException {
+        String sql = "UPDATE inventory SET quantity_in_stock = ?, quantity_reserved = ?, stock_status = ?, version = ? WHERE inventory_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, inventory.getStockQuantity());
+            ps.setInt(2, inventory.getReservedQuantity());
+            ps.setString(3, inventory.getStockStatus());
+            ps.setLong(4, inventory.getVersion());
+            ps.setLong(5, inventory.getId());
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
     public void deleteById(Long id) {
         String sql = "DELETE FROM inventory WHERE inventory_id = ?";
         try (Connection conn = dataSource.getConnection();

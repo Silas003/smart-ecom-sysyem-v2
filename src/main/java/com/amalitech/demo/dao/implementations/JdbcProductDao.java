@@ -48,20 +48,6 @@ public class JdbcProductDao implements ProductDao {
     }
 
     @Override
-    public boolean existsByName(String name) {
-        String sql = "SELECT 1 FROM products WHERE name = ? LIMIT 1";
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, name);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
     public List<Product> findByCategoryId(Long categoryId, int limit, int offset) {
         String sql = "SELECT id, name, price, stock_quantity, category_id FROM products WHERE category_id = ? ORDER BY id LIMIT ? OFFSET ?";
         List<Product> list = new ArrayList<>();
@@ -136,7 +122,7 @@ public class JdbcProductDao implements ProductDao {
             ps.setLong(4, product.getCategory().getId());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) return keys.getLong(1);
+                if (keys.next()) return keys.getLong(3);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -157,6 +143,19 @@ public class JdbcProductDao implements ProductDao {
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void update(Product product, Connection conn) throws SQLException {
+        String sql = "UPDATE products SET name = ?, price = ?, stock_quantity = ?, category_id = ? WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, product.getName());
+            ps.setDouble(2, product.getPrice());
+            ps.setInt(3, product.getStockQuantity());
+            ps.setLong(4, product.getCategory().getId());
+            ps.setLong(5, product.getId());
+            ps.executeUpdate();
         }
     }
 

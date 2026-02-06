@@ -41,7 +41,7 @@ public class ReviewsControllerTest {
     void shouldCreateReview() throws Exception {
         String req = "{\"productId\":1,\"rating\":5,\"description\":\"ok\"}";
         ReviewResponse r = new ReviewResponse(); r.setId(2L); r.setRating(5); r.setDescription("ok"); r.setProductId(1L); r.setReviewerDisplay("u");
-        when(reviewsService.createReview(any(ReviewRequest.class), anyLong())).thenReturn(r);
+        when(reviewsService.createReview(any(ReviewRequest.class))).thenReturn(r);
 
         mockMvc.perform(post("/api/v1/reviews/").contentType("application/json").header("X-User-Id", "2").content(req))
                 .andExpect(status().isCreated())

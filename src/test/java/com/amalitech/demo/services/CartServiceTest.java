@@ -4,6 +4,7 @@ import com.amalitech.demo.dao.interfaces.CartDao;
 import com.amalitech.demo.dao.interfaces.CartItemsDao;
 import com.amalitech.demo.dao.interfaces.ProductDao;
 import com.amalitech.demo.dao.interfaces.UserDao;
+import com.amalitech.demo.dao.interfaces.InventoryDao;
 import com.amalitech.demo.dto.CartStatus;
 import com.amalitech.demo.dto.response.CartItemsReponse;
 import com.amalitech.demo.dto.response.CartResponse;
@@ -13,16 +14,19 @@ import com.amalitech.demo.models.Cart;
 import com.amalitech.demo.models.CartItems;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.User;
+import com.amalitech.demo.models.Inventory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,6 +50,9 @@ public class CartServiceTest {
     @Mock
     private CartItemMapper cartItemMapper;
 
+    @Mock
+    private InventoryDao inventoryDao;
+
     @InjectMocks
     private CartService cartService;
 
@@ -56,7 +63,8 @@ public class CartServiceTest {
         when(cartDao.existsByUserIdAndStatus(1L, CartStatus.active)).thenReturn(false);
         Cart cart = new Cart(user, "active"); cart.setId(10L);
         when(cartDao.save(any())).thenReturn(10L);
-        when(cartMapper.toResponse(any())).thenReturn(new CartResponse(10L,1L,"active"));
+        when(cartItemsDao.findByCartId(10L)).thenReturn(List.of());
+        when(cartMapper.toResponse(any(), anyList())).thenReturn(new CartResponse(10L,1L,"active", List.of()));
 
         CartResponse resp = cartService.createCart(1L);
         assertNotNull(resp);
@@ -71,7 +79,8 @@ public class CartServiceTest {
         when(userDao.findById(1L)).thenReturn(Optional.of(user));
         when(cartDao.existsByUserIdAndStatus(1L, CartStatus.active)).thenReturn(true);
         when(cartDao.findByUserIdAndStatus(1L, CartStatus.active)).thenReturn(Optional.of(cart));
-        when(cartMapper.toResponse(cart)).thenReturn(new CartResponse(20L,1L,"active"));
+        when(cartItemsDao.findByCartId(20L)).thenReturn(List.of());
+        when(cartMapper.toResponse(any(), anyList())).thenReturn(new CartResponse(20L,1L,"active", List.of()));
 
         CartResponse resp = cartService.createCart(1L);
         assertNotNull(resp);
@@ -84,8 +93,10 @@ public class CartServiceTest {
         User user = new User(); user.setId(1L);
         Cart cart = new Cart(user, "active"); cart.setId(5L);
         Product product = new Product(); product.setId(3L); product.setPrice(2.0);
+        Inventory inventory = new Inventory(); inventory.setProduct(product); inventory.setStockQuantity(10);
         when(cartDao.findByUserIdAndStatus(1L, CartStatus.active)).thenReturn(Optional.of(cart));
         when(productDao.findById(3L)).thenReturn(Optional.of(product));
+        when(inventoryDao.findByProductId(3L)).thenReturn(Optional.of(inventory));
         when(cartItemsDao.findByProductIdAndCartId(3L, 5L)).thenReturn(Optional.empty());
         when(cartItemsDao.save(any())).thenReturn(99L);
         when(cartItemMapper.toResponse(any())).thenReturn(new CartItemsReponse(99L,5L,3L,2.0,4.0,2));
@@ -101,9 +112,11 @@ public class CartServiceTest {
         User user = new User(); user.setId(1L);
         Cart cart = new Cart(user, "active"); cart.setId(5L);
         Product product = new Product(); product.setId(3L); product.setPrice(2.0);
+        Inventory inventory = new Inventory(); inventory.setProduct(product); inventory.setStockQuantity(10);
         CartItems existing = new CartItems(); existing.setId(7L); existing.setQuantity(1);
         when(cartDao.findByUserIdAndStatus(1L, CartStatus.active)).thenReturn(Optional.of(cart));
         when(productDao.findById(3L)).thenReturn(Optional.of(product));
+        when(inventoryDao.findByProductId(3L)).thenReturn(Optional.of(inventory));
         when(cartItemsDao.findByProductIdAndCartId(3L, 5L)).thenReturn(Optional.of(existing));
         when(cartItemMapper.toResponse(existing)).thenReturn(new CartItemsReponse(7L,5L,3L,2.0,6.0,3));
 
@@ -117,7 +130,8 @@ public class CartServiceTest {
     void updateCartStatus_updatesAndReturns() {
         Cart cart = new Cart(new User(), "active"); cart.setId(11L);
         when(cartDao.findByUserIdAndStatus(11L, CartStatus.active)).thenReturn(Optional.of(cart));
-        when(cartMapper.toResponse(cart)).thenReturn(new CartResponse(11L,11L,"deactivated"));
+        when(cartItemsDao.findByCartId(11L)).thenReturn(List.of());
+        when(cartMapper.toResponse(any(), anyList())).thenReturn(new CartResponse(11L,11L,"deactivated", List.of()));
         cartService.updateCartStatus(11L, CartStatus.deactivated);
         verify(cartDao, times(1)).update(cart);
     }

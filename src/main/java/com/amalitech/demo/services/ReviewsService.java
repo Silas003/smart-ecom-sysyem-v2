@@ -41,15 +41,16 @@ public class ReviewsService implements ReviewsServiceInterface {
         return sorted.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    @Transactional
+
     @Override
-    public ReviewResponse createReview(ReviewRequest request, Long userId) {
+    public ReviewResponse createReview(ReviewRequest request) {
         Product product = productService.getProductById(request.getProductId());
-        User user = userService.getUserByIdForReview(userId);
+        User user = userService.getUserByIdForReview(request.getUserId());
 
         Reviews review = new Reviews(request.getRating(), request.getDescription(),user, product);
-        Reviews saved = reviewsDao.findById(reviewsDao.save(review)).orElseThrow(() -> new EntityNotFoundException("Failed to create review"));
-        return toResponse(saved);
+        long id = reviewsDao.save(review);
+        review.setId(id);
+        return toResponse(review);
 
     }
 
@@ -71,7 +72,7 @@ public class ReviewsService implements ReviewsServiceInterface {
         return reviewsDao.findByUserIdOrderByIdDesc(userId).stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    @Transactional
+
     @Override
     public void deleteReview(Long id) {
         if (reviewsDao.findById(id).isEmpty()) throw new EntityNotFoundException("Review not found");

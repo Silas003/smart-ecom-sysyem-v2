@@ -48,8 +48,8 @@ public class ReviewsController {
                     content = @Content(schema = @Schema(implementation = ReviewResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
-    public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request, @Parameter(description = "ID of the user creating the review, from X-User-Id header", required = true) @RequestHeader("X-User-Id") Long userId){
-        ReviewResponse review = reviewsService.createReview(request, userId);
+    public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request){
+        ReviewResponse review = reviewsService.createReview(request);
         return  new ResponseDto<>(HttpStatus.CREATED,"review created",review);
     }
 

@@ -19,10 +19,10 @@ public interface OrderServiceInterface {
 
     void deleteOrder(Long orderId);
 
-    @Transactional
+
     OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus);
 
-    @Transactional
+
     OrderResponse createOrder(OrderRequest req);
 
     /**

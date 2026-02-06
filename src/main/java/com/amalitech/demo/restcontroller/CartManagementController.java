@@ -25,14 +25,14 @@ public class CartManagementController {
     private CartServiceInterface cartService;
 
 
-    @PostMapping("/create_cart/{userId}")
+    @PostMapping("/create_cart/")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create cart", description = "Create a new cart for a user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Cart created",
                     content = @Content(schema = @Schema(implementation = CartResponse.class)))
     })
-    public ResponseDto<CartResponse> createCart(@Parameter(description = "ID of the user to create a cart for", required = true) @PathVariable Long userId) {
+    public ResponseDto<CartResponse> createCart(@Parameter(description = "ID of the user to create a cart for", required = true) @RequestBody Long userId) {
         CartResponse cart = cartService.createCart(userId);
         return new ResponseDto<>(HttpStatus.CREATED,"cart created",cart);
     }

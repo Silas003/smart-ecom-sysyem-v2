@@ -3,6 +3,7 @@ package com.amalitech.demo.dao.interfaces;
 import com.amalitech.demo.models.OrderItem;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,4 +16,8 @@ public interface OrderItemDao {
     void saveAll(List<OrderItem> items);
     void update(OrderItem item);
     void deleteById(Long id);
+
+    // Connection-aware variants for transactional callers (e.g. OrdersDao.save)
+    long save(OrderItem item, Connection conn);
+    void saveAll(List<OrderItem> items, Connection conn);
 }

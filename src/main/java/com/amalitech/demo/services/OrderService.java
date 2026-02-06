@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -131,50 +133,63 @@ public class OrderService implements OrderServiceInterface {
         return ordersMapper.toResponse(order);
     }
 
-    @Transactional
     @Override
     public OrderResponse createOrder(OrderRequest req) {
+        // 1. Validate user
         Long userId = req.getUserId();
-        User user = userDao.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userDao.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        // 2. Validate order items
         if (req.getItems() == null || req.getItems().isEmpty()) {
             throw new IllegalArgumentException("Order must contain at least one item");
         }
 
+        // 3. Create order
         Orders order = new Orders();
         order.setUser(user);
         order.setStatus(OrderStatus.pending);
 
+        // 4. Process order items and validate inventory
         List<OrderItem> items = new ArrayList<>();
         double total = 0.0;
 
-        for (OrderItemRequest it : req.getItems()) {
-            Product product = productDao.findById(it.getProductId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
-            Inventory inv = inventoryDao.findByProductId(product.getId()).orElseThrow(() -> new EntityNotFoundException("Inventory not found for product"));
-            if (inv.getStockQuantity() < it.getQuantity()) {
-                throw new IllegalArgumentException("Insufficient stock for product id: " + product.getId());
-            }
-            inv.setStockQuantity(inv.getStockQuantity() - it.getQuantity());
-            inventoryDao.update(inv);
+        for (OrderItemRequest itemReq : req.getItems()) {
+            // Validate product exists
+            Product product = productDao.findById(itemReq.getProductId())
+                    .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + itemReq.getProductId()));
 
+            // Validate inventory exists and has sufficient stock
+            Inventory inv = inventoryDao.findByProductId(product.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Inventory not found for product ID: " + product.getId()));
+
+            if (inv.getStockQuantity() < itemReq.getQuantity()) {
+                throw new IllegalArgumentException("Insufficient stock for product ID: " + product.getId()
+                    + ". Available: " + inv.getStockQuantity() + ", Requested: " + itemReq.getQuantity());
+            }
+
+            // Create order item
             OrderItem oi = new OrderItem();
-            oi.setOrder(order);
             oi.setProduct(product);
-            oi.setQuantity(it.getQuantity());
+            oi.setQuantity(itemReq.getQuantity());
             oi.setUnitPrice(product.getPrice());
-            oi.setTotalPrice(product.getPrice() * it.getQuantity());
+            oi.setTotalPrice(product.getPrice() * itemReq.getQuantity());
             items.add(oi);
+
             total += oi.getTotalPrice();
         }
 
+        // 5. Set order details
         order.setTotalAmount(total);
         order.setItems(items);
 
+        // 6. Save order (DAO handles all transactional updates: orders, order_items, inventory, products)
         try {
-            long id = ordersDao.save(order);
-            order.setId(id);
+            long orderId = ordersDao.save(order);
+            order.setId(orderId);
             return ordersMapper.toResponse(order);
-        } catch (Exception e){
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create order: " + e.getMessage(), e);
         }
     }
 

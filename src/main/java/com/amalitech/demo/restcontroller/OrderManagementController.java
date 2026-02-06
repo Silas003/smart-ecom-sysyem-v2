@@ -54,6 +54,7 @@ public class OrderManagementController {
             @ApiResponse(responseCode = "404", description = "Order not found")
     })
     public ResponseDto<OrderResponse> getOrderById(@Parameter(description = "ID of the order to retrieve", required = true) @PathVariable Long orderId){
+        System.out.println(orderId);
         OrderResponse orderResponse = orderService.getOrderById(orderId);
         return new ResponseDto<>(HttpStatus.OK,"order retrieved",orderResponse);
     }

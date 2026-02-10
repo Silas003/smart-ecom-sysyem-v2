@@ -80,16 +80,18 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <header className="space-y-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
-          Overview
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Admin dashboard
-        </h1>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Monitor store activity, manage catalog, and keep orders on track.
-        </p>
+      <header className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+        <div className="space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+            Dashboard
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Overview
+          </h1>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Monitor store activity, manage catalog, and keep orders on track.
+          </p>
+        </div>
       </header>
 
       {counts && (

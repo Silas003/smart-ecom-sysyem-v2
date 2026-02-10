@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getProductById } from "../../../../lib/api";
 import ProductDetailActions from "./product-actions";
+import { getReviewsForProduct } from "../../../../lib/reviews";
 
 interface ProductPageProps {
   params: {
@@ -8,15 +9,21 @@ interface ProductPageProps {
   };
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage(props: ProductPageProps) {
+  const params = await props.params;
   const numericId = Number(params.id);
 
   if (!Number.isFinite(numericId)) {
     notFound();
   }
 
-  const response = await getProductById(numericId);
-  const product = response.data;
+  const [productResponse, reviewsResponse] = await Promise.all([
+    getProductById(numericId),
+    getReviewsForProduct(numericId),
+  ]);
+
+  const product = productResponse.data;
+  const reviews = reviewsResponse.data;
 
   if (!product) {
     notFound();
@@ -69,6 +76,45 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <li>Secure checkout and buyer protection included</li>
           </ul>
         </div>
+      </section>
+
+      <section className="md:col-span-2 space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            Customer reviews
+          </h2>
+          {reviews.length === 0 ? (
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              No reviews yet. Be the first to review this product.
+            </p>
+          ) : (
+            <ul className="space-y-3 text-xs text-zinc-700 dark:text-zinc-200">
+              {reviews.map((review) => (
+                <li
+                  key={review.id}
+                  className="rounded-2xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+                      <span>{"★".repeat(review.rating)}</span>
+                      <span className="text-zinc-400 dark:text-zinc-500">
+                        ({review.rating}/5)
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-zinc-400">
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-[11px] text-zinc-600 dark:text-zinc-300">
+                    {review.description}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Placeholder for review form; a separate client component can handle posting */}
       </section>
     </div>
   );

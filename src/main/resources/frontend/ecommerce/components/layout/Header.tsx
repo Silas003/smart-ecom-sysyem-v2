@@ -24,46 +24,45 @@ export function Header() {
 
   const toggleMobile = () => setMobileOpen((prev) => !prev);
 
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+
   return (
-    <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
+    <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/80">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        {/* Brand */}
         <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:focus-visible:ring-zinc-300 rounded-full"
+            className="flex items-center gap-2 rounded-full px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:focus-visible:ring-zinc-300"
           >
-            <span className="rounded-full bg-zinc-900 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-white dark:bg-zinc-100 dark:text-zinc-900">
-              Shop
+            <span className="rounded-full bg-zinc-900 px-2 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-zinc-100 dark:text-zinc-900">
+              Thrift-T
             </span>
-            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-              Ecommerce
-            </span>
+
           </Link>
         </div>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium text-zinc-600 sm:flex dark:text-zinc-300">
-          {navItems.map((item) => {
-            const active =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={classNames(
-                  "transition-colors hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:hover:text-zinc-50 dark:focus-visible:ring-zinc-300 rounded-full px-1 py-0.5",
-                  active && "text-zinc-900 dark:text-zinc-50"
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-6 text-xs font-medium text-zinc-600 sm:flex dark:text-zinc-300">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={classNames(
+                "rounded-full px-2 py-1 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:hover:bg-zinc-900 dark:hover:text-zinc-50 dark:focus-visible:ring-zinc-300",
+                isActive(item.href) &&
+                  "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 p-2"
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
+        {/* Right side actions */}
         <div className="flex items-center gap-3">
+          {/* Search (desktop) */}
           <form
             action="/search"
             className="hidden items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs text-zinc-500 shadow-sm sm:flex dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
@@ -80,6 +79,7 @@ export function Header() {
             />
           </form>
 
+          {/* Cart */}
           <Link
             href="/cart"
             className="relative flex items-center justify-center rounded-full border border-zinc-200 bg-white p-2 text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
@@ -93,6 +93,7 @@ export function Header() {
             )}
           </Link>
 
+          {/* Auth actions (desktop) */}
           {!isAuthenticated() ? (
             <>
               <Link
@@ -113,6 +114,7 @@ export function Header() {
             </button>
           )}
 
+          {/* Mobile menu toggle */}
           <button
             type="button"
             className="flex items-center justify-center rounded-full border border-zinc-200 bg-white p-2 text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 sm:hidden dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
@@ -121,34 +123,28 @@ export function Header() {
             onClick={toggleMobile}
           >
             <span className="block h-0.5 w-4 rounded bg-current" />
-            <span className="sr-only">Open navigation</span>
           </button>
         </div>
       </div>
 
+      {/* Mobile nav */}
       {mobileOpen && (
         <div className="border-t border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm sm:hidden dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
           <nav className="flex flex-col gap-2">
-            {navItems.map((item) => {
-              const active =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.href);
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={classNames(
-                    "rounded-full px-3 py-1 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:hover:bg-zinc-900 dark:focus-visible:ring-zinc-300",
-                    active && "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  )}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={classNames(
+                  "rounded-full px-3 py-1 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:hover:bg-zinc-900 dark:focus-visible:ring-zinc-300",
+                  isActive(item.href) &&
+                    "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                )}
+                onClick={() => setMobileOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
             <Link
               href="/cart"
               className="mt-1 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-zinc-700 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:text-zinc-200 dark:hover:bg-zinc-900 dark:focus-visible:ring-zinc-300"
@@ -167,3 +163,4 @@ export function Header() {
     </header>
   );
 }
+

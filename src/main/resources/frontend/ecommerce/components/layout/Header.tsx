@@ -101,12 +101,7 @@ export function Header() {
               >
                 Sign in
               </Link>
-              <Link
-                href="/register"
-                className="hidden items-center justify-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 sm:inline-flex dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
-              >
-                Sign up
-              </Link>
+
             </>
           ) : (
             <button

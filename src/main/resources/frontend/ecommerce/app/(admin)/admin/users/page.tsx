@@ -151,7 +151,6 @@ export default function AdminUsersPage() {
             <th className="py-2 pr-4">Username</th>
             <th className="py-2 pr-4">Email</th>
             <th className="py-2 pr-4">Role</th>
-            <th className="py-2 pr-4">Created at</th>
             <th className="py-2 pr-4">Actions</th>
           </tr>
         </thead>
@@ -165,7 +164,6 @@ export default function AdminUsersPage() {
               <td className="py-2 pr-4">{u.username}</td>
               <td className="py-2 pr-4">{u.email}</td>
               <td className="py-2 pr-4">{u.userRole}</td>
-              <td className="py-2 pr-4">{u.createdAt}</td>
               <td className="py-2 pr-4">
                 <button
                   type="button"

@@ -103,4 +103,13 @@ public class ExceptionHandlers {
         details.put("path", request != null ? request.getDescription(false) : "");
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", details);
     }
+
+    @ExceptionHandler(UserExists.class)
+    public ResponseEntity<ResponseDto<Object>> handleUserExists(UserExists userExists, WebRequest request){
+        Map<String,Object> details = new HashMap<>();
+        details.put("timestamp",LocalDateTime.now());
+        details.put("message", userExists.getMessage());
+        details.put("path", request != null ? request.getDescription(false) : "");
+        return build(HttpStatus.CONFLICT, "User already exists", details);
+    }
 }

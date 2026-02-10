@@ -7,8 +7,6 @@ import com.amalitech.demo.dao.interfaces.ProductDao;
 import com.amalitech.demo.models.Orders;
 import com.amalitech.demo.models.OrderItem;
 import com.amalitech.demo.models.User;
-import com.amalitech.demo.models.Inventory;
-import com.amalitech.demo.models.Product;
 import com.amalitech.demo.dto.OrderStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -91,10 +89,33 @@ public class JdbcOrdersDao implements OrdersDao {
 
     @Override
     public long save(Orders order) throws SQLException {
-        // Use DataSourceUtils to get connection from Spring's transaction if one exists
-        // DataSourceUtils will participate in the existing transaction managed by @Transactional
-        Connection conn = DataSourceUtils.getConnection(dataSource);
-        return save(order, conn);
+        Connection conn = null;
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+
+            long orderId = save(order, conn);
+
+            conn.commit();
+            return orderId;
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException rollbackEx) {
+                    throw new RuntimeException("Failed to rollback order save", rollbackEx);
+                }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ignored) {
+                }
+            }
+        }
     }
 
     @Override
@@ -125,37 +146,37 @@ public class JdbcOrdersDao implements OrdersDao {
             }
         }
 
-        // 2. If there are order items, save them and update inventory/product
         if (orders.getItems() != null && !orders.getItems().isEmpty()) {
-            // Set the order reference for each item and save individually to get IDs
             for (OrderItem item : orders.getItems()) {
                 item.setOrder(orders);
-                // Save each item to get the generated ID
                 long itemId = orderItemDao.save(item, conn);
                 item.setId(itemId);
             }
 
-            // 3. Update inventory and product stock for each item using DAO methods
             for (OrderItem item : orders.getItems()) {
-                // Fetch current inventory
-                Inventory inventory = inventoryDao.findByProductId(item.getProduct().getId())
-                    .orElseThrow(() -> new SQLException("Inventory not found for product ID: " + item.getProduct().getId()));
+                inventoryDao.findByProductId(item.getProduct().getId())
+                        .ifPresentOrElse(inv -> {
+                            inv.setStockQuantity(inv.getStockQuantity() - item.getQuantity());
+                            try {
+                                inventoryDao.update(inv, conn);
+                            } catch (SQLException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }, () -> {
+                            throw new RuntimeException("Inventory not found for product ID: " + item.getProduct().getId());
+                        });
 
-                // Reduce stock quantity
-                inventory.setStockQuantity(inventory.getStockQuantity() - item.getQuantity());
-
-                // Update inventory using DAO method
-                inventoryDao.update(inventory, conn);
-
-                // Fetch current product
-                Product product = productDao.findById(item.getProduct().getId())
-                    .orElseThrow(() -> new SQLException("Product not found with ID: " + item.getProduct().getId()));
-
-                // Reduce product stock quantity
-                product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
-
-                // Update product using DAO method
-                productDao.update(product, conn);
+                productDao.findById(item.getProduct().getId())
+                        .ifPresentOrElse(product -> {
+                            product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
+                            try {
+                                productDao.update(product, conn);
+                            } catch (SQLException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }, () -> {
+                            throw new RuntimeException("Product not found with ID: " + item.getProduct().getId());
+                        });
             }
         }
 

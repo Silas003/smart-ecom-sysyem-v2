@@ -36,10 +36,4 @@ public class UserRequest {
     @Schema(description = "Role for the user: admin | customer | seller", example = "customer")
     private String userRole;
 
-
-    public UserRequest(String email,String password) {
-        this.email = email;
-        this.password = password;
-    }
-    public UserRequest() {}
 }

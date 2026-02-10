@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getUsers, createUser, deleteUser, type User, type UserRole } from "../../../../lib/auth-api";
 import { useAuthStore } from "../../../../lib/auth-store";
+import { useToast } from "../../../../components/ui/toaster";
 
 export default function AdminUsersPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const { addToast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -54,10 +56,12 @@ export default function AdminUsersPage() {
       await createUser(form);
       setForm({ username: "", email: "", password: "", userRole: "customer" });
       await refresh();
+      addToast("User created successfully", "success");
     } catch (err) {
       const fallback = "Failed to create user.";
-      if (err instanceof Error) setError(err.message || fallback);
-      else setError(fallback);
+      const message = err instanceof Error ? err.message || fallback : fallback;
+      setError(message);
+      addToast(message, "error");
     } finally {
       setCreating(false);
     }
@@ -68,9 +72,12 @@ export default function AdminUsersPage() {
     try {
       await deleteUser(id);
       setUsers((prev) => prev.filter((u) => u.id !== id));
+      addToast("User deleted", "success");
     } catch (err) {
       console.error("Failed to delete user", err);
-      setError("Failed to delete user.");
+      const message = "Failed to delete user.";
+      setError(message);
+      addToast(message, "error");
     }
   };
 

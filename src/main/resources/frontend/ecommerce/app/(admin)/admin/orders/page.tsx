@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAllOrders, updateOrderStatus, type Order } from "../../../../lib/orders";
 import { useAuthStore } from "../../../../lib/auth-store";
+import { useToast } from "../../../../components/ui/toaster";
 
 export default function AdminOrdersPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const { addToast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,9 +40,12 @@ export default function AdminOrdersPage() {
       const res = await updateOrderStatus(id, { status });
       const updated = res.data;
       setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+      addToast("Order status updated", "success");
     } catch (err) {
       console.error("Failed to update order status", err);
-      setError("Failed to update order status.");
+      const message = "Failed to update order status.";
+      setError(message);
+      addToast(message, "error");
     }
   };
 

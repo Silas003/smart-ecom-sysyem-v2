@@ -2,19 +2,32 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { listProducts, createProduct, updateProduct, deleteProduct, type Product } from "../../../../lib/api";
+import {
+  listProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  type Product,
+} from "../../../../lib/api";
 import { useAuthStore } from "../../../../lib/auth-store";
+import { getAllCategories, type Category } from "../../../../lib/categories";
+import { useToast } from "../../../../components/ui/toaster";
 
 export default function AdminProductsPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const { addToast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState<{ name: string; price: number; stockQuantity: number; categoryId: number }>(
-    { name: "", price: 0, stockQuantity: 0, categoryId: 0 }
-  );
+  const [form, setForm] = useState<{
+    name: string;
+    price: number;
+    stockQuantity: number;
+    categoryId: number;
+  }>({ name: "", price: 0, stockQuantity: 0, categoryId: 0 });
 
   useEffect(() => {
     if (!isAuthenticated() || !user) {
@@ -26,7 +39,17 @@ export default function AdminProductsPage() {
       return;
     }
 
-    refresh();
+    const load = async () => {
+      await refresh();
+      try {
+        const res = await getAllCategories();
+        setCategories(res.data);
+      } catch (err) {
+        console.error("Failed to load categories", err);
+      }
+    };
+
+    load();
   }, [isAuthenticated, router, user]);
 
   const refresh = async () => {
@@ -55,15 +78,18 @@ export default function AdminProductsPage() {
       setError(null);
       if (editingId === null) {
         await createProduct(form);
+        addToast("Product created", "success");
       } else {
         await updateProduct(editingId, form);
+        addToast("Product updated", "success");
       }
       resetForm();
       await refresh();
     } catch (err) {
       const fallback = "Failed to save product.";
-      if (err instanceof Error) setError(err.message || fallback);
-      else setError(fallback);
+      const message = err instanceof Error ? err.message || fallback : fallback;
+      setError(message);
+      addToast(message, "error");
     } finally {
       setCreating(false);
     }
@@ -84,9 +110,12 @@ export default function AdminProductsPage() {
     try {
       await deleteProduct(id);
       setProducts((prev) => prev.filter((p) => p.id !== id));
+      addToast("Product deleted", "success");
     } catch (err) {
       console.error("Failed to delete product", err);
-      setError("Failed to delete product.");
+      const message = "Failed to delete product.";
+      setError(message);
+      addToast(message, "error");
     }
   };
 
@@ -117,7 +146,7 @@ export default function AdminProductsPage() {
         <div className="grid gap-3 sm:grid-cols-4">
           <input
             type="text"
-            placeholder="Name"
+            placeholder="Product name (e.g. Wireless Headphones)"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             required
@@ -126,7 +155,7 @@ export default function AdminProductsPage() {
           <input
             type="number"
             step="0.01"
-            placeholder="Price"
+            placeholder="Price in USD (e.g. 49.99)"
             value={form.price}
             onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
             required
@@ -134,20 +163,27 @@ export default function AdminProductsPage() {
           />
           <input
             type="number"
-            placeholder="Stock"
+            placeholder="Stock quantity (e.g. 100)"
             value={form.stockQuantity}
             onChange={(e) => setForm({ ...form, stockQuantity: Number(e.target.value) })}
             required
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
           />
-          <input
-            type="number"
-            placeholder="Category ID"
-            value={form.categoryId}
+          <select
+            value={form.categoryId || ""}
             onChange={(e) => setForm({ ...form, categoryId: Number(e.target.value) })}
             required
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-          />
+          >
+            <option value="" disabled>
+              Select category
+            </option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name} (#{c.id})
+              </option>
+            ))}
+          </select>
         </div>
         <div className="flex items-center justify-between gap-3">
           <button

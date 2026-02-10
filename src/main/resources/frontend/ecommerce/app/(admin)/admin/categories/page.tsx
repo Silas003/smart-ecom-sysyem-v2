@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAllCategories, type Category } from "../../../../lib/categories";
 import { useAuthStore } from "../../../../lib/auth-store";
+import { useToast } from "../../../../components/ui/toaster";
 
 export default function AdminCategoriesPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const { addToast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState<string>("");
@@ -26,19 +28,24 @@ export default function AdminCategoriesPage() {
       .then((res) => setCategories(res.data))
       .catch((err) => {
         console.error("Failed to load categories", err);
-        setError(err instanceof Error ? err.message : "Failed to load categories");
+        const message = err instanceof Error ? err.message : "Failed to load categories";
+        setError(message);
+        addToast(message, "error");
       });
-  }, [isAuthenticated, router, user]);
+  }, [isAuthenticated, router, user, addToast]);
 
   const handleCreateCategory = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCategoryName.trim()) {
-      setError("Category name is required");
+      const message = "Category name is required";
+      setError(message);
+      addToast(message, "error");
       return;
     }
-    // Placeholder for create category API call to keep UX consistent
+    // Placeholder for create category API call; show optimistic toast
     setNewCategoryName("");
     setError(null);
+    addToast("Category created (stub)", "success");
   };
 
   if (!isAuthenticated() || !user || user.userRole !== "admin") {
@@ -74,7 +81,7 @@ export default function AdminCategoriesPage() {
             type="text"
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
-            placeholder="New category name"
+            placeholder="New category name (e.g. Electronics)"
             className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
           />
           <button

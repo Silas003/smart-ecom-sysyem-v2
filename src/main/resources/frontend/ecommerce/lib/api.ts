@@ -125,3 +125,47 @@ export async function listProductsByCategory(options: {
 
   return handleResponse<ResponseDto<Page<Product>>>(res);
 }
+
+export type ProductRequest = {
+  name: string;
+  price: number;
+  stockQuantity: number;
+  categoryId: number;
+};
+
+export async function createProduct(body: ProductRequest): Promise<ResponseDto<Product>> {
+  const url = `${API_BASE_URL}/api/v1/products/create_product`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  return handleResponse<ResponseDto<Product>>(res);
+}
+
+export async function updateProduct(id: number, body: ProductRequest): Promise<ResponseDto<Product>> {
+  const url = `${API_BASE_URL}/api/v1/products/${id}`;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  return handleResponse<ResponseDto<Product>>(res);
+}
+
+export async function deleteProduct(id: number): Promise<void> {
+  const url = `${API_BASE_URL}/api/v1/products/${id}`;
+  const res = await fetch(url, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    await handleResponse(res as Response); // reuse error handling
+  }
+}

@@ -26,8 +26,13 @@ export default function RegisterPage() {
       setIsSubmitting(true);
       await registerUser({ username, email, password, userRole: role });
       const loginResponse = await loginUser({ email, password });
-      setUser(loginResponse.data);
-      router.push(redirect);
+      const loggedInUser = loginResponse.data;
+      setUser(loggedInUser);
+      if (loggedInUser.userRole === "admin") {
+        router.push("/admin");
+      } else {
+        router.push(redirect);
+      }
     } catch (err) {
       const fallback = "Registration failed. Please check your details and try again.";
       if (err instanceof Error) {

@@ -9,7 +9,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams?.get("redirect") || "/";
-  const setUser = useAuthStore((state) => state.setUser);
+  const { setUser } = useAuthStore.getState ? useAuthStore : { setUser: () => {} };
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,8 +26,13 @@ export default function LoginPage() {
         email,
         password,
       });
-      setUser(response.data);
-      router.push(redirect);
+      const loggedInUser = response.data;
+      useAuthStore.getState().setUser(loggedInUser);
+      if (loggedInUser.userRole === "admin") {
+        router.push("/admin");
+      } else {
+        router.push(redirect);
+      }
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("Login failed", err);

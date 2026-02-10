@@ -16,10 +16,14 @@ export default function CartPage() {
 
   useEffect(() => {
     const userId = getCurrentUserId();
+    if (!userId) {
+      router.push(`/login?redirect=${encodeURIComponent("/cart")}`);
+      return;
+    }
     getCartForUser(userId)
       .then((res) => hydrateFromServer(res.data))
       .catch((error) => console.error("Failed to load cart", error));
-  }, [hydrateFromServer]);
+  }, [hydrateFromServer, router]);
 
   const handleRemove = async (cartItemId: number) => {
     try {

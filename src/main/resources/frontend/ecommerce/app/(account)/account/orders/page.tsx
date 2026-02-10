@@ -2,22 +2,28 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getUserOrders, type Order } from "../../../../lib/orders";
 import { getCurrentUserId } from "../../../../lib/user";
 
 export default function AccountOrdersPage() {
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const userId = getCurrentUserId();
+    if (!userId) {
+      router.push(`/login?redirect=${encodeURIComponent("/account/orders")}`);
+      return;
+    }
     getUserOrders(userId)
       .then((res) => setOrders(res.data))
       .catch((err) => {
         console.error("Failed to load orders", err);
         setError(err instanceof Error ? err.message : "Failed to load orders");
       });
-  }, []);
+  }, [router]);
 
   if (error) {
     return (
@@ -36,7 +42,9 @@ export default function AccountOrdersPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Your orders
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading your order history...</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          Loading your order history...
+        </p>
       </div>
     );
   }

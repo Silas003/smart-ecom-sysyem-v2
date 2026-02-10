@@ -3,16 +3,22 @@
 import { useState } from "react";
 import { addItemToCart } from "../../../../lib/cart-api";
 import { useCartStore } from "../../../../lib/cart-store";
+import { useRouter } from "next/navigation";
 import { getCurrentUserId } from "../../../../lib/user";
 
 export default function ProductDetailActions({ productId }: { productId: number }) {
   const [isAdding, setIsAdding] = useState(false);
   const addOrUpdateItem = useCartStore((state) => state.addOrUpdateItem);
+  const router = useRouter();
 
   const handleAddToCart = async () => {
     try {
       setIsAdding(true);
       const userId = getCurrentUserId();
+      if (!userId) {
+        router.push(`/login?redirect=${encodeURIComponent(`/products/${productId}`)}`);
+        return;
+      }
       const response = await addItemToCart({ userId, productId, quantity: 1 });
       addOrUpdateItem(response.data);
     } catch (error) {

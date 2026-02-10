@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { useCartStore } from "../../lib/cart-store";
+import { useAuthStore } from "../../lib/auth-store";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -17,12 +19,19 @@ function classNames(...classes: (string | false | null | undefined)[]) {
 export function Header() {
   const pathname = usePathname();
   const totalQuantity = useCartStore((state) => state.totalQuantity());
+  const { user, setUser, isAuthenticated } = useAuthStore();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const toggleMobile = () => setMobileOpen((prev) => !prev);
 
   return (
     <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:focus-visible:ring-zinc-300 rounded-full"
+          >
             <span className="rounded-full bg-zinc-900 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-white dark:bg-zinc-100 dark:text-zinc-900">
               Shop
             </span>
@@ -44,7 +53,7 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className={classNames(
-                  "transition-colors hover:text-zinc-900 dark:hover:text-zinc-50",
+                  "transition-colors hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:hover:text-zinc-50 dark:focus-visible:ring-zinc-300 rounded-full px-1 py-0.5",
                   active && "text-zinc-900 dark:text-zinc-50"
                 )}
               >
@@ -54,12 +63,16 @@ export function Header() {
           })}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <form
             action="/search"
             className="hidden items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs text-zinc-500 shadow-sm sm:flex dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
           >
+            <label className="sr-only" htmlFor="header-search">
+              Search products
+            </label>
             <input
+              id="header-search"
               type="text"
               name="q"
               placeholder="Search products"
@@ -69,9 +82,9 @@ export function Header() {
 
           <Link
             href="/cart"
-            className="relative flex items-center justify-center rounded-full border border-zinc-200 bg-white p-2 text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="relative flex items-center justify-center rounded-full border border-zinc-200 bg-white p-2 text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
+            aria-label="View cart"
           >
-            <span className="sr-only">View cart</span>
             <span className="text-lg">🛒</span>
             {totalQuantity > 0 && (
               <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900 px-1 text-[10px] font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900">
@@ -79,8 +92,83 @@ export function Header() {
               </span>
             )}
           </Link>
+
+          {!isAuthenticated() ? (
+            <>
+              <Link
+                href="/login"
+                className="hidden items-center justify-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 sm:inline-flex dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/register"
+                className="hidden items-center justify-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 sm:inline-flex dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
+              >
+                Sign up
+              </Link>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setUser(null)}
+              className="hidden items-center justify-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 sm:inline-flex dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
+            >
+              Sign out
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="flex items-center justify-center rounded-full border border-zinc-200 bg-white p-2 text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 sm:hidden dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileOpen}
+            onClick={toggleMobile}
+          >
+            <span className="block h-0.5 w-4 rounded bg-current" />
+            <span className="sr-only">Open navigation</span>
+          </button>
         </div>
       </div>
+
+      {mobileOpen && (
+        <div className="border-t border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm sm:hidden dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
+          <nav className="flex flex-col gap-2">
+            {navItems.map((item) => {
+              const active =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={classNames(
+                    "rounded-full px-3 py-1 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:hover:bg-zinc-900 dark:focus-visible:ring-zinc-300",
+                    active && "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                  )}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+            <Link
+              href="/cart"
+              className="mt-1 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-zinc-700 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:text-zinc-200 dark:hover:bg-zinc-900 dark:focus-visible:ring-zinc-300"
+              onClick={() => setMobileOpen(false)}
+            >
+              <span>Cart</span>
+              {totalQuantity > 0 && (
+                <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900 px-1 text-[10px] font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900">
+                  {totalQuantity}
+                </span>
+              )}
+            </Link>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

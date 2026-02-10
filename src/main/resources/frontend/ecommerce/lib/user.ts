@@ -1,5 +1,9 @@
-export function getCurrentUserId(): number {
-  // TODO: Replace this stub with real authentication logic.
-  // For now, use a fixed user id to keep cart and order flows working.
-  return 1;
+import { useAuthStore } from "./auth-store";
+
+export function getCurrentUserId(): number | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  const state = useAuthStore.getState();
+  return state.user?.id ?? null;
 }

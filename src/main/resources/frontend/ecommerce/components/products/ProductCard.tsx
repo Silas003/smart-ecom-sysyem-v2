@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { addItemToCart } from "../../lib/cart-api";
 import { useCartStore } from "../../lib/cart-store";
+import { useRouter } from "next/navigation";
 import { getCurrentUserId } from "../../lib/user";
 
 export type ProductCardProps = {
@@ -18,11 +19,16 @@ export type ProductCardProps = {
 export function ProductCard({ id, name, price, imageUrl, description }: ProductCardProps) {
   const [isAdding, setIsAdding] = useState(false);
   const addOrUpdateItem = useCartStore((state) => state.addOrUpdateItem);
+  const router = useRouter();
 
   const handleAddToCart = async () => {
     try {
       setIsAdding(true);
       const userId = getCurrentUserId();
+      if (!userId) {
+        router.push(`/login?redirect=${encodeURIComponent(`/products/${id}`)}`);
+        return;
+      }
       const response = await addItemToCart({ userId, productId: Number(id), quantity: 1 });
       addOrUpdateItem(response.data);
     } catch (error) {

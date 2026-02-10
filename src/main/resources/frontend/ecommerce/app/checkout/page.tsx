@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "../../lib/cart-store";
 import { createOrder } from "../../lib/orders";
+import { getCurrentUserId } from "../../lib/user";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -22,11 +23,15 @@ export default function CheckoutPage() {
       return;
     }
 
+    const userId = getCurrentUserId();
+    if (!userId) {
+      setError("You need to be signed in to place an order.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setError(null);
-
-      const userId = 1; // TODO: replace with real authenticated user ID
 
       const orderItems = items.map((item) => ({
         productId: item.productId,

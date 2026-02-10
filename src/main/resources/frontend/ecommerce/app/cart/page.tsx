@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getCartForUser, removeItemFromCart, addItemToCart } from "../../lib/cart-api";
 import { useCartStore } from "../../lib/cart-store";
@@ -13,6 +13,7 @@ export default function CartPage() {
   const clearCart = useCartStore((state) => state.clearCart);
   const hydrateFromServer = useCartStore((state) => state.hydrateFromServer);
   const removeItemLocally = useCartStore((state) => state.removeItemLocally);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const userId = getCurrentUserId();
@@ -22,15 +23,15 @@ export default function CartPage() {
     }
     getCartForUser(userId)
       .then((res) => hydrateFromServer(res.data))
-      .catch((error) => console.error("Failed to load cart", error));
+      .catch((error) => console.error("Failed to load cart", error))
+      .finally(() => setLoading(false));
   }, [hydrateFromServer, router]);
 
   const handleRemove = async (cartItemId: number) => {
     try {
       const userId = getCurrentUserId();
-       removeItemLocally(cartItemId);
+      removeItemLocally(cartItemId);
       await removeItemFromCart({ userId, cartItemId });
-
     } catch (error) {
       console.error("Failed to remove item from cart", error);
     }
@@ -55,7 +56,6 @@ export default function CartPage() {
         productId,
         quantity: delta,
       });
-      // Backend returns the updated cart item; merge it into local store
       const addOrUpdateItem = useCartStore.getState().addOrUpdateItem;
       addOrUpdateItem(response.data);
     } catch (error) {
@@ -65,21 +65,36 @@ export default function CartPage() {
 
   const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
+  if (loading) {
+    return (
+      <div className="space-y-4 animate-pulse">
+        <div className="h-6 w-40 rounded bg-zinc-200 dark:bg-zinc-800" />
+        <div className="space-y-3">
+          <div className="h-20 rounded-2xl bg-zinc-100 dark:bg-zinc-900" />
+          <div className="h-20 rounded-2xl bg-zinc-100 dark:bg-zinc-900" />
+        </div>
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6 rounded-3xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center dark:border-zinc-700 dark:bg-zinc-950/60">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Your cart is empty
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Start exploring our collection and add items to your cart.
+        <p className="mx-auto max-w-md text-sm text-zinc-500 dark:text-zinc-400">
+          Explore our latest products and add your favorites to the cart. Items you add will
+          appear here so you can review them before checkout.
         </p>
-        <Link
-          href="/products"
-          className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          Browse products
-        </Link>
+        <div className="flex justify-center gap-3">
+          <Link
+            href="/products"
+            className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            Browse products
+          </Link>
+        </div>
       </div>
     );
   }

@@ -1,170 +1,148 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCartStore } from "../../lib/cart-store";
-import { createOrder } from "../../lib/orders";
 import { getCurrentUserId } from "../../lib/user";
+import { createOrder } from "../../lib/orders";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const items = useCartStore((state) => state.items);
-  const cartId = useCartStore((state) => state.cartId);
   const clearCart = useCartStore((state) => state.clearCart);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      router.push(`/login?redirect=${encodeURIComponent("/checkout")}`);
+      return;
+    }
+    setCheckingAuth(false);
+  }, [router]);
 
   const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!items.length) {
-      setError("Your cart is empty.");
-      return;
-    }
-
-    const userId = getCurrentUserId();
-    if (!userId) {
-      setError("You need to be signed in to place an order.");
-      return;
-    }
-
+  const handlePlaceOrder = async () => {
     try {
-      setIsSubmitting(true);
-      setError(null);
-
+      setSubmitting(true);
+      const userId = getCurrentUserId();
+      if (!userId) {
+        router.push(`/login?redirect=${encodeURIComponent("/checkout")}`);
+        return;
+      }
       const orderItems = items.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
       }));
-
-      const response = await createOrder({ userId, items: orderItems });
-      const order = response.data;
-
+      await createOrder({ userId, items: orderItems });
       clearCart();
-      const params = new URLSearchParams();
-      params.set("orderId", String(order.id));
-      if (cartId) params.set("cartId", String(cartId));
-      router.push(`/checkout/success?${params.toString()}`);
-    } catch (err) {
-      console.error("Failed to create order", err);
-      const fallbackMessage = "Something went wrong while placing your order. Please try again.";
-      if (err instanceof Error) {
-        setError(err.message || fallbackMessage);
-      } else {
-        setError(fallbackMessage);
-      }
+      router.push("/checkout/success");
+    } catch (error) {
+      console.error("Failed to place order", error);
+      alert("Something went wrong placing your order. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
-  if (!items.length) {
+  if (checkingAuth) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3 animate-pulse">
+        <div className="h-6 w-32 rounded bg-zinc-200 dark:bg-zinc-800" />
+        <div className="h-24 rounded-2xl bg-zinc-100 dark:bg-zinc-900" />
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="space-y-4 text-center">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Checkout
+          Nothing to checkout yet
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Your cart is empty. Add items to your cart before proceeding to checkout.
+          Your cart is empty. Add some items before proceeding to checkout.
         </p>
+        <Link
+          href="/products"
+          className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        >
+          Browse products
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="grid gap-10 md:grid-cols-[minmax(0,2fr),minmax(0,2fr)]">
-      <section className="space-y-4">
+    <div className="space-y-8">
+      <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Checkout
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Enter your details to place your order. Payment can be wired in later; this flow
-          focuses on creating an order record.
+          Review your order before placing it.
         </p>
+      </header>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                First name
-              </label>
-              <input
-                type="text"
-                required
-                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-0 transition focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-              />
+      <div className="grid gap-10 md:grid-cols-[minmax(0,3fr),minmax(0,2fr)]">
+        <section className="space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            Items
+          </h2>
+          <ul className="space-y-3">
+            {items.map((item) => (
+              <li
+                key={item.cartItemId ?? `${item.productId}-${item.quantity}`}
+                className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm dark:border-zinc-800 dark:bg-zinc-950"
+              >
+                <div>
+                  <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                    Product #{item.productId}
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Quantity: {item.quantity}
+                  </p>
+                </div>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                  ${item.totalPrice.toFixed(2)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="space-y-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
+          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+            Order summary
+          </h2>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span>Subtotal</span>
+              <span>${subtotal.toFixed(2)}</span>
             </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                Last name
-              </label>
-              <input
-                type="text"
-                required
-                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-0 transition focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-              />
+            <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+              <span>Shipping</span>
+              <span>Calculated at next step</span>
             </div>
           </div>
-
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Email
-            </label>
-            <input
-              type="email"
-              required
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-0 transition focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            />
+          <hr className="border-zinc-200 dark:border-zinc-800" />
+          <div className="flex items-center justify-between text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <span>Total</span>
+            <span>${subtotal.toFixed(2)}</span>
           </div>
-
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-              Shipping address
-            </label>
-            <textarea
-              required
-              rows={3}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none ring-0 transition focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            />
-          </div>
-
-          {error && (
-            <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
-          )}
-
           <button
-            type="submit"
-            disabled={isSubmitting}
-            className="inline-flex w-full items-center justify-center rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            type="button"
+            onClick={handlePlaceOrder}
+            disabled={submitting}
+            className="inline-flex w-full items-center justify-center rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
-            {isSubmitting ? "Placing order..." : "Place order"}
+            {submitting ? "Placing order..." : "Place order"}
           </button>
-        </form>
-      </section>
-
-      <section className="space-y-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
-        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-          Order summary
-        </h2>
-        <ul className="space-y-2 text-xs">
-          {items.map((item) => (
-            <li key={item.cartItemId} className="flex items-center justify-between">
-              <span>
-                Product #{item.productId} x {item.quantity}
-              </span>
-              <span>${item.totalPrice.toFixed(2)}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-3 flex items-center justify-between text-sm font-medium">
-          <span>Total</span>
-          <span>${subtotal.toFixed(2)}</span>
-        </div>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Taxes and shipping are calculated separately. This demo focuses on order creation.
-        </p>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }

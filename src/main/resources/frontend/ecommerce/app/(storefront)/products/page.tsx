@@ -1,143 +1,126 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ProductGrid } from "../../../components/products/ProductGrid";
-import { listProducts, listProductsByCategory } from "../../../lib/api";
-import { getAllCategories } from "../../../lib/categories";
+import { listProducts, type Product, type Page } from "../../../lib/api";
 
-export default async function ProductsPage({
-  searchParams,
-}: {
-  searchParams?: { page?: string; sort?: string; categoryId?: string; q?: string };
-}) {
-  const pageParam = Number(searchParams?.page ?? "1");
-  const apiPage = Number.isFinite(pageParam) && pageParam > 0 ? pageParam - 1 : 0;
+export default function ProductsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pageParam = searchParams?.get("page");
+  const currentPage = pageParam ? Number(pageParam) || 0 : 0;
+  const pageSize = 12;
 
-  const sort = searchParams?.sort || "price,asc";
-  const categoryId = searchParams?.categoryId ? Number(searchParams.categoryId) : undefined;
+  const [page, setPage] = useState<Page<Product> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const categoriesPromise = getAllCategories().catch(() => null);
-
-  const productsPromise = categoryId
-    ? listProductsByCategory({ categoryId, page: apiPage, size: 12, sort })
-    : listProducts({ page: apiPage, size: 12, sort });
-
-  const [productsResponse, categoriesResponse] = await Promise.all([
-    productsPromise,
-    categoriesPromise,
-  ]);
-
-  const page = productsResponse.data;
-  const categories = categoriesResponse ? categoriesResponse.data : [];
-
-  const currentPage = page.number + 1;
-  const totalPages = page.totalPages;
-
-  const buildPageLink = (pageNumber: number) => {
-    const params = new URLSearchParams();
-    params.set("page", String(pageNumber));
-    if (sort) params.set("sort", sort);
-    if (categoryId) params.set("categoryId", String(categoryId));
-    if (searchParams?.q) params.set("q", searchParams.q);
-    return `/products?${params.toString()}`;
-  };
-
-  const buildCategoryLink = (id?: number) => {
-    const params = new URLSearchParams();
-    params.set("page", "1");
-    if (sort) params.set("sort", sort);
-    if (searchParams?.q) params.set("q", searchParams.q);
-    if (id) {
-      params.set("categoryId", String(id));
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await listProducts({ page: currentPage, size: pageSize, sort: "price,asc" });
+        if (!cancelled) setPage(res.data);
+      } catch (err) {
+        if (!cancelled) {
+          const msg =
+            err instanceof Error
+              ? err.message
+              : "Failed to load products. Please try again.";
+          setError(msg);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
-    const qs = params.toString();
-    return `/products${qs ? `?${qs}` : ""}`;
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentPage]);
+
+  const goToPage = (pageIndex: number) => {
+    const params = new URLSearchParams(searchParams ?? undefined);
+    if (pageIndex <= 0) {
+      params.delete("page");
+    } else {
+      params.set("page", String(pageIndex));
+    }
+    router.push(`/products${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
   return (
     <div className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-          Shop
+      <header className="space-y-1">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+          Products
         </p>
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          All products
+          Browse our catalog
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Browse our full collection of everyday essentials.
-        </p>
       </header>
 
-      {categories.length > 0 && (
-        <div className="flex flex-wrap gap-2 text-xs">
-          <Link
-            href={buildCategoryLink(undefined)}
-            className={`inline-flex items-center rounded-full border px-3 py-1 transition ${
-              !categoryId
-                ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
-                : "border-zinc-200 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
-            }`}
-          >
-            All categories
-          </Link>
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={buildCategoryLink(cat.id)}
-              className={`inline-flex items-center rounded-full border px-3 py-1 transition ${
-                categoryId === cat.id
-                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
-                  : "border-zinc-200 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
-              }`}
-            >
-              {cat.name}
-            </Link>
-          ))}
-        </div>
+      {loading && !page && (
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading products…</p>
+      )}
+      {error && (
+        <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
       )}
 
-      <ProductGrid
-        products={page.content.map((p) => ({
-          id: p.id,
-          name: p.name,
-          price: p.price,
-        }))}
-      />
-
-      {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-between border-t border-zinc-200 pt-4 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
-          <div>
-            <span className="text-xs uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
-              Page
-            </span>
-            <span className="ml-1 font-medium">
-              {currentPage} of {totalPages}
-            </span>
+      {page && (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {page.content.map((product) => (
+              <Link
+                key={product.id}
+                href={`/products/${product.id}`}
+                className="group rounded-2xl border border-zinc-200 bg-white p-4 text-sm transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-600 dark:hover:bg-zinc-900"
+              >
+                <div className="flex h-40 items-center justify-center rounded-xl bg-zinc-100 text-xs text-zinc-400 transition group-hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-500 dark:group-hover:bg-zinc-800">
+                  Image
+                </div>
+                <div className="mt-3 space-y-1">
+                  <p className="line-clamp-1 text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    {product.name}
+                  </p>
+                  <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">
+                    ${product.price.toFixed(2)}
+                  </p>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    Stock: {product.stockQuantity}
+                  </p>
+                </div>
+              </Link>
+            ))}
           </div>
 
-          <div className="flex gap-2">
-            <Link
-              href={buildPageLink(Math.max(1, currentPage - 1))}
-              aria-disabled={currentPage === 1}
-              className={`inline-flex items-center justify-center rounded-full border px-3 py-1 text-xs font-medium transition ${
-                currentPage === 1
-                  ? "cursor-not-allowed border-zinc-200 text-zinc-400 dark:border-zinc-800 dark:text-zinc-600"
-                  : "border-zinc-300 text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
-              }`}
-            >
-              Previous
-            </Link>
-            <Link
-              href={buildPageLink(Math.min(totalPages, currentPage + 1))}
-              aria-disabled={currentPage === totalPages}
-              className={`inline-flex items-center justify-center rounded-full border px-3 py-1 text-xs font-medium transition ${
-                currentPage === totalPages
-                  ? "cursor-not-allowed border-zinc-200 text-zinc-400 dark:border-zinc-800 dark:text-zinc-600"
-                  : "border-zinc-300 text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
-              }`}
-            >
-              Next
-            </Link>
+          <div className="mt-4 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+            <span>
+              Page {page.number + 1} of {page.totalPages || 1}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={page.first}
+                className="inline-flex items-center justify-center rounded-full border border-zinc-200 px-3 py-1 text-[11px] font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={page.last}
+                className="inline-flex items-center justify-center rounded-full border border-zinc-200 px-3 py-1 text-[11px] font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              >
+                Next
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

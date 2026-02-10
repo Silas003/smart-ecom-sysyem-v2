@@ -5,6 +5,7 @@ import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
+import com.amalitech.demo.exceptions.UserExists;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.dao.interfaces.UserDao;
@@ -33,7 +34,7 @@ public class UserService implements UserServiceInterface {
     public void createUser(UserRequest userRequest) {
         // perform uniqueness checks using DAO
         if(userDao.existsByEmail(userRequest.getEmail()) || userDao.existsByUsername(userRequest.getUsername())){
-            throw new IllegalArgumentException("User with given email or username already exists");
+            throw new UserExists("User with given email or username already exists");
         }
         User user = userMapper.toEntity(userRequest);
         String password = PasswordUtils.hashPassword(user.getPassword());

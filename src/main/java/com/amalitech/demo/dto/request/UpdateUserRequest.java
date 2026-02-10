@@ -24,5 +24,4 @@ public class UpdateUserRequest {
 
     private String userRole;
 
-    public UpdateUserRequest() {}
 }

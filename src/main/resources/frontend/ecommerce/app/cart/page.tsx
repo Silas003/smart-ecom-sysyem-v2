@@ -28,8 +28,9 @@ export default function CartPage() {
   const handleRemove = async (cartItemId: number) => {
     try {
       const userId = getCurrentUserId();
+       removeItemLocally(cartItemId);
       await removeItemFromCart({ userId, cartItemId });
-      removeItemLocally(cartItemId);
+
     } catch (error) {
       console.error("Failed to remove item from cart", error);
     }
@@ -92,7 +93,7 @@ export default function CartPage() {
         <ul className="space-y-3">
           {items.map((item) => (
             <li
-              key={item.cartItemId}
+              key={item.id}
               className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm dark:border-zinc-800 dark:bg-zinc-950"
             >
               <div>
@@ -106,7 +107,12 @@ export default function CartPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      handleChangeQuantity(item.cartItemId, item.productId, -1, item.quantity)
+                      handleChangeQuantity(
+                        item.id,
+                        item.productId,
+                        -1,
+                        item.quantity
+                      )
                     }
                     className="h-5 w-5 rounded-full border border-zinc-300 text-center text-xs leading-none text-zinc-700 hover:bg-zinc-200 dark:border-zinc-600 dark:text-zinc-100 dark:hover:bg-zinc-800"
                   >
@@ -116,7 +122,12 @@ export default function CartPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      handleChangeQuantity(item.cartItemId, item.productId, 1, item.quantity)
+                      handleChangeQuantity(
+                        item.id,
+                        item.productId,
+                        1,
+                        item.quantity
+                      )
                     }
                     className="h-5 w-5 rounded-full border border-zinc-300 text-center text-xs leading-none text-zinc-700 hover:bg-zinc-200 dark:border-zinc-600 dark:text-zinc-100 dark:hover:bg-zinc-800"
                   >
@@ -130,7 +141,7 @@ export default function CartPage() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => handleRemove(item.cartItemId)}
+                  onClick={() => handleRemove(item.id)}
                   className="text-xs text-white hover:text-white font-semibold rounded-full bg-red-300 border border-red-400 px-3 py-1 transition hover:bg-red-400 dark:bg-red-700 dark:border-red-600 dark:text-white dark:hover:bg-red-600"
                 >
                   Remove

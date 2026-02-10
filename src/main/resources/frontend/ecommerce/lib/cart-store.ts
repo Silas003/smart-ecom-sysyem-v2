@@ -32,11 +32,11 @@ export const useCartStore = create<CartState>()(
         });
       },
       addOrUpdateItem: (item) => {
-        const existing = get().items.find((i) => i.cartItemId === item.cartItemId);
+        const existing = get().items.find((i) => i.id === item.id);
         if (existing) {
           set({
             items: get().items.map((i) =>
-              i.cartItemId === item.cartItemId ? { ...i, ...item } : i
+              i.id === item.id ? { ...i, ...item } : i
             ),
           });
         } else {
@@ -44,7 +44,7 @@ export const useCartStore = create<CartState>()(
         }
       },
       removeItemLocally: (cartItemId) => {
-        set({ items: get().items.filter((i) => i.cartItemId !== cartItemId) });
+        set({ items: get().items.filter((i) => i.id !== cartItemId) });
       },
       clearCart: () =>
         set({ items: [], cartId: undefined, userId: undefined, status: undefined }),

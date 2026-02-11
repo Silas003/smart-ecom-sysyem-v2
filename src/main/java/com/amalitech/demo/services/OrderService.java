@@ -1,13 +1,16 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dto.*;
+import com.amalitech.demo.dao.interfaces.InventoryDao;
+import com.amalitech.demo.dao.interfaces.OrdersDao;
+import com.amalitech.demo.dao.interfaces.ProductDao;
+import com.amalitech.demo.dao.interfaces.UserDao;
+import com.amalitech.demo.dto.OrderStatus;
 import com.amalitech.demo.dto.request.OrderItemRequest;
 import com.amalitech.demo.dto.request.OrderRequest;
 import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.OrdersMapper;
 import com.amalitech.demo.models.*;
-import com.amalitech.demo.dao.interfaces.*;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import com.amalitech.demo.utils.Sorter;
 import lombok.AllArgsConstructor;
@@ -16,9 +19,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
-import java.util.Map;
 
 @Service
 @AllArgsConstructor

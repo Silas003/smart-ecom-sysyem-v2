@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getCurrentUser, getCurrentUserId } from "../../lib/user";
 import { listUserOrders } from "../../lib/orders";
+import type { Order } from "../../lib/orders";
 
 export default function AccountPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const initialUserId = getCurrentUserId();
+  const [loading, setLoading] = useState(!initialUserId);
   const [ordersLoading, setOrdersLoading] = useState(true);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const user = getCurrentUser();
 
   useEffect(() => {
@@ -19,7 +21,6 @@ export default function AccountPage() {
       router.push(`/login?redirect=${encodeURIComponent("/account")}`);
       return;
     }
-    setLoading(false);
     listUserOrders(userId)
       .then((res) => setOrders(res.data))
       .catch((err) => console.error("Failed to load orders", err))
@@ -114,4 +115,3 @@ export default function AccountPage() {
     </div>
   );
 }
-

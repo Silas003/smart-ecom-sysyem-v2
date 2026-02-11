@@ -18,6 +18,12 @@ export default function ProductsPage() {
   const categoryIdParam = searchParams?.get("categoryId");
   const categoryId = categoryIdParam ? Number(categoryIdParam) || undefined : undefined;
 
+  const sortParam = searchParams?.get("sort") || "price,asc";
+  const minParam = searchParams?.get("minPrice");
+  const maxParam = searchParams?.get("maxPrice");
+  const minPrice = minParam ? Number(minParam) || undefined : undefined;
+  const maxPrice = maxParam ? Number(maxParam) || undefined : undefined;
+
   const [page, setPage] = useState<Page<Product> | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +40,7 @@ export default function ProductsPage() {
         const res = await listProducts({
           page: currentPage,
           size: pageSize,
-          sort: "price,asc",
+          sort: sortParam,
           categoryId,
         });
         if (!cancelled) {
@@ -60,7 +66,7 @@ export default function ProductsPage() {
     return () => {
       cancelled = true;
     };
-  }, [currentPage, categoryId]);
+  }, [currentPage, categoryId, sortParam]);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,21 +102,44 @@ export default function ProductsPage() {
       params.set("page", String(pageIndex));
     }
 
-    // categoryId remains in params, preserving the active filter
     router.push(`/products${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
-  const goToCategory = (nextCategoryId: number | "") => {
+  const updateParams = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams ?? undefined);
-    if (nextCategoryId === null) {
-      params.delete("categoryId");
-    } else {
-      params.set("categoryId", String(nextCategoryId));
-    }
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
     params.delete("page");
     const qs = params.toString();
     router.push(`/products${qs ? `?${qs}` : ""}`);
   };
+
+  const goToCategory = (nextCategoryId: number | "") => {
+    updateParams({ categoryId: nextCategoryId === "" ? null : String(nextCategoryId) });
+  };
+
+  const handleSortChange = (value: string) => {
+    updateParams({ sort: value });
+  };
+
+  const handlePriceFilterChange = (
+    type: "minPrice" | "maxPrice",
+    value: string
+  ) => {
+    const parsed = value.trim();
+    updateParams({ [type]: parsed ? parsed : null });
+  };
+
+  const filteredContent = page?.content.filter((p) => {
+    if (minPrice != null && p.price < minPrice) return false;
+    if (maxPrice != null && p.price > maxPrice) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -123,43 +152,66 @@ export default function ProductsPage() {
         </h1>
       </header>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            Filter by category
-          </span>
-          {loadingCategories && (
-            <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
-              Loading categories...
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              Filter by category
             </span>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => goToCategory("")}
-            className={`whitespace-nowrap rounded-full border px-3 py-1 text-[11px] font-medium transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-900 ${
-              categoryId == null
-                ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
-                : "border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
-            }`}
-          >
-            All products
-          </button>
-          {categories.map((category) => (
+            {loadingCategories && (
+              <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
+                Loading categories...
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
             <button
-              key={category.id}
               type="button"
-              onClick={() => goToCategory(category.id)}
+              onClick={() => goToCategory("")}
               className={`whitespace-nowrap rounded-full border px-3 py-1 text-[11px] font-medium transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-900 ${
-                categoryId === category.id
+                categoryId == null
                   ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
                   : "border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
               }`}
             >
-              {category.name}
+              All products
             </button>
-          ))}
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => goToCategory(category.id)}
+                className={`whitespace-nowrap rounded-full border px-3 py-1 text-[11px] font-medium transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-900 ${
+                  categoryId === category.id
+                    ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
+                    : "border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
+                }`}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="space-y-1">
+            <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+              Sort By
+            </span>
+            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+
+              <select
+                value={sortParam}
+                onChange={(e) => handleSortChange(e.target.value)}
+                className="bg-transparent text-[11px] font-medium outline-none focus-visible:outline-none"
+              >
+                <option value="price,asc">Price · Low to high</option>
+                <option value="price,desc">Price · High to low</option>
+                <option value="name,asc">Name · A–Z</option>
+                <option value="name,desc">Name · Z–A</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -174,7 +226,7 @@ export default function ProductsPage() {
       {page && (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {page.content.map((product) => (
+            {(filteredContent ?? page.content).map((product) => (
               <Link
                 key={product.id}
                 href={`/products/${product.id}`}

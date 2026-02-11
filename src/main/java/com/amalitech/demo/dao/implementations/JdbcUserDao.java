@@ -1,8 +1,8 @@
 package com.amalitech.demo.dao.implementations;
 
 import com.amalitech.demo.dao.interfaces.UserDao;
-import com.amalitech.demo.models.User;
 import com.amalitech.demo.dto.UserRole;
+import com.amalitech.demo.models.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 

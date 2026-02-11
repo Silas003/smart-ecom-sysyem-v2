@@ -19,7 +19,7 @@ function classNames(...classes: (string | false | null | undefined)[]) {
 export function Header() {
   const pathname = usePathname();
   const totalQuantity = useCartStore((state) => state.totalQuantity());
-  const { user, setUser, isAuthenticated } = useAuthStore();
+  const { setUser, isAuthenticated } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const toggleMobile = () => setMobileOpen((prev) => !prev);
@@ -163,4 +163,3 @@ export function Header() {
     </header>
   );
 }
-

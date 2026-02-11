@@ -20,6 +20,7 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @Tag(name = "GraphQL - Products", description = "GraphQL queries and mutations for products")
@@ -39,8 +40,8 @@ public class ProductGraphqlController {
             @ApiResponse(responseCode = "200", description = "Products retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class))))
     })
-        public ProductPageResponse products(@Argument Integer page, @Argument Integer size) {
-                Page<Product> p = productService.getAllProducts(PageRequest.of(page,size));
+        public ProductPageResponse products(@Argument Integer page, @Argument Integer size,@RequestParam(required = false) Long categoryId) {
+                Page<Product> p = productService.getAllProducts(PageRequest.of(page,size),categoryId);
                 var items = p.getContent().stream().map(productMapper::toResponse).toList();
                 return new ProductPageResponse(items, p.getTotalElements());
         }

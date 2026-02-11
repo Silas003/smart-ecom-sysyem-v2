@@ -22,7 +22,12 @@ export default function LoginPage() {
     try {
       const res = await loginUser({ email, password });
       setUser(res.data);
-      router.push(redirect);
+      const role = res.data.userRole?.toLowerCase?.() ?? "customer";
+      if (role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push(redirect);
+      }
     } catch (err) {
       console.error(err);
       setError("Invalid email or password. Please try again.");
@@ -38,7 +43,7 @@ export default function LoginPage() {
           Sign in
         </h1>
         <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
-          Access your account to track orders and manage your details.
+          Use the email and password you registered with to access your account.
         </p>
         {error && (
           <div className="mb-4 rounded-2xl border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-700 dark:bg-red-950/40 dark:text-red-200">

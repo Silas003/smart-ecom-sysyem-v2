@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getUserOrders, type Order } from "../../../../lib/orders";
 import { getCurrentUserId } from "../../../../lib/user";
+import { useToast } from "../../../../components/ui/toaster";
 
 export default function AccountOrdersPage() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,9 +23,12 @@ export default function AccountOrdersPage() {
       .then((res) => setOrders(res.data))
       .catch((err) => {
         console.error("Failed to load orders", err);
-        setError(err instanceof Error ? err.message : "Failed to load orders");
+        const message =
+          err instanceof Error ? err.message : "Failed to load orders. Please try again.";
+        setError(message);
+        addToast(message, "error");
       });
-  }, [router]);
+  }, [router, addToast]);
 
   if (error) {
     return (

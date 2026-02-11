@@ -6,6 +6,7 @@ import { getCartForUser, removeItemFromCart, addItemToCart } from "../../lib/car
 import { useCartStore } from "../../lib/cart-store";
 import { useRouter } from "next/navigation";
 import { getCurrentUserId } from "../../lib/user";
+import { useToast } from "../../components/ui/toaster";
 
 export default function CartPage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function CartPage() {
   const clearCart = useCartStore((state) => state.clearCart);
   const hydrateFromServer = useCartStore((state) => state.hydrateFromServer);
   const removeItemLocally = useCartStore((state) => state.removeItemLocally);
+  const { addToast } = useToast();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,8 +34,10 @@ export default function CartPage() {
       const userId = getCurrentUserId();
       removeItemLocally(cartItemId);
       await removeItemFromCart({ userId, cartItemId });
+      addToast("Item removed from cart", "success");
     } catch (error) {
       console.error("Failed to remove item from cart", error);
+      addToast("Failed to remove item. Please try again.", "error");
     }
   };
 
@@ -58,8 +62,10 @@ export default function CartPage() {
       });
       const addOrUpdateItem = useCartStore.getState().addOrUpdateItem;
       addOrUpdateItem(response.data);
+      addToast("Cart updated", "success");
     } catch (error) {
       console.error("Failed to update quantity", error);
+      addToast("Failed to update quantity. Please try again.", "error");
     }
   };
 

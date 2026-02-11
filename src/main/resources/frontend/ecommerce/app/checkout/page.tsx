@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCartStore } from "../../lib/cart-store";
 import { getCurrentUserId } from "../../lib/user";
 import { createOrder } from "../../lib/orders";
+import { useToast } from "../../components/ui/toaster";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function CheckoutPage() {
   const clearCart = useCartStore((state) => state.clearCart);
   const [submitting, setSubmitting] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const { addToast } = useToast();
 
   useEffect(() => {
     const userId = getCurrentUserId();
@@ -39,10 +41,11 @@ export default function CheckoutPage() {
       }));
       await createOrder({ userId, items: orderItems });
       clearCart();
+      addToast("Order placed successfully", "success");
       router.push("/checkout/success");
     } catch (error) {
       console.error("Failed to place order", error);
-      alert("Something went wrong placing your order. Please try again.");
+      addToast("Something went wrong placing your order. Please try again.", "error");
     } finally {
       setSubmitting(false);
     }

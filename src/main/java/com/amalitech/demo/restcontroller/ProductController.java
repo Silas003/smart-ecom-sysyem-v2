@@ -1,12 +1,20 @@
 package com.amalitech.demo.restcontroller;
 
 
+import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.request.ProductRequest;
 import com.amalitech.demo.dto.response.ProductResponse;
-import com.amalitech.demo.dto.ResponseDto;
-import com.amalitech.demo.models.Product;
 import com.amalitech.demo.mapper.ProductMapper;
+import com.amalitech.demo.models.Product;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,15 +24,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @RestController
 @RequestMapping(value = "/api/v1/products")
@@ -42,9 +41,10 @@ public class ProductController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class))))
     })
     public ResponseDto<Page<ProductResponse>> getAllProducts(
-            @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable,@RequestParam(required = false) Long categoryId
     ) {
-        Page<Product> products = productService.getAllProducts(pageable);
+//        todo:create my own pageable and sorting implementation
+        Page<Product> products = productService.getAllProducts(pageable,categoryId);
         Page<ProductResponse> resp = products.map(productMapper::toResponse);
         return new ResponseDto<>(HttpStatus.OK, "products retrieved", resp);
 

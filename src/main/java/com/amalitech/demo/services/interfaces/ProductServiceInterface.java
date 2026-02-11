@@ -12,7 +12,7 @@ public interface ProductServiceInterface {
 
     Product getProductById(Long id);
 
-    Page<Product> getAllProducts(Pageable pageable);
+    Page<Product> getAllProducts(Pageable pageable,Long categoryId);
 
     Product updateProduct(Long id, ProductRequest request);
 

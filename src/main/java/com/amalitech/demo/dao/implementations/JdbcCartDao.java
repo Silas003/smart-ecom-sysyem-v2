@@ -1,18 +1,14 @@
 package com.amalitech.demo.dao.implementations;
 
 import com.amalitech.demo.dao.interfaces.CartDao;
+import com.amalitech.demo.dto.CartStatus;
 import com.amalitech.demo.models.Cart;
 import com.amalitech.demo.models.User;
-import com.amalitech.demo.dto.CartStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Optional;
 
 @AllArgsConstructor

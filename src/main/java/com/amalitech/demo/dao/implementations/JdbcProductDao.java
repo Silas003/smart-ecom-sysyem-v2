@@ -1,8 +1,8 @@
 package com.amalitech.demo.dao.implementations;
 
 import com.amalitech.demo.dao.interfaces.ProductDao;
-import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.Category;
+import com.amalitech.demo.models.Product;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 

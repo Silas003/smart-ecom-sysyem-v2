@@ -135,7 +135,15 @@ export default function ProductsPage() {
     updateParams({ [type]: parsed ? parsed : null });
   };
 
-  const filteredContent = page?.content.filter((p) => {
+  // Derive the list we actually display: first filter by category on the current page,
+  // then apply client-side price filtering. Backend still receives categoryId so that
+  // when navigating directly to a category or paginating, data stays consistent.
+  const categoryFiltered = page?.content.filter((p) => {
+    if (categoryId != null && p.categoryId !== categoryId) return false;
+    return true;
+  });
+
+  const filteredContent = (categoryFiltered ?? page?.content)?.filter((p) => {
     if (minPrice != null && p.price < minPrice) return false;
     if (maxPrice != null && p.price > maxPrice) return false;
     return true;

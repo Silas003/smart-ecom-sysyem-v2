@@ -76,11 +76,13 @@ export async function listProducts(options?: {
   page?: number;
   size?: number;
   sort?: string;
+  categoryId?: number;
 }): Promise<ResponseDto<Page<Product>>> {
   const params = new URLSearchParams();
   if (typeof options?.page === "number") params.set("page", String(options.page));
   if (typeof options?.size === "number") params.set("size", String(options.size));
   if (options?.sort) params.set("sort", options.sort);
+  if(typeof options?.categoryId === "number") params.set("categoryId", String(options.categoryId));
 
   const url = `${API_BASE_URL}/api/v1/products/${params.toString() ? `?${params.toString()}` : ""}`;
 

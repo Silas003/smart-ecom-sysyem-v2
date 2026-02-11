@@ -108,6 +108,9 @@ export default async function ProductPage(props: ProductPageProps) {
                   <p className="mt-2 text-[11px] text-zinc-600 dark:text-zinc-300">
                     {review.description}
                   </p>
+                  <p className="mt-2 text-[8px] text-zinc-600 dark:text-zinc-300 font-semibold">
+                      {review.reviewerDisplay}
+                   </p>
                 </li>
               ))}
             </ul>

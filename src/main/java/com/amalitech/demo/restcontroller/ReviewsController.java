@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class ReviewsController {
     private final ReviewsServiceInterface reviewsService;
 
 
-    @GetMapping("/")
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all reviews", description = "Retrieve all reviews")
     @ApiResponses(value = {
@@ -40,9 +41,10 @@ public class ReviewsController {
         return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",reviews);
 
     }
-    @PostMapping("/")
+    @PreAuthorize("hasAnyRole('customer','admin')")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Create review", description = "Create a new review for a product. User is inferred from X-User-Id header")
+    @Operation(summary = "Create review", description = "Create a new review for a product")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Review created",
                     content = @Content(schema = @Schema(implementation = ReviewResponse.class))),
@@ -96,6 +98,7 @@ public class ReviewsController {
 
     }
 
+    @PreAuthorize("hasRole('admin')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Delete review", description = "Delete a review by id")

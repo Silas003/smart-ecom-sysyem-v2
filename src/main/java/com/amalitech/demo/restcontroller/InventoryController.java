@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,7 +28,8 @@ import java.util.List;
 public class InventoryController {
     private final InventoryServiceInterface  inventoryService;
 
-    @GetMapping("/")
+    @PreAuthorize("hasAnyRole('admin','seller')")
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all inventories", description = "Retrieve all inventory records")
     @ApiResponses(value = {
@@ -41,6 +43,7 @@ public class InventoryController {
 
     }
 
+    @PreAuthorize("hasAnyRole('admin','seller')")
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get inventory", description = "Retrieve a single inventory record by id")
@@ -55,6 +58,7 @@ public class InventoryController {
 
     }
 
+    @PreAuthorize("hasAnyRole('admin','seller')")
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update inventory", description = "Update inventory record by id")
@@ -70,6 +74,7 @@ public class InventoryController {
 
     }
 
+    @PreAuthorize("hasAnyRole('admin','seller')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete inventory", description = "Delete inventory by id")
@@ -82,6 +87,7 @@ public class InventoryController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('admin','seller')")
     @PostMapping("/create_inventory")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create inventory", description = "Create a new inventory record")

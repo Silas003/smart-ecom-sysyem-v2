@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,7 +29,8 @@ import java.util.List;
 public class CategoryController {
     private final CategoryServiceInterface categoryService;
 
-    @GetMapping("/")
+    // Public read endpoints
+    @GetMapping("")
     @Operation(summary = "Get all categories", description = "Retrieve all categories")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categories retrieved",
@@ -53,6 +55,8 @@ public class CategoryController {
         return new ResponseDto<>(HttpStatus.OK,"category retrieved",category);
     }
 
+    // Admin-only write endpoints
+    @PreAuthorize("hasRole('admin')")
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update category", description = "Update a category by id")
@@ -68,6 +72,7 @@ public class CategoryController {
 
     }
 
+    @PreAuthorize("hasRole('admin')")
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete category", description = "Delete a category by id")
     @ApiResponses(value = {
@@ -79,7 +84,8 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PostMapping("/create_category")
+    @PreAuthorize("hasRole('admin')")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create category", description = "Create a category")
     @ApiResponses(value = {

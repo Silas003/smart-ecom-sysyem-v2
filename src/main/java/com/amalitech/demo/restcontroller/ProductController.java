@@ -23,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,7 +34,8 @@ public class ProductController {
     private final ProductServiceInterface productService;
     private final ProductMapper productMapper;
 
-    @GetMapping("/")
+    // Public catalog endpoints
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "List products", description = "List products with pagination and sorting")
     @ApiResponses(value = {
@@ -41,14 +43,12 @@ public class ProductController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class))))
     })
     public ResponseDto<Page<ProductResponse>> getAllProducts(
-            @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable,@RequestParam(required = false) Long categoryId
+            @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable,
+            @RequestParam(required = false) Long categoryId
     ) {
-//        todo:create my own pageable and sorting implementation
-        Page<Product> products = productService.getAllProducts(pageable,categoryId);
+        Page<Product> products = productService.getAllProducts(pageable, categoryId);
         Page<ProductResponse> resp = products.map(productMapper::toResponse);
         return new ResponseDto<>(HttpStatus.OK, "products retrieved", resp);
-
-
     }
 
     @GetMapping("/{id}")
@@ -62,9 +62,10 @@ public class ProductController {
     public ResponseDto<ProductResponse> getProductById(@Parameter(description = "ID of the product to retrieve", required = true) @PathVariable Long id) {
         Product product = productService.getProductById(id);
         return new ResponseDto<>(HttpStatus.OK, "product retrieved", productMapper.toResponse(product));
-
     }
 
+    // Admin/Seller management endpoints
+    @PreAuthorize("hasAnyRole('admin','seller')")
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update product", description = "Update product details")
@@ -74,11 +75,13 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found"),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
-    public ResponseDto<ProductResponse> updateProduct(@Parameter(description = "ID of the product to update", required = true) @PathVariable Long id, @RequestBody @Valid ProductRequest productRequest) {
+    public ResponseDto<ProductResponse> updateProduct(@Parameter(description = "ID of the product to update", required = true) @PathVariable Long id,
+                                                      @RequestBody @Valid ProductRequest productRequest) {
         Product updated = productService.updateProduct(id, productRequest);
         return new ResponseDto<>(HttpStatus.OK, "product updated", productMapper.toResponse(updated));
     }
 
+    @PreAuthorize("hasAnyRole('admin','seller')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete product", description = "Delete a product by id")
@@ -91,7 +94,8 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/create_product")
+    @PreAuthorize("hasAnyRole('admin','seller')")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create product", description = "Create a new product")
     @ApiResponses(value = {
@@ -99,11 +103,9 @@ public class ProductController {
                     content = @Content(schema = @Schema(implementation = ProductResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
-
     public ResponseDto<ProductResponse> createProduct(@RequestBody @Valid ProductRequest productRequest) {
         Product newProduct = productService.createProduct(productRequest);
         return new ResponseDto<>(HttpStatus.CREATED, "product created ", productMapper.toResponse(newProduct));
-
     }
 
     @GetMapping("/category/{categoryId}")

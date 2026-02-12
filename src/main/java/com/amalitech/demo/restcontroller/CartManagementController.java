@@ -18,6 +18,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,8 @@ import org.springframework.web.bind.annotation.*;
 public class CartManagementController {
     private final CartServiceInterface cartService;
 
+    // Customers manage their own carts; admin can also inspect/create if needed
+    @PreAuthorize("hasAnyRole('customer','admin')")
     @GetMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
@@ -51,6 +54,7 @@ public class CartManagementController {
         return new ResponseDto<>(HttpStatus.OK, "Cart retrieved successfully", cart);
     }
 
+    @PreAuthorize("hasAnyRole('customer','admin')")
     @PostMapping("/users/{userId}/items")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
@@ -79,6 +83,7 @@ public class CartManagementController {
         return new ResponseDto<>(HttpStatus.CREATED, "Item added to cart successfully", cartItems);
     }
 
+    @PreAuthorize("hasAnyRole('customer','admin')")
     @DeleteMapping("/users/{userId}/items/{cartItemId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
@@ -103,6 +108,8 @@ public class CartManagementController {
         return new ResponseDto<>(HttpStatus.NO_CONTENT, "Item removed from cart successfully", null);
     }
 
+    // Admin can adjust cart status (e.g., after order processing); customer typically cannot
+    @PreAuthorize("hasRole('admin')")
     @PatchMapping("/{cartId}/status")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
@@ -124,5 +131,4 @@ public class CartManagementController {
         CartResponse cartResponse = cartService.updateCartStatus(cartId, status.status());
         return new ResponseDto<>(HttpStatus.OK, "Cart status updated successfully", cartResponse);
     }
-
 }

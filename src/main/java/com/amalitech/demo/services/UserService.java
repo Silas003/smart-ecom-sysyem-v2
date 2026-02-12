@@ -1,5 +1,6 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dao.interfaces.UserDao;
 import com.amalitech.demo.dto.UserRole;
 import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
@@ -9,7 +10,6 @@ import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.exceptions.UserExists;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.User;
-import com.amalitech.demo.dao.interfaces.UserDao;
 import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;

@@ -1,21 +1,13 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dao.interfaces.*;
 import com.amalitech.demo.dto.CartStatus;
 import com.amalitech.demo.dto.response.CartItemsReponse;
 import com.amalitech.demo.dto.response.CartResponse;
-import com.amalitech.demo.mapper.CartMapper;
-import com.amalitech.demo.mapper.CartItemMapper;
-import com.amalitech.demo.models.Cart;
-import com.amalitech.demo.models.CartItems;
-import com.amalitech.demo.models.Product;
-import com.amalitech.demo.models.User;
-import com.amalitech.demo.models.Inventory;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
-import com.amalitech.demo.dao.interfaces.CartItemsDao;
-import com.amalitech.demo.dao.interfaces.CartDao;
-import com.amalitech.demo.dao.interfaces.ProductDao;
-import com.amalitech.demo.dao.interfaces.UserDao;
-import com.amalitech.demo.dao.interfaces.InventoryDao;
+import com.amalitech.demo.mapper.CartItemMapper;
+import com.amalitech.demo.mapper.CartMapper;
+import com.amalitech.demo.models.*;
 import com.amalitech.demo.services.interfaces.CartServiceInterface;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,14 +1,13 @@
 package com.amalitech.demo.dao.interfaces;
 
 import com.amalitech.demo.models.Product;
-import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+
 public interface ProductDao {
     Optional<Product> findById(Long id);
     Optional<Product> findByName(String name);

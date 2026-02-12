@@ -1,12 +1,12 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dao.interfaces.ProductDao;
 import com.amalitech.demo.dto.request.ProductRequest;
 import com.amalitech.demo.dto.response.ProductResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.ProductMapper;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.models.Product;
-import com.amalitech.demo.dao.interfaces.ProductDao;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
 import com.amalitech.demo.utils.Sorter;
 import org.springframework.data.domain.Page;

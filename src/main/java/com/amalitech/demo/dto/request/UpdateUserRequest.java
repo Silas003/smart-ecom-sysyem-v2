@@ -1,7 +1,7 @@
 package com.amalitech.demo.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import com.amalitech.demo.validation.StrongPassword;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;

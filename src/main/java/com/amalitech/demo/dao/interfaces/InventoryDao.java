@@ -1,14 +1,12 @@
 package com.amalitech.demo.dao.interfaces;
 
 import com.amalitech.demo.models.Inventory;
-import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface InventoryDao {
     Optional<Inventory> findById(Long id);
     Optional<Inventory> findByProductId(Long productId);

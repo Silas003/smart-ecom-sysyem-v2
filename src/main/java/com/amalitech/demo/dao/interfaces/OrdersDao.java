@@ -1,15 +1,12 @@
-// ...existing code...
 package com.amalitech.demo.dao.interfaces;
 
 import com.amalitech.demo.models.Orders;
-import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface OrdersDao {
     Optional<Orders> findById(Long id);
     List<Orders> findByUserId(Long userId);

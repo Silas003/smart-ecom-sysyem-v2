@@ -3,7 +3,6 @@ package com.amalitech.demo.services.interfaces;
 import com.amalitech.demo.dto.request.ReviewRequest;
 import com.amalitech.demo.dto.response.ReviewResponse;
 import com.amalitech.demo.models.Reviews;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

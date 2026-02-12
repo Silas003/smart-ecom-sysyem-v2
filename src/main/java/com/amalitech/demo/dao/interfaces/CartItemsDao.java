@@ -1,12 +1,11 @@
 package com.amalitech.demo.dao.interfaces;
 
 import com.amalitech.demo.models.CartItems;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+
 public interface CartItemsDao {
     Optional<CartItems> findById(Long id);
     Optional<CartItems> findByProductIdAndCartId(Long productId, Long cartId);

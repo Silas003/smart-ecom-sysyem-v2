@@ -1,16 +1,15 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dao.interfaces.ReviewsDao;
 import com.amalitech.demo.dto.request.ReviewRequest;
 import com.amalitech.demo.dto.response.ReviewResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.models.User;
-import com.amalitech.demo.dao.interfaces.ReviewsDao;
 import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
 import com.amalitech.demo.utils.Sorter;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;

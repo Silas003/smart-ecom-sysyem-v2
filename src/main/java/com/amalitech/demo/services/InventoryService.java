@@ -1,12 +1,12 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dao.interfaces.InventoryDao;
 import com.amalitech.demo.dto.request.InventoryRequest;
 import com.amalitech.demo.dto.response.InventoryResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.InventoryMapper;
 import com.amalitech.demo.models.Inventory;
 import com.amalitech.demo.models.Product;
-import com.amalitech.demo.dao.interfaces.InventoryDao;
 import com.amalitech.demo.services.interfaces.InventoryServiceInterface;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
 import com.amalitech.demo.utils.Sorter;

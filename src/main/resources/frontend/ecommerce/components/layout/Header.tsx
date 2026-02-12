@@ -63,6 +63,14 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          {user && user.userRole !== "admin" && (
+            <Link
+              href="/account"
+              className="rounded-full px-2 py-1 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 dark:hover:bg-zinc-900 dark:hover:text-zinc-50 dark:focus-visible:ring-zinc-300"
+            >
+              Account
+            </Link>
+          )}
         </nav>
 
         {/* Right side actions */}

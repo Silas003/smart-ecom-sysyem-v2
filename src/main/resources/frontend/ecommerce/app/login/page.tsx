@@ -5,13 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { loginUser } from "../../lib/auth-api";
 import { useAuthStore } from "../../lib/auth-store";
 import { useToast } from "../../components/ui/toaster";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
   const auth = useAuthStore();
-    const { addToast } = useToast();
+  const { addToast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,7 @@ export default function LoginPage() {
       const res = await loginUser({ email, password });
       auth.login(res.data);
       if (typeof window !== "undefined") {
-        addToast("Logged in successfully","success");
+        addToast("Logged in successfully", "success");
       }
       const role = res.data.user.userRole?.toLowerCase();
       if (role === "admin") {
@@ -34,7 +35,7 @@ export default function LoginPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed";
       if (typeof window !== "undefined") {
-        addToast(message,"error");
+        addToast(message, "error");
       }
     } finally {
       setLoading(false);
@@ -85,6 +86,20 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
+        <div className="mt-3 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+          <Link
+            href="/reset-password/request"
+            className="hover:text-zinc-800 dark:hover:text-zinc-200"
+          >
+            Forgot password?
+          </Link>
+          <Link
+            href="/register"
+            className="hover:text-zinc-800 dark:hover:text-zinc-200"
+          >
+            Create account
+          </Link>
+        </div>
       </div>
     </div>
   );

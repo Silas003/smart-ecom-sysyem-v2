@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, getCurrentUserId } from "../../lib/user";
-import { listUserOrders, type Order } from "../../lib/orders";
+import { getCurrentUserId } from "../../lib/user";
+import { useAuthStore } from "../../lib/auth-store";
+import { getUserOrders, type Order } from "../../lib/orders";
 import { updateUser } from "../../lib/auth-api";
 import { useToast } from "../../components/ui/toaster";
 
@@ -14,11 +15,11 @@ export default function AccountPage() {
   const [loading, setLoading] = useState(!initialUserId);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
-  const user = getCurrentUser();
+  const { user, hydrate } = useAuthStore();
   const { addToast } = useToast();
 
-  const [username, setUsername] = useState(user?.username ?? "");
-  const [email, setEmail] = useState(user?.email ?? "");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
@@ -26,12 +27,16 @@ export default function AccountPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
+  useEffect(() => {
     const userId = getCurrentUserId();
     if (!userId) {
       router.push(`/login?redirect=${encodeURIComponent("/account")}`);
       return;
     }
-    listUserOrders(userId)
+    getUserOrders(userId)
       .then((res) => setOrders(res.data))
       .catch((err) => console.error("Failed to load orders", err))
       .finally(() => setOrdersLoading(false));

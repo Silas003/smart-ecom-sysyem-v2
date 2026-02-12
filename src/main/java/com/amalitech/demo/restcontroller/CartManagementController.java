@@ -138,6 +138,6 @@ public class CartManagementController {
             @Parameter(description = "New cart status", required = true)
             @Valid @RequestBody UpdateCartStatusRquest status) {
         CartResponse cartResponse = cartService.updateCartStatus(cartId, status.status());
-        return new ResponseDto<>(HttpStatus.OK, "Cart status updated successfully", cartResponse);
+        return new ResponseDto<>(HttpStatus.OK, "Cart status updated successfully", null);
     }
 }

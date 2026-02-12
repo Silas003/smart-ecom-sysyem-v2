@@ -14,6 +14,7 @@ import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.utils.Sorter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -68,8 +69,16 @@ public class OrderServiceTest {
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(productRepository.findById(prod.getId())).thenReturn(Optional.of(prod));
         when(inventoryRepository.findByProductId(prod.getId())).thenReturn(Optional.of(inv));
+
+        // Capture the order being saved so we can inspect its items
+        ArgumentCaptor<Orders> orderCaptor = ArgumentCaptor.forClass(Orders.class);
         Orders savedOrder = new Orders(); savedOrder.setId(55L);
-        when(ordersRepository.save(any())).thenReturn(savedOrder);
+        when(ordersRepository.save(any(Orders.class))).thenAnswer(invocation -> {
+            Orders o = invocation.getArgument(0);
+            o.setId(55L);
+            return o;
+        });
+
         when(ordersMapper.toResponse(any(Orders.class))).thenReturn(new OrderResponse(55L, user.getId(), "pending", 10.0, List.of(), LocalDateTime.now()));
 
         // Act
@@ -80,7 +89,14 @@ public class OrderServiceTest {
         assertEquals(55L, resp.id());
         // inventory updated (stock decreased by 2)
         verify(inventoryRepository, atLeastOnce()).save(any(Inventory.class));
-        verify(ordersRepository, times(1)).save(any());
+        verify(ordersRepository, times(1)).save(orderCaptor.capture());
+
+        Orders persisted = orderCaptor.getValue();
+        assertNotNull(persisted.getItems());
+        assertEquals(1, persisted.getItems().size());
+        OrderItem persistedItem = persisted.getItems().get(0);
+        assertNotNull(persistedItem.getOrder());
+        assertEquals(persisted, persistedItem.getOrder());
     }
 
     @Test

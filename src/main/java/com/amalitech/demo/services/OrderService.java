@@ -195,6 +195,7 @@ public class OrderService implements OrderServiceInterface {
 
             // Create order item
             OrderItem oi = new OrderItem();
+            oi.setOrder(order);
             oi.setProduct(product);
             oi.setQuantity(itemReq.getQuantity());
             oi.setUnitPrice(product.getPrice());

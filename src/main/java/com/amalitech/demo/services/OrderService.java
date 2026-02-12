@@ -1,26 +1,26 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dto.*;
+import com.amalitech.demo.dao.interfaces.InventoryDao;
+import com.amalitech.demo.dao.interfaces.OrdersDao;
+import com.amalitech.demo.dao.interfaces.ProductDao;
+import com.amalitech.demo.dao.interfaces.UserDao;
+import com.amalitech.demo.dto.OrderStatus;
 import com.amalitech.demo.dto.request.OrderItemRequest;
 import com.amalitech.demo.dto.request.OrderRequest;
 import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.OrdersMapper;
 import com.amalitech.demo.models.*;
-import com.amalitech.demo.repository.*;
+import com.amalitech.demo.security.CurrentUser;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
+import com.amalitech.demo.utils.Sorter;
 import lombok.AllArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -28,12 +28,13 @@ import java.util.*;
 @AllArgsConstructor
 public class OrderService implements OrderServiceInterface {
 
-    private final OrdersRepository ordersRepository;
+    private final OrdersDao ordersDao;
     private final OrdersMapper ordersMapper;
-    private final OrderItemRepository orderItemRepository;
-    private final ProductRepository productRepository;
-    private final InventoryRepository inventoryRepository;
-    private final UserRepository userRepository;
+    private final ProductDao productDao;
+    private final InventoryDao inventoryDao;
+    private final UserDao userDao;
+
+    private final Sorter<Orders> sorter;
 
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS =
             Map.of(
@@ -43,58 +44,102 @@ public class OrderService implements OrderServiceInterface {
                     OrderStatus.cancelled, Set.of()
             );
 
+    private Long getCurrentUserIdOrThrow() {
+        String email = CurrentUser.getEmail();
+        if (email == null) {
+            throw new AccessDeniedException("Unauthenticated");
+        }
+        User user = userDao.findByEmail(email)
+                .orElseThrow(() -> new AccessDeniedException("User not found for current principal"));
+        return user.getId();
+    }
+
+    private boolean isCurrentUserAdmin() {
+        var auth = CurrentUser.getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_admin"));
+    }
+
     @Override
-    @Cacheable(value="orderByUser", key="#userId", sync = true)
     public List<OrderResponse> getOrderByUserId(Long userId){
-        List<Orders> orders = ordersRepository.findByUser_IdWithItemsAndProducts(userId).orElseThrow(
-                ()-> new EntityNotFoundException("user does not have any orders")
-        );
-        // Use OrdersMapper to convert entities to DTOs (ensures productId is populated)
+        // Enforce ownership: non-admins can only see their own orders
+        if (!isCurrentUserAdmin()) {
+            Long currentUserId = getCurrentUserIdOrThrow();
+            if (!currentUserId.equals(userId)) {
+                throw new AccessDeniedException("Cannot access other users' orders");
+            }
+        }
+        List<Orders> orders = ordersDao.findByUserId(userId);
+        if(orders == null || orders.isEmpty()){
+            throw new EntityNotFoundException("user does not have any orders");
+        }
         return ordersMapper.toResponse(orders);
     }
 
     @Override
-    @Cacheable(value = "order", key = "#id")
     public OrderResponse getOrderById(Long id){
-        Orders order = ordersRepository.findByIdWithItemsAndProducts(id).orElseThrow(()-> new EntityNotFoundException("order not found"));
+        Orders order = ordersDao.findById(id).orElseThrow(()-> new EntityNotFoundException("order not found"));
+        // Enforce ownership for non-admins based on order.user.id
+        if (!isCurrentUserAdmin()) {
+            Long currentUserId = getCurrentUserIdOrThrow();
+            User orderUser = order.getUser();
+            if (orderUser == null || orderUser.getId() == null || !orderUser.getId().equals(currentUserId)) {
+                throw new AccessDeniedException("Cannot access other users' orders");
+            }
+        }
         return ordersMapper.toResponse(order);
     }
 
     @Override
     public Page<OrderResponse> getAllOrders(Pageable pageable) {
-        Page<Orders> orders = ordersRepository.findAll(pageable);
-        // Ensure items and products are fetched for each order before mapping to DTOs
-        List<OrderResponse> content = orders.getContent().stream().map(o -> {
-            Orders full = ordersRepository.findByIdWithItemsAndProducts(o.getId()).orElse(o);
-            return ordersMapper.toResponse(full);
-        }).toList();
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPageNumber();
+        int offset = pageNumber * pageSize;
+        List<Orders> orders = ordersDao.findAll(pageSize, offset);
+        if (orders == null) orders = List.of();
 
-        return new PageImpl<>(content, pageable, orders.getTotalElements());
+        // Apply in-memory merge sort if pageable requests sorting
+        Sort sort = pageable.getSort();
+        if (sort.isSorted() && !orders.isEmpty()) {
+            Sort.Order order = sort.iterator().next();
+            Comparator<Orders> cmp = buildOrdersComparator(order.getProperty());
+            if (cmp != null) {
+                if (order.isDescending()) cmp = cmp.reversed();
+                orders = sorter.sort(orders, cmp);
+            }
+        }
+
+        List<Orders> safeOrders = orders == null ? List.of() : orders;
+        List<OrderResponse> content = safeOrders.stream().map(ordersMapper::toResponse).toList();
+        long total = content.size();
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    private Comparator<Orders> buildOrdersComparator(String prop) {
+        if (prop == null) return null;
+        return switch (prop) {
+            case "totalAmount", "total_amount" -> Comparator.comparing(Orders::getTotalAmount, Comparator.nullsLast(Double::compareTo));
+            case "createdAt", "created_at" -> Comparator.comparing(Orders::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "status" -> Comparator.comparing(Orders::getStatus, Comparator.nullsLast(Comparator.comparing(Enum::name)));
+            case "id" -> Comparator.comparing(Orders::getId, Comparator.nullsLast(Long::compareTo));
+            default -> Comparator.comparing(Orders::getId, Comparator.nullsLast(Long::compareTo));
+        };
     }
 
     @Override
-    @Caching(
-            evict = {
-                    @CacheEvict(value = "order", key = "#orderId"),
-                    @CacheEvict(value = "orderByUser", allEntries = true)
-            }
-    )
     public void deleteOrder(Long orderId) {
-        Orders order = ordersRepository.findById(orderId)
-                .orElseThrow(()-> new EntityNotFoundException("order not found"));
-        ordersRepository.delete(order);
+        ordersDao.findById(orderId).orElseThrow(() -> new EntityNotFoundException("order not found"));
+        try {
+            ordersDao.deleteById(orderId);
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
-    @Caching(
-            evict = {
-                    @CacheEvict(value = "order", key = "#orderId"),
-                    @CacheEvict(value = "orderByUser", allEntries = true)
-            }
-    )
-    @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.READ_COMMITTED)
+
     @Override
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
-        Orders order = ordersRepository.findById(orderId)
+        Orders order = ordersDao.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
         OrderStatus currentStatus = order.getStatus();
@@ -105,57 +150,90 @@ public class OrderService implements OrderServiceInterface {
             );
         }
 
+        // If transitioning into cancelled from a non-cancelled state, restore inventory
         if (currentStatus != OrderStatus.cancelled && newStatus == OrderStatus.cancelled) {
             restoreInventory(order);
         }
 
         order.setStatus(newStatus);
-        Orders updated = ordersRepository.save(order);
+        try {
+            ordersDao.update(order);
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
 
-        return ordersMapper.toResponse(updated);
+        return ordersMapper.toResponse(order);
     }
 
-    @CachePut(value = "orderByUser",key="#result.userId")
-    @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.READ_COMMITTED)
     @Override
     public OrderResponse createOrder(OrderRequest req) {
+        // 1. Validate user
         Long userId = req.getUserId();
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userDao.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        // 2. Validate order items
         if (req.getItems() == null || req.getItems().isEmpty()) {
             throw new IllegalArgumentException("Order must contain at least one item");
         }
 
+        // 3. Create order
         Orders order = new Orders();
         order.setUser(user);
         order.setStatus(OrderStatus.pending);
 
+        // 4. Process order items and validate inventory
         List<OrderItem> items = new ArrayList<>();
         double total = 0.0;
 
-        for (OrderItemRequest it : req.getItems()) {
-            Product product = productRepository.findById(it.getProductId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
-            Inventory inv = inventoryRepository.findByProduct_Id(product.getId()).orElseThrow(() -> new EntityNotFoundException("Inventory not found for product"));
-            if (inv.getStockQuantity() < it.getQuantity()) {
-                throw new IllegalArgumentException("Insufficient stock for product id: " + product.getId());
-            }
-            inv.setStockQuantity(inv.getStockQuantity() - it.getQuantity());
-            inventoryRepository.save(inv);
+        for (OrderItemRequest itemReq : req.getItems()) {
+            // Validate product exists
+            Product product = productDao.findById(itemReq.getProductId())
+                    .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + itemReq.getProductId()));
 
+            // Validate inventory exists and has sufficient stock
+            Inventory inv = inventoryDao.findByProductId(product.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Inventory not found for product ID: " + product.getId()));
+
+            if (inv.getStockQuantity() < itemReq.getQuantity()) {
+                throw new IllegalArgumentException("Insufficient stock for product ID: " + product.getId()
+                    + ". Available: " + inv.getStockQuantity() + ", Requested: " + itemReq.getQuantity());
+            }
+
+            // Create order item
             OrderItem oi = new OrderItem();
-            oi.setOrder(order);
             oi.setProduct(product);
-            oi.setQuantity(it.getQuantity());
+            oi.setQuantity(itemReq.getQuantity());
             oi.setUnitPrice(product.getPrice());
-            oi.setTotalPrice(product.getPrice() * it.getQuantity());
+            oi.setTotalPrice(product.getPrice() * itemReq.getQuantity());
             items.add(oi);
+
             total += oi.getTotalPrice();
         }
 
+        // 5. Set order details
         order.setTotalAmount(total);
         order.setItems(items);
 
-        Orders saved = ordersRepository.save(order);
-        return ordersMapper.toResponse(saved);
+        // 6. Save order (DAO handles all transactional updates: orders, order_items, inventory, products)
+        try {
+            long orderId = ordersDao.save(order);
+            order.setId(orderId);
+            return ordersMapper.toResponse(order);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create order: " + e.getMessage(), e);
+        }
+    }
+
+    public void restoreInventory(Orders order) {
+        if (order.getItems() == null) return;
+        for (OrderItem item : order.getItems()) {
+            Inventory inv = inventoryDao.findByProductId(item.getProduct().getId()).orElse(null);
+            if (inv != null) {
+                inv.setStockQuantity(inv.getStockQuantity() + item.getQuantity());
+                inventoryDao.update(inv);
+            }
+        }
     }
 
 }

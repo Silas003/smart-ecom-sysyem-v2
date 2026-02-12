@@ -4,7 +4,6 @@ package com.amalitech.demo.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

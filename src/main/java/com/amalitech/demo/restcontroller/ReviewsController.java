@@ -3,20 +3,20 @@ package com.amalitech.demo.restcontroller;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.request.ReviewRequest;
 import com.amalitech.demo.dto.response.ReviewResponse;
-import com.amalitech.demo.services.ReviewsService;
 import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,16 +41,17 @@ public class ReviewsController {
         return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",reviews);
 
     }
+    @PreAuthorize("hasAnyRole('customer','admin')")
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Create review", description = "Create a new review for a product. User is inferred from X-User-Id header")
+    @Operation(summary = "Create review", description = "Create a new review for a product")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Review created",
                     content = @Content(schema = @Schema(implementation = ReviewResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
-    public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request, @Parameter(description = "ID of the user creating the review, from X-User-Id header", required = true) @RequestHeader("X-User-Id") Long userId){
-        ReviewResponse review = reviewsService.createReview(request, userId);
+    public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request){
+        ReviewResponse review = reviewsService.createReview(request);
         return  new ResponseDto<>(HttpStatus.CREATED,"review created",review);
     }
 
@@ -97,6 +98,7 @@ public class ReviewsController {
 
     }
 
+    @PreAuthorize("hasRole('admin')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Delete review", description = "Delete a review by id")

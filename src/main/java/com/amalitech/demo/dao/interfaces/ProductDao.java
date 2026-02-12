@@ -1,0 +1,22 @@
+package com.amalitech.demo.dao.interfaces;
+
+import com.amalitech.demo.models.Product;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Optional;
+
+
+public interface ProductDao {
+    Optional<Product> findById(Long id);
+    Optional<Product> findByName(String name);
+    List<Product> findByCategoryId(Long categoryId, int limit, int offset);
+    long countByCategoryId(Long categoryId);
+    List<Product> findAll(int limit, int offset);
+    long countAll();
+    long save(Product product);
+    void update(Product product);
+    void update(Product product, Connection conn) throws SQLException;
+    void deleteById(Long id);
+}

@@ -1,20 +1,19 @@
 package com.amalitech.demo.restcontroller;
 
 
-import com.amalitech.demo.dto.request.OrderRequest;
-import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.dto.ResponseDto;
+import com.amalitech.demo.dto.request.OrderRequest;
 import com.amalitech.demo.dto.request.UpdateOrderRequest;
-import com.amalitech.demo.services.OrderService;
+import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +34,10 @@ import java.util.List;
 public class OrderManagementController {
     private OrderServiceInterface orderService;
 
+    // Ownership is enforced in OrderService; here we only handle routing and role guards
+
+    // Customer can view their own orders; admins can view any user's orders
+    @PreAuthorize("hasAnyRole('admin','customer')")
     @GetMapping("/user/{userId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(method = "GET",tags = "user Orders",description = "Get orders by userId")
@@ -47,6 +51,8 @@ public class OrderManagementController {
         return new ResponseDto<>(HttpStatus.OK,"user orders retrieved",orders);
     }
 
+    // Customer can view their own order; admins can view any
+    @PreAuthorize("hasAnyRole('admin','customer')")
     @GetMapping("/{orderId}")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(value = {
@@ -59,6 +65,8 @@ public class OrderManagementController {
         return new ResponseDto<>(HttpStatus.OK,"order retrieved",orderResponse);
     }
 
+    // Admin can view all orders (e.g., dashboard)
+    @PreAuthorize("hasRole('admin')")
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(value = {
@@ -72,17 +80,21 @@ public class OrderManagementController {
         return new ResponseDto<>(HttpStatus.OK,"orders retrieved",orders);
     }
 
+    // Admin can delete any order; potentially customer could cancel own in future
+    @PreAuthorize("hasRole('admin')")
     @DeleteMapping("/{orderId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Order deleted"),
             @ApiResponse(responseCode = "404", description = "Order not found")
     })
-    public ResponseEntity deleteOrder(@Parameter(description = "ID of the order to delete", required = true) @PathVariable Long orderId){
+    public ResponseEntity<Void> deleteOrder(@Parameter(description = "ID of the order to delete", required = true) @PathVariable Long orderId){
         orderService.deleteOrder(orderId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    // Admin (or seller) can update order status; customers normally can't arbitrarily change it
+    @PreAuthorize("hasAnyRole('admin','seller')")
     @PatchMapping("/{orderId}")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(value = {
@@ -96,6 +108,8 @@ public class OrderManagementController {
         return new ResponseDto<>(HttpStatus.OK,"order updated",orderService.updateOrderStatus(orderId, request.status()));
     }
 
+    // Customers create orders; admin could also for support
+    @PreAuthorize("hasAnyRole('admin','customer')")
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create order", description = "Create a new order")

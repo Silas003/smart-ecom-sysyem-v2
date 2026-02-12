@@ -1,27 +1,24 @@
 package com.amalitech.demo.services.interfaces;
 
+import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
+import com.amalitech.demo.dto.response.LoginResponse;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.models.User;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface UserServiceInterface {
-    @Transactional(propagation = Propagation.REQUIRED)
-    UserResponse createUser(UserRequest userRequest);
+    void createUser(UserRequest userRequest);
 
     UserResponse getUserById(Long id);
 
     User getUserByIdForReview(Long id);
 
-    List<UserResponse> getAllUsers();
+    Page<UserResponse> getAllUsers(int pageNumber, int pageSize);
 
-    @Transactional(propagation = Propagation.MANDATORY)
     UserResponse updateUser(Long id, UserRequest userRequest);
 
     void deleteUser(Long id);
 
-    UserResponse loginUser(UserRequest userRequest);
+    LoginResponse loginUser(UserLoginRequest userRequest);
 }

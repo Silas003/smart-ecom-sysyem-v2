@@ -2,6 +2,7 @@ package com.amalitech.demo.controllers;
 
 import com.amalitech.demo.dto.request.CategoryRequest;
 import com.amalitech.demo.dto.response.CategoryResponse;
+import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.restcontroller.CategoryController;
 import com.amalitech.demo.services.CategoryService;
@@ -17,7 +18,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CategoryController.class)
@@ -31,10 +31,9 @@ public class CategoryControllerTest {
 
     @Test
     void shouldReturnAllCategories() throws Exception {
-        CategoryResponse category = new CategoryResponse(1L,"category");
+        CategoryResponse category = new CategoryResponse(1L, "Category 1");
         when(categoryService.getAllCategories()).thenReturn(List.of(category,category,category));
         mockMvc.perform(get("/api/v1/categories/"))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("categories retrieved"))
                 .andExpect(jsonPath("$.data.length()").value(3));
@@ -42,9 +41,8 @@ public class CategoryControllerTest {
 
     @Test
     void shouldReturnCategory() throws Exception {
-        Category category = new Category();
-        category.setName("Category 1");
-        when(categoryService.getCategoryById(anyLong())).thenReturn(new CategoryResponse(1L,"Category 1"));
+        CategoryResponse category = new CategoryResponse(1L, "Category 1");
+        when(categoryService.getCategoryById(anyLong())).thenReturn(category);
 
         mockMvc.perform(get("/api/v1/categories/5"))
                 .andExpect(status().isOk())
@@ -56,7 +54,7 @@ public class CategoryControllerTest {
         CategoryRequest category = new CategoryRequest();
         category.setName("Category 1");
 
-        when(categoryService.createCategory(category)).thenReturn(new CategoryResponse(1L,"category"));
+        when(categoryService.createCategory(category)).thenReturn(new CategoryResponse(1L, "Category 1"));
 
         String categoryJson = """
                 {

@@ -5,8 +5,13 @@ import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.models.Category;
 import org.mapstruct.Mapper;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
     Category toEntity(CategoryRequest req);
+
+    CategoryResponse toDto(Category entity);
+    List<CategoryResponse> toDto(List<Category> list);
     CategoryResponse toResponse(Category category);
 }

@@ -2,13 +2,10 @@ package com.amalitech.demo.models;
 
 import com.amalitech.demo.dto.CartStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -25,7 +22,7 @@ public class Cart{
 
     @JoinColumn(name = "user_id" , referencedColumnName = "id")
     @NotNull
-    @ManyToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private User user;
 
 @Enumerated(EnumType.STRING)

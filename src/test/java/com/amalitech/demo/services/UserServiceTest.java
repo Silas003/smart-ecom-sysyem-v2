@@ -1,33 +1,43 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dao.interfaces.UserDao;
 import com.amalitech.demo.dto.UserRole;
+import com.amalitech.demo.dto.request.UserLoginRequest;
+import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.UserResponse;
+import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.User;
-import com.amalitech.demo.repository.UserRepository;
+import com.amalitech.demo.utils.Sorter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserDao userDao;
 
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private Sorter<User> sorter;
+
     @InjectMocks
     private UserService userService;
+
 
     @Test
     void shouldReturnUserFound() {
@@ -44,7 +54,7 @@ public class UserServiceTest {
                 "USER"
         );
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+        when(userDao.findById(1L)).thenReturn(Optional.of(mockUser));
         when(userMapper.toResponse(mockUser)).thenReturn(expectedResponse);
 
         // Act
@@ -58,52 +68,103 @@ public class UserServiceTest {
         assertEquals("USER", result.userRole());
 
         // Verify interactions
-        verify(userRepository, times(1)).findById(1L);
+        verify(userDao, times(1)).findById(1L);
         verify(userMapper, times(1)).toResponse(mockUser);
     }
 
     @Test
-    void shouldReturnNullWhenUserNotFound() {
+    void shouldThrowWhenUserNotFound() {
 
-        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+        when(userDao.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> {
-            userService.getUserById(999L);
-        });
+        assertThrows(EntityNotFoundException.class, () -> userService.getUserById(999L));
 
-        verify(userRepository, times(1)).findById(999L);
+        verify(userDao, times(1)).findById(999L);
 
     }
 
     @Test
-    void shouldReturnListOfUsers(){
-        User  user = new User();
+    void shouldReturnPagedUsers() {
+        User user = new User();
         user.setUsername("username");
         user.setPassword("Testpassword");
         user.setUserRole(UserRole.customer);
         user.setEmail("email@gmail.com");
+        int pageSize = 10;
+        int pageNumber = 1; // service uses offset = pageNumber * pageSize
+        when(userDao.findAll(pageSize, pageSize * pageNumber)).thenReturn(List.of(user));
 
-        when(userRepository.findAll()).thenReturn(List.of(user));
         UserResponse expectedResponse = new UserResponse(
                 1L,
                 "username",
                 "email@gmail.com",
                 "USER"
         );
+        when(sorter.sort(anyList(), any())).thenReturn(List.of(user));
         when(userMapper.toResponse(List.of(user))).thenReturn(List.of(expectedResponse));
 
-        List<UserResponse> result = userService.getAllUsers();
+        Page<UserResponse> result = userService.getAllUsers(pageNumber, pageSize);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(userRepository, times(1)).findAll();
+        assertEquals(1, result.getContent().size());
+        assertEquals("username", result.getContent().get(0).username());
+
+        verify(userDao, times(1)).findAll(pageSize, pageSize * pageNumber);
+        verify(sorter, times(1)).sort(anyList(), any());
+        verify(userMapper, times(1)).toResponse(List.of(user));
     }
 
     @Test
-    void shouldReturnVoidAfterDelete(){
-        User  user = new User();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+    void shouldDeleteUserWhenExists() {
+        User user = new User();
+        user.setId(1L);
+        when(userDao.findById(1L)).thenReturn(Optional.of(user));
         userService.deleteUser(1L);
-        verify(userRepository, times(1)).findById(1L);
+        verify(userDao, times(1)).findById(1L);
+        verify(userDao, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void shouldCreateUser() {
+        UserRequest userRequest = new UserRequest(
+                "username",
+                "email@gmail.com",
+                "Testpassword",
+                UserRole.customer.toString()
+        );
+        User user = new User(
+                "username",
+                "email@gmail.com",
+                "Testpassword",
+                UserRole.customer
+        );
+
+        when(userDao.existsByEmail(userRequest.getEmail())).thenReturn(false);
+        when(userDao.existsByUsername(userRequest.getUsername())).thenReturn(false);
+
+        when(userMapper.toEntity(userRequest)).thenReturn(user);
+        when(userDao.save(user)).thenReturn(1L);
+
+        userService.createUser(userRequest);
+        verify(userDao, times(1)).existsByEmail(userRequest.getEmail());
+        verify(userDao, times(1)).existsByUsername(userRequest.getUsername());
+        verify(userMapper, times(1)).toEntity(userRequest);
+        verify(userDao, times(1)).save(user);
+    }
+
+    @Test
+    void shouldThrowExceptionWithInvalidCredentialsAfterLogin() {
+        User user = new User();
+        user.setUsername("username");
+        user.setPassword("Testpassword");
+        user.setUserRole(UserRole.customer);
+        user.setEmail("email@gmail.com");
+
+        UserLoginRequest userRequest = new UserLoginRequest(user.getEmail(), "wrong-password");
+
+        when(userDao.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        assertThrows(IllegalArgumentException.class, () -> userService.loginUser(userRequest));
+        verify(userDao, times(1)).findByEmail(user.getEmail());
     }
 }

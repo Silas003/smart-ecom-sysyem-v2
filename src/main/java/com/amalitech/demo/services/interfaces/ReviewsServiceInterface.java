@@ -3,15 +3,14 @@ package com.amalitech.demo.services.interfaces;
 import com.amalitech.demo.dto.request.ReviewRequest;
 import com.amalitech.demo.dto.response.ReviewResponse;
 import com.amalitech.demo.models.Reviews;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface ReviewsServiceInterface {
     List<ReviewResponse> getAllReviews();
 
-    @Transactional
-    ReviewResponse createReview(ReviewRequest request, Long userId);
+
+    ReviewResponse createReview(ReviewRequest request);
 
     ReviewResponse getReview(Long id);
 
@@ -19,7 +18,7 @@ public interface ReviewsServiceInterface {
 
     List<ReviewResponse> getReviewsByUser(Long userId);
 
-    @Transactional
+
     void deleteReview(Long id);
 
     default ReviewResponse toResponse(Reviews r) {
@@ -28,6 +27,7 @@ public interface ReviewsServiceInterface {
         resp.setProductId(r.getProduct().getId());
         // anonymize reviewer display to prevent exposing raw user id or email
         String display = r.getUser().getUsername();
+        System.out.println("display: " + display);
         if (display == null || display.isBlank()) {
             display = "Anonymous";
         }

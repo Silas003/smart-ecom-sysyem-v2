@@ -5,6 +5,9 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -31,6 +34,9 @@ public class Reviews {
     @JoinColumn(name = "product_id", referencedColumnName = "id")
     @NotNull
     private Product product;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
     public Reviews(){}
     public Reviews(Integer rating, String description,User user, Product product) {

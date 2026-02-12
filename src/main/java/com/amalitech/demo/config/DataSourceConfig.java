@@ -8,14 +8,17 @@ import javax.sql.DataSource;
 
 @Configuration
 public class DataSourceConfig {
+    private final String url = System.getenv("DB_URL");
+    private final String user = System.getenv("DB_USERNAME");
+    private final String password = System.getenv("DB_PASSWORD");
 
     @Bean
     public DataSource dataSource() {
         DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
         dataSourceBuilder.driverClassName("org.postgresql.Driver");
-        dataSourceBuilder.url("jdbc:postgresql://localhost:5432/smartEcom");
-        dataSourceBuilder.username("postgres");
-        dataSourceBuilder.password("Drake@7890");
+        dataSourceBuilder.url(url);
+        dataSourceBuilder.username(user);
+        dataSourceBuilder.password(password);
         return dataSourceBuilder.build();
     }
 }

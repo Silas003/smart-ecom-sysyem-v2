@@ -100,7 +100,7 @@ public class ProductServiceTest {
         // sorter expected to be called because pageable has sort
         when(sorter.sort(anyList(), any())).thenReturn(List.of(p2, p1));
 
-        Page<Product> result = productService.getAllProducts(pageable);
+        Page<Product> result = productService.getAllProducts(pageable,any());
         assertNotNull(result);
         assertEquals(2, result.getContent().size());
         // ensure sorter was used

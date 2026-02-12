@@ -7,16 +7,12 @@ import com.amalitech.demo.models.Product;
 import com.amalitech.demo.utils.MergeSorter;
 import com.amalitech.demo.utils.Sorter;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Repository;
 import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @AllArgsConstructor
 @Repository

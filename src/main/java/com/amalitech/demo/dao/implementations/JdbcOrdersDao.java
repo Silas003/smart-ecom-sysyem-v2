@@ -1,20 +1,23 @@
 package com.amalitech.demo.dao.implementations;
 
-import com.amalitech.demo.dao.interfaces.OrdersDao;
-import com.amalitech.demo.dao.interfaces.OrderItemDao;
 import com.amalitech.demo.dao.interfaces.InventoryDao;
+import com.amalitech.demo.dao.interfaces.OrderItemDao;
+import com.amalitech.demo.dao.interfaces.OrdersDao;
 import com.amalitech.demo.dao.interfaces.ProductDao;
 import com.amalitech.demo.models.Orders;
 import com.amalitech.demo.models.OrderItem;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.dto.OrderStatus;
+import com.amalitech.demo.models.*;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Repository;
 import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @Repository

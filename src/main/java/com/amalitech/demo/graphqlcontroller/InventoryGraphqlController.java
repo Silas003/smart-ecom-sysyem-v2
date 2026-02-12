@@ -2,7 +2,10 @@ package com.amalitech.demo.graphqlcontroller;
 
 import com.amalitech.demo.dto.request.InventoryRequest;
 import com.amalitech.demo.dto.response.InventoryResponse;
+import com.amalitech.demo.models.Inventory;
+import com.amalitech.demo.models.Product;
 import com.amalitech.demo.services.InventoryService;
+import com.amalitech.demo.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -13,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
@@ -22,9 +26,11 @@ import java.util.List;
 public class InventoryGraphqlController {
 
     private final InventoryService inventoryService;
+    private final ProductService productService;
 
-    public InventoryGraphqlController(InventoryService inventoryService) {
+    public InventoryGraphqlController(InventoryService inventoryService, ProductService productService) {
         this.inventoryService = inventoryService;
+        this.productService = productService;
     }
 
     @QueryMapping
@@ -79,5 +85,11 @@ public class InventoryGraphqlController {
     public Boolean deleteInventory(@Argument Long id) {
         inventoryService.deleteInventory(id);
         return true;
+    }
+
+
+    @SchemaMapping(typeName = "Inventory", field = "product")
+    public Product product(Inventory inventory) {
+        return productService.getProductById(inventory.getProduct().getId());
     }
 }

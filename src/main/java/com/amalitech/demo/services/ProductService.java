@@ -53,10 +53,29 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
-    public Page<Product> getAllProducts(Pageable pageable) {
+    public Page<Product> getAllProducts(Pageable pageable,Long categoryId) {
         int pageSize = pageable.getPageSize();
         int pageNumber = pageable.getPageNumber();
         int offset = pageNumber * pageSize;
+        if(categoryId !=null){
+            List<Product> content = productDao.findByCategoryId(categoryId, pageSize, offset);
+            if (content == null) content = List.of();
+
+            // Apply merge-sort if pageable has sorting criteria
+            Sort sort = pageable.getSort();
+            if (sort.isSorted() && !content.isEmpty()) {
+                // pick the first sort order (supporting single-field sorting)
+                Sort.Order order = sort.iterator().next();
+                Comparator<Product> cmp = buildProductComparator(order.getProperty());
+                if (cmp != null) {
+                    if (order.isDescending()) cmp = cmp.reversed();
+                    content = sorter.sort(content, cmp);
+                }
+            }
+
+            long total = productDao.countByCategoryId(categoryId);
+            return new PageImpl<>(content, pageable, total);
+        }
         List<Product> content = productDao.findAll(pageSize, offset);
         if (content == null) content = List.of();
 

@@ -86,6 +86,7 @@ public class ReviewsService implements ReviewsServiceInterface {
         resp.setRating(r.getRating());
         resp.setProductId(r.getProduct().getId());
         resp.setReviewerDisplay(r.getUser().getUsername());
+        resp.setCreatedAt(r.getCreatedAt());
         return resp;
     }
 

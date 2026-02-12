@@ -2,21 +2,25 @@ package com.amalitech.demo.graphqlcontroller;
 
 import com.amalitech.demo.dto.request.OrderRequest;
 import com.amalitech.demo.dto.response.OrderResponse;
-import java.util.List;
+import com.amalitech.demo.models.OrderItem;
+import com.amalitech.demo.models.Product;
 import com.amalitech.demo.services.OrderService;
 import com.amalitech.demo.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
+
+import java.util.List;
 
 
 @Controller
@@ -76,6 +80,20 @@ public class OrderGraphqlController {
         return orderService.updateOrderStatus(id, status);
     }
 
+    @MutationMapping
+    @Operation(summary = "Delete order (GraphQL)", description = "Delete an order by id via GraphQL mutation")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order deleted"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    public Boolean deleteOrder(@Argument Long id) {
+        orderService.deleteOrder(id);
+        return true;
+    }
 
+    @SchemaMapping(typeName = "OrderItem", field = "product")
+    public Product product(OrderItem item) {
+        return productService.getProductById(item.getProduct().getId());
+    }
 
 }

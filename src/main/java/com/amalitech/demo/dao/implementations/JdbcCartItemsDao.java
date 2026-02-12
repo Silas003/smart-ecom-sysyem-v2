@@ -1,8 +1,8 @@
 package com.amalitech.demo.dao.implementations;
 
 import com.amalitech.demo.dao.interfaces.CartItemsDao;
-import com.amalitech.demo.models.CartItems;
 import com.amalitech.demo.models.Cart;
+import com.amalitech.demo.models.CartItems;
 import com.amalitech.demo.models.Product;
 import lombok.AllArgsConstructor;
 import org.springframework.jdbc.datasource.DataSourceUtils;

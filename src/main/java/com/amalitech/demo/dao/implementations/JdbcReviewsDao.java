@@ -1,8 +1,9 @@
 package com.amalitech.demo.dao.implementations;
 
 import com.amalitech.demo.dao.interfaces.ReviewsDao;
-import com.amalitech.demo.models.Reviews;
+import com.amalitech.demo.dao.interfaces.UserDao;
 import com.amalitech.demo.models.Product;
+import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.models.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -17,10 +18,11 @@ import java.util.Optional;
 @Repository
 public class JdbcReviewsDao implements ReviewsDao {
     private final DataSource dataSource;
+    private UserDao userDao;
 
     @Override
     public Optional<Reviews> findById(Long id) {
-        String sql = "SELECT id, stars, description, user_id, product_id FROM reviews WHERE id = ?";
+        String sql = "SELECT id, stars, description, user_id, product_id,created_at FROM reviews WHERE id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -35,7 +37,7 @@ public class JdbcReviewsDao implements ReviewsDao {
 
     @Override
     public List<Reviews> findAll() {
-        String sql = "SELECT id, stars, description, user_id, product_id FROM reviews ORDER BY id DESC";
+        String sql = "SELECT id, stars, description, user_id, product_id,created_at FROM reviews ORDER BY id DESC";
         List<Reviews> list = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -49,7 +51,7 @@ public class JdbcReviewsDao implements ReviewsDao {
 
     @Override
     public List<Reviews> findByProductIdOrderByIdDesc(Long productId) {
-        String sql = "SELECT id, stars, description, user_id, product_id FROM reviews WHERE product_id = ? ORDER BY id DESC";
+        String sql = "SELECT id, stars, description, user_id, product_id,created_at FROM reviews WHERE product_id = ? ORDER BY id DESC";
         List<Reviews> list = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -65,7 +67,7 @@ public class JdbcReviewsDao implements ReviewsDao {
 
     @Override
     public List<Reviews> findByUserIdOrderByIdDesc(Long userId) {
-        String sql = "SELECT id, stars, description, user_id, product_id FROM reviews WHERE user_id = ? ORDER BY id DESC";
+        String sql = "SELECT id, stars, description, user_id, product_id,created_at FROM reviews WHERE user_id = ? ORDER BY id DESC";
         List<Reviews> list = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -160,12 +162,12 @@ public class JdbcReviewsDao implements ReviewsDao {
         r.setId(rs.getLong("id"));
         r.setRating(rs.getInt("stars"));
         r.setDescription(rs.getString("description"));
-        User u = new User();
-        u.setId(rs.getLong("user_id"));
+        User u = userDao.findById(rs.getLong("user_id")).orElseThrow(() -> new RuntimeException("User not found for review"));
         r.setUser(u);
         Product p = new Product();
         p.setId(rs.getLong("product_id"));
         r.setProduct(p);
+        r.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
         return r;
     }
 }

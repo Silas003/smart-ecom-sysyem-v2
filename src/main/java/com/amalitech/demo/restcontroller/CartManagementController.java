@@ -1,23 +1,26 @@
 package com.amalitech.demo.restcontroller;
 
+import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.request.AddItemToCartRequest;
 import com.amalitech.demo.dto.request.UpdateCartStatusRquest;
 import com.amalitech.demo.dto.response.CartItemsReponse;
 import com.amalitech.demo.dto.response.CartResponse;
-import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.services.interfaces.CartServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +34,13 @@ import org.springframework.web.bind.annotation.*;
 public class CartManagementController {
     private final CartServiceInterface cartService;
 
+    private boolean isAdmin(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_admin"));
+    }
+
+    // Customers manage their own carts; admin can also inspect/create if needed
+    @PreAuthorize("hasAnyRole('customer','admin')")
     @GetMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
@@ -47,10 +57,15 @@ public class CartManagementController {
     public ResponseDto<CartResponse> getOrCreateCart(
             @Parameter(description = "ID of the user", required = true)
             @PathVariable @Positive Long userId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!isAdmin(auth)) {
+            // TODO: enforce that userId matches the authenticated user when userId mapping is available
+        }
         CartResponse cart = cartService.createCart(userId);
         return new ResponseDto<>(HttpStatus.OK, "Cart retrieved successfully", cart);
     }
 
+    @PreAuthorize("hasAnyRole('customer','admin')")
     @PostMapping("/users/{userId}/items")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
@@ -79,6 +94,7 @@ public class CartManagementController {
         return new ResponseDto<>(HttpStatus.CREATED, "Item added to cart successfully", cartItems);
     }
 
+    @PreAuthorize("hasAnyRole('customer','admin')")
     @DeleteMapping("/users/{userId}/items/{cartItemId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
@@ -103,6 +119,8 @@ public class CartManagementController {
         return new ResponseDto<>(HttpStatus.NO_CONTENT, "Item removed from cart successfully", null);
     }
 
+    // Admin can adjust cart status (e.g., after order processing); customer typically cannot
+    @PreAuthorize("hasRole('admin')")
     @PatchMapping("/{cartId}/status")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
@@ -124,5 +142,4 @@ public class CartManagementController {
         CartResponse cartResponse = cartService.updateCartStatus(cartId, status.status());
         return new ResponseDto<>(HttpStatus.OK, "Cart status updated successfully", cartResponse);
     }
-
 }

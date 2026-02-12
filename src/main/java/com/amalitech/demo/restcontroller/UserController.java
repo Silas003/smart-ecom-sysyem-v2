@@ -4,6 +4,7 @@ import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.request.UpdateUserRequest;
 import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
+import com.amalitech.demo.dto.response.LoginResponse;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,9 +20,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
- 
 
 @RestController
 @RequestMapping(value = "/api/v1/users")
@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private UserServiceInterface userService;
 
-
-    @GetMapping("/")
+    @PreAuthorize("hasRole('admin')") // Only allow admins to access this endpoint
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all users", description = "Retrieve a list of all users")
     @ApiResponses(value = {
@@ -79,6 +79,7 @@ public class UserController {
 
     }
 
+    @PreAuthorize("hasRole('admin')") // Only allow admins to delete users
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete user", description = "Delete a user by id")
     @ApiResponses(value = {
@@ -90,7 +91,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PostMapping("/create_user")
+    @PostMapping("")
     @Operation(summary = "Create user", description = "Create a new user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User created",
@@ -108,12 +109,11 @@ public class UserController {
     @Operation(summary = "Login user", description = "Authenticate user with credentials")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login successful",
-                    content = @Content(schema = @Schema(implementation = UserResponse.class))),
+                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    public ResponseDto<UserResponse> loginUser(@RequestBody UserLoginRequest request) {
-        UserResponse userResponse = userService.loginUser(request);
-
-        return new ResponseDto<>(HttpStatus.OK,"user login successful",userResponse);
+    public ResponseDto<LoginResponse> loginUser(@RequestBody @Valid UserLoginRequest request) {
+        LoginResponse loginResponse = userService.loginUser(request);
+        return new ResponseDto<>(HttpStatus.OK, "user login successful", loginResponse);
     }
 }

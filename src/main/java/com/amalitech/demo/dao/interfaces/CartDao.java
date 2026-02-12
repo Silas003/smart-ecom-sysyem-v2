@@ -1,8 +1,8 @@
 // ...existing code...
 package com.amalitech.demo.dao.interfaces;
 
-import com.amalitech.demo.models.Cart;
 import com.amalitech.demo.dto.CartStatus;
+import com.amalitech.demo.models.Cart;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;

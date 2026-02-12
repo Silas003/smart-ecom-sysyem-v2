@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Table(name = "inventory")
 public class Inventory {
 
-    @Id
+      @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "inventory_id")
     private Long id;

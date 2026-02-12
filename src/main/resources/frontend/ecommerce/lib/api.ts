@@ -84,7 +84,7 @@ export async function listProducts(options?: {
   if (options?.sort) params.set("sort", options.sort);
   if(typeof options?.categoryId === "number") params.set("categoryId", String(options.categoryId));
 
-  const url = `${API_BASE_URL}/api/v1/products/${params.toString() ? `?${params.toString()}` : ""}`;
+  const url = `${API_BASE_URL}/api/v1/products${params.toString() ? `?${params.toString()}` : ""}`;
 
   const res = await fetch(url, {
     method: "GET",
@@ -135,9 +135,11 @@ export type ProductRequest = {
   categoryId: number;
 };
 
+import { authorizedFetch } from "./secured-fetch";
+
 export async function createProduct(body: ProductRequest): Promise<ResponseDto<Product>> {
-  const url = `${API_BASE_URL}/api/v1/products/create_product`;
-  const res = await fetch(url, {
+  const url = `${API_BASE_URL}/api/v1/products`;
+  const res = await authorizedFetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -145,12 +147,12 @@ export async function createProduct(body: ProductRequest): Promise<ResponseDto<P
     body: JSON.stringify(body),
   });
 
-  return handleResponse<ResponseDto<Product>>(res);
+  return handleResponse<ResponseDto<Product>>(res as Response);
 }
 
 export async function updateProduct(id: number, body: ProductRequest): Promise<ResponseDto<Product>> {
   const url = `${API_BASE_URL}/api/v1/products/${id}`;
-  const res = await fetch(url, {
+  const res = await authorizedFetch(url, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -158,16 +160,16 @@ export async function updateProduct(id: number, body: ProductRequest): Promise<R
     body: JSON.stringify(body),
   });
 
-  return handleResponse<ResponseDto<Product>>(res);
+  return handleResponse<ResponseDto<Product>>(res as Response);
 }
 
 export async function deleteProduct(id: number): Promise<void> {
   const url = `${API_BASE_URL}/api/v1/products/${id}`;
-  const res = await fetch(url, {
+  const res = await authorizedFetch(url, {
     method: "DELETE",
   });
 
-  if (!res.ok) {
-    await handleResponse(res as Response); // reuse error handling
+  if (!(res as Response).ok) {
+    await handleResponse(res as Response);
   }
 }

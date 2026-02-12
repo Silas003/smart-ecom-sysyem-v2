@@ -1,4 +1,6 @@
 import type { ResponseDto } from "./api";
+// public category APIs (GET) remain unauthenticated
+// import { authorizedFetch } from "./secured-fetch";
 
 export type Category = {
   id: number;
@@ -30,7 +32,7 @@ async function handleCategoryResponse<T>(res: Response): Promise<T> {
 }
 
 export async function getAllCategories(): Promise<ResponseDto<Category[]>> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/categories/`, {
+  const res = await fetch(`${API_BASE_URL}/api/v1/categories`, {
     method: "GET",
     cache: "no-store",
   });

@@ -1,4 +1,5 @@
 import type { ResponseDto } from "./api";
+import { authorizedFetch } from "./secured-fetch";
 
 export type CartItem = {
   cartItemId: number;
@@ -54,7 +55,7 @@ export async function addItemToCart(options: {
   productId: number;
   quantity: number;
 }): Promise<ResponseDto<CartItem>> {
-  const res = await fetch(
+  const res = await authorizedFetch(
     `${API_BASE_URL}/api/v1/carts/users/${options.userId}/items`,
     {
       method: "POST",
@@ -68,44 +69,43 @@ export async function addItemToCart(options: {
     }
   );
 
-  return handleCartResponse<ResponseDto<CartItem>>(res);
+  return handleCartResponse<ResponseDto<CartItem>>(res as Response);
 }
 
 export async function getCartForUser(
   userId: number
 ): Promise<ResponseDto<CartSummary>> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/carts/users/${userId}`, {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/carts/users/${userId}`, {
     method: "GET",
     cache: "no-store",
   });
 
-  return handleCartResponse<ResponseDto<CartSummary>>(res);
+  return handleCartResponse<ResponseDto<CartSummary>>(res as Response);
 }
 
 export async function removeItemFromCart(options: {
   userId: number;
   cartItemId: number;
 }): Promise<ResponseDto<null>> {
-  const res = await fetch(
+  const res = await authorizedFetch(
     `${API_BASE_URL}/api/v1/carts/users/${options.userId}/items/${options.cartItemId}`,
     {
       method: "DELETE",
     }
   );
 
-  // Backend returns 204 with ResponseDto<Void>; we still parse JSON if present.
-  if (res.status === 204) {
+  if ((res as Response).status === 204) {
     return { status: 204, message: "Item removed from cart successfully", data: null };
   }
 
-  return handleCartResponse<ResponseDto<null>>(res);
+  return handleCartResponse<ResponseDto<null>>(res as Response);
 }
 
 export async function updateCartStatus(options: {
   cartId: number;
   status: string;
 }): Promise<ResponseDto<CartSummary>> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/carts/${options.cartId}/status`, {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/carts/${options.cartId}/status`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -113,5 +113,5 @@ export async function updateCartStatus(options: {
     body: JSON.stringify({ status: options.status }),
   });
 
-  return handleCartResponse<ResponseDto<CartSummary>>(res);
+  return handleCartResponse<ResponseDto<CartSummary>>(res as Response);
 }

@@ -1,4 +1,5 @@
 import type { Page } from "./api";
+import { authorizedFetch } from "./secured-fetch";
 
 export type ApiResponse<T> = {
   status: number | string;
@@ -73,7 +74,7 @@ async function handleOrderResponse<T>(res: Response): Promise<T> {
 }
 
 export async function createOrder(request: OrderRequest): Promise<CreateOrderResponse> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/orders/`, {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/orders`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -81,25 +82,25 @@ export async function createOrder(request: OrderRequest): Promise<CreateOrderRes
     body: JSON.stringify(request),
   });
 
-  return handleOrderResponse<CreateOrderResponse>(res);
+  return handleOrderResponse<CreateOrderResponse>(res as Response);
 }
 
 export async function getOrderById(orderId: number): Promise<GetOrderByIdResponse> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/orders/${orderId}`, {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/orders/${orderId}`, {
     method: "GET",
     cache: "no-store",
   });
 
-  return handleOrderResponse<GetOrderByIdResponse>(res);
+  return handleOrderResponse<GetOrderByIdResponse>(res as Response);
 }
 
 export async function getUserOrders(userId: number): Promise<GetUserOrdersResponse> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/orders/user/${userId}`, {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/orders/user/${userId}`, {
     method: "GET",
     cache: "no-store",
   });
 
-  return handleOrderResponse<GetUserOrdersResponse>(res);
+  return handleOrderResponse<GetUserOrdersResponse>(res as Response);
 }
 
 export async function getAllOrders(page = 0, size = 10): Promise<GetAllOrdersResponse> {
@@ -107,19 +108,22 @@ export async function getAllOrders(page = 0, size = 10): Promise<GetAllOrdersRes
   params.set("page", String(page));
   params.set("size", String(size));
 
-  const res = await fetch(`${API_BASE_URL}/api/v1/orders/?${params.toString()}`, {
-    method: "GET",
-    cache: "no-store",
-  });
+  const res = await authorizedFetch(
+    `${API_BASE_URL}/api/v1/orders?${params.toString()}`,
+    {
+      method: "GET",
+      cache: "no-store",
+    }
+  );
 
-  return handleOrderResponse<GetAllOrdersResponse>(res);
+  return handleOrderResponse<GetAllOrdersResponse>(res as Response);
 }
 
 export async function updateOrderStatus(
   orderId: number,
   request: UpdateOrderRequest
 ): Promise<UpdateOrderStatusResponse> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/orders/${orderId}`, {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/orders/${orderId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -127,18 +131,18 @@ export async function updateOrderStatus(
     body: JSON.stringify(request),
   });
 
-  return handleOrderResponse<UpdateOrderStatusResponse>(res);
+  return handleOrderResponse<UpdateOrderStatusResponse>(res as Response);
 }
 
 export async function deleteOrder(orderId: number): Promise<void> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/orders/${orderId}`, {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/orders/${orderId}`, {
     method: "DELETE",
   });
 
-  if (!res.ok && res.status !== 204) {
+  if (!(res as Response).ok && (res as Response).status !== 204) {
     let body: unknown = null;
     try {
-      body = await res.json();
+      body = await (res as Response).json();
     } catch {
       // ignore
     }

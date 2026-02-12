@@ -1,24 +1,55 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type { User } from "./auth-api";
+import type { User, LoginResponse } from "./auth-api";
 
-export type AuthState = {
+type AuthState = {
   user: User | null;
-  setUser: (user: User | null) => void;
-  isAuthenticated: () => boolean;
+  token: string | null;
+  isLoading: boolean;
+  login: (payload: LoginResponse) => void;
+  logout: () => void;
+  hydrate: () => void;
 };
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      setUser: (user) => set({ user }),
-      isAuthenticated: () => get().user !== null,
-    }),
-    {
-      name: "auth-store",
+export const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  token: null,
+  isLoading: true,
+  login: ({ token, user }) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("auth_token", token);
+      localStorage.setItem("auth_user", JSON.stringify(user));
     }
-  )
-);
+    set({ user, token, isLoading: false });
+  },
+  logout: () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
+    }
+    set({ user: null, token: null, isLoading: false });
+  },
+  hydrate: () => {
+    if (typeof window === "undefined") return;
+    const storedToken = localStorage.getItem("auth_token");
+    const storedUser = localStorage.getItem("auth_user");
+    if (storedToken && storedUser) {
+      try {
+        const user = JSON.parse(storedUser) as User;
+        set({ token: storedToken, user, isLoading: false });
+      } catch {
+        set({ token: null, user: null, isLoading: false });
+      }
+    } else {
+      set({ token: null, user: null, isLoading: false });
+    }
+  },
+}));
+
+export function getAuthHeader() {
+  if (typeof window === "undefined") return {} as Record<string, string>;
+  const token = localStorage.getItem("auth_token");
+  if (!token) return {} as Record<string, string>;
+  return { Authorization: `Bearer ${token}` } as Record<string, string>;
+}

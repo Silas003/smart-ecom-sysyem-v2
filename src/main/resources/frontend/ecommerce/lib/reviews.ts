@@ -51,7 +51,7 @@ export async function getReviewsForProduct(productId: number): Promise<ResponseD
 }
 
 export async function createReview(body: ReviewRequest): Promise<ResponseDto<Review>> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/reviews/`, {
+  const res = await fetch(`${API_BASE_URL}/api/v1/reviews`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

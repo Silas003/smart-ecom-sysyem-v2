@@ -1,4 +1,5 @@
 import type { ResponseDto } from "./api";
+import { authorizedFetch } from "./secured-fetch";
 
 export type UserRole = "admin" | "customer" | "seller" | string;
 
@@ -6,8 +7,12 @@ export type User = {
   id: number;
   username: string;
   email: string;
-  userRole: UserRole;
-  createdAt: string;
+  userRole: string;
+};
+
+export type LoginResponse = {
+  token: string;
+  user: User;
 };
 
 export type UserLoginRequest = {
@@ -65,25 +70,28 @@ export async function getUsers(params: {
   search.set("page", String(params.page));
   search.set("size", String(params.size));
 
-  const res = await fetch(`${API_BASE_URL}/api/v1/users/?${search.toString()}`, {
-    method: "GET",
-    cache: "no-store",
-  });
+  const res = await authorizedFetch(
+    `${API_BASE_URL}/api/v1/users?${search.toString()}`,
+    {
+      method: "GET",
+      cache: "no-store",
+    }
+  );
 
-  return handleUserResponse<GetUsersResponse>(res);
+  return handleUserResponse<GetUsersResponse>(res as Response);
 }
 
 export async function getUserById(id: number): Promise<GetUserByIdResponse> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/users/${id}`, {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/users/${id}`, {
     method: "GET",
     cache: "no-store",
   });
 
-  return handleUserResponse<GetUserByIdResponse>(res);
+  return handleUserResponse<GetUserByIdResponse>(res as Response);
 }
 
 export async function createUser(request: UserRequest): Promise<CreateUserResponse> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/users/create_user`, {
+  const res = await fetch(`${API_BASE_URL}/api/v1/users`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -98,7 +106,7 @@ export async function updateUser(
   id: number,
   request: UpdateUserRequest
 ): Promise<UpdateUserResponse> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/users/${id}`, {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/users/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -106,15 +114,15 @@ export async function updateUser(
     body: JSON.stringify(request),
   });
 
-  return handleUserResponse<UpdateUserResponse>(res);
+  return handleUserResponse<UpdateUserResponse>(res as Response);
 }
 
 export async function deleteUser(id: number): Promise<void> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/users/${id}`, {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/users/${id}`, {
     method: "DELETE",
   });
 
-  if (res.status !== 204) {
+  if ((res as Response).status !== 204) {
     let body: unknown = null;
     try {
       body = await res.json();
@@ -144,7 +152,18 @@ export async function loginUser(
     body: JSON.stringify(request),
   });
 
-  return handleUserResponse<LoginUserResponse>(res);
+  if (!res.ok) {
+    // try to read backend error, but fall back to generic
+    let message = "Failed to login";
+    try {
+      const data = await res.json();
+      if (data?.message) message = data.message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = (await res.json()) as ApiResponse<LoginResponse>;
+  return data;
 }
 
 export async function registerUser(

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCartStore } from "../../lib/cart-store";
 import { useAuthStore } from "../../lib/auth-store";
 
@@ -19,13 +19,19 @@ function classNames(...classes: (string | false | null | undefined)[]) {
 export function Header() {
   const pathname = usePathname();
   const totalQuantity = useCartStore((state) => state.totalQuantity());
-  const { setUser, isAuthenticated } = useAuthStore();
+  const { user, isLoading, logout, hydrate } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
 
   const toggleMobile = () => setMobileOpen((prev) => !prev);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+  const isAuthed = !!user;
 
   return (
     <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/80">
@@ -39,7 +45,6 @@ export function Header() {
             <span className="rounded-full bg-zinc-900 px-2 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white dark:bg-zinc-100 dark:text-zinc-900">
               Thrift-T
             </span>
-
           </Link>
         </div>
 
@@ -94,7 +99,7 @@ export function Header() {
           </Link>
 
           {/* Auth actions (desktop) */}
-          {!isAuthenticated() ? (
+          {!isLoading && !isAuthed ? (
             <>
               <Link
                 href="/login"
@@ -102,12 +107,13 @@ export function Header() {
               >
                 Sign in
               </Link>
-
             </>
-          ) : (
+          ) : null}
+
+          {!isLoading && isAuthed && (
             <button
               type="button"
-              onClick={() => setUser(null)}
+              onClick={logout}
               className="hidden items-center justify-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 sm:inline-flex dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-300"
             >
               Sign out

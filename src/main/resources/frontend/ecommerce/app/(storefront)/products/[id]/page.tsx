@@ -3,15 +3,12 @@ import { getProductById } from "../../../../lib/api";
 import ProductDetailActions from "./product-actions";
 import { getReviewsForProduct } from "../../../../lib/reviews";
 
-interface ProductPageProps {
-  params: {
-    id: string;
-  };
+interface ProductPageParams {
+  id: string;
 }
 
-export default async function ProductPage(props: ProductPageProps) {
-  const params = await props.params;
-  const numericId = Number(params.id);
+async function renderProductPage(id: string) {
+  const numericId = Number(id);
 
   if (!Number.isFinite(numericId)) {
     notFound();
@@ -98,7 +95,7 @@ export default async function ProductPage(props: ProductPageProps) {
                     <div className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
                       <span>{"★".repeat(review.rating)}</span>
                       <span className="text-zinc-400 dark:text-zinc-500">
-                        ({review.rating}/5)
+                        ({review.rating}/10)
                       </span>
                     </div>
                     <span className="text-[10px] text-zinc-400">
@@ -109,16 +106,22 @@ export default async function ProductPage(props: ProductPageProps) {
                     {review.description}
                   </p>
                   <p className="mt-2 text-[8px] text-zinc-600 dark:text-zinc-300 font-semibold">
-                      {review.reviewerDisplay}
-                   </p>
+                    {review.reviewerDisplay}
+                  </p>
                 </li>
               ))}
             </ul>
           )}
         </div>
-
-        {/* Placeholder for review form; a separate client component can handle posting */}
       </section>
     </div>
   );
+}
+
+export default async function ProductPage(
+  props: { params: ProductPageParams } | { params: Promise<ProductPageParams> }
+) {
+  const resolvedParams =
+    props.params instanceof Promise ? await props.params : props.params;
+  return renderProductPage(resolvedParams.id);
 }

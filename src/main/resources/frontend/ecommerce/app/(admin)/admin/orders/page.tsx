@@ -8,13 +8,19 @@ import { useToast } from "../../../../components/ui/toaster";
 
 export default function AdminOrdersPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isLoading, hydrate } = useAuthStore();
   const { addToast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated() || !user) {
+    hydrate();
+  }, [hydrate]);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!user) {
       router.push(`/login?redirect=${encodeURIComponent("/admin/orders")}`);
       return;
     }
@@ -29,10 +35,17 @@ export default function AdminOrdersPage() {
         console.error("Failed to load orders", err);
         setError(err instanceof Error ? err.message : "Failed to load orders");
       });
-  }, [isAuthenticated, router, user]);
+  }, [isLoading, router, user, hydrate]);
 
-  if (!isAuthenticated() || !user || user.userRole !== "admin") {
-    return null;
+  if (isLoading || !user || user.userRole !== "admin") {
+    return (
+      <div className="space-y-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Orders
+        </h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">Checking permissions...</p>
+      </div>
+    );
   }
 
   const handleStatusChange = async (id: number, status: string) => {

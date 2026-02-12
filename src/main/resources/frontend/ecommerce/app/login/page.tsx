@@ -9,28 +9,31 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
+  const auth = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const setUser = useAuthStore((s) => s.setUser);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
     try {
       const res = await loginUser({ email, password });
-      setUser(res.data);
-      const role = res.data.userRole?.toLowerCase?.() ?? "customer";
+      auth.login(res.data);
+      if (typeof window !== "undefined") {
+        window.alert("Logged in successfully");
+      }
+      const role = res.data.user.userRole?.toLowerCase();
       if (role === "admin") {
         router.push("/admin");
       } else {
         router.push(redirect);
       }
     } catch (err) {
-      console.error(err);
-      setError("Invalid email or password. Please try again.");
+      const message = err instanceof Error ? err.message : "Login failed";
+      if (typeof window !== "undefined") {
+        window.alert(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -45,11 +48,6 @@ export default function LoginPage() {
         <p className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
           Use the email and password you registered with to access your account.
         </p>
-        {error && (
-          <div className="mb-4 rounded-2xl border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-700 dark:bg-red-950/40 dark:text-red-200">
-            {error}
-          </div>
-        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
             <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">

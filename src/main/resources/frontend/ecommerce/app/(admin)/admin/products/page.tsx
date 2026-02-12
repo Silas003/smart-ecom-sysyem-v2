@@ -15,7 +15,7 @@ import { useToast } from "../../../../components/ui/toaster";
 
 export default function AdminProductsPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isLoading, hydrate } = useAuthStore();
   const { addToast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -30,7 +30,13 @@ export default function AdminProductsPage() {
   }>({ name: "", price: 0, stockQuantity: 0, categoryId: 0 });
 
   useEffect(() => {
-    if (!isAuthenticated() || !user) {
+    hydrate();
+  }, [hydrate]);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!user) {
       router.push(`/login?redirect=${encodeURIComponent("/admin/products")}`);
       return;
     }
@@ -50,7 +56,7 @@ export default function AdminProductsPage() {
     };
 
     load();
-  }, [isAuthenticated, router, user]);
+  }, [isLoading, router, user, hydrate]);
 
   const refresh = async () => {
     try {
@@ -62,8 +68,17 @@ export default function AdminProductsPage() {
     }
   };
 
-  if (!isAuthenticated() || !user || user.userRole !== "admin") {
-    return null;
+  if (isLoading || !user || user.userRole !== "admin") {
+    return (
+      <div className="space-y-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Products
+        </h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          Checking permissions...
+        </p>
+      </div>
+    );
   }
 
   const resetForm = () => {

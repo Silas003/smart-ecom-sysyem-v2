@@ -10,7 +10,7 @@ import { getAllOrders } from "../../../lib/orders";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isLoading, hydrate } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState<{
     users: number;
@@ -20,7 +20,13 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated() || !user) {
+    hydrate();
+  }, [hydrate]);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!user) {
       router.push(`/login?redirect=${encodeURIComponent("/admin")}`);
       return;
     }
@@ -50,13 +56,9 @@ export default function AdminDashboardPage() {
     }
 
     loadCounts();
-  }, [isAuthenticated, router, user]);
+  }, [isLoading, router, user]);
 
-  if (!isAuthenticated() || !user || user.userRole !== "admin") {
-    return null;
-  }
-
-  if (loading) {
+  if (isLoading || loading || !user || user.userRole !== "admin") {
     return (
       <div className="space-y-3">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">

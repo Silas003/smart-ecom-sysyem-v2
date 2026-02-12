@@ -8,7 +8,7 @@ import { useToast } from "../../../../components/ui/toaster";
 
 export default function AdminUsersPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isLoading, hydrate } = useAuthStore();
   const { addToast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +18,13 @@ export default function AdminUsersPage() {
   );
 
   useEffect(() => {
-    if (!isAuthenticated() || !user) {
+    hydrate();
+  }, [hydrate]);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!user) {
       router.push(`/login?redirect=${encodeURIComponent("/admin/users")}`);
       return;
     }
@@ -33,10 +39,15 @@ export default function AdminUsersPage() {
         console.error("Failed to load users", err);
         setError(err instanceof Error ? err.message : "Failed to load users");
       });
-  }, [isAuthenticated, router, user]);
+  }, [isLoading, router, user, hydrate]);
 
-  if (!isAuthenticated() || !user || user.userRole !== "admin") {
-    return null;
+  if (isLoading || !user || user.userRole !== "admin") {
+    return (
+      <div className="space-y-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Users</h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">Checking permissions...</p>
+      </div>
+    );
   }
 
   const refresh = async () => {

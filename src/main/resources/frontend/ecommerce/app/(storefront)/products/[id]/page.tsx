@@ -21,7 +21,6 @@ async function renderProductPage(id: string) {
 
   const product = productResponse.data;
   const reviews = reviewsResponse.data;
-
   if (!product) {
     notFound();
   }

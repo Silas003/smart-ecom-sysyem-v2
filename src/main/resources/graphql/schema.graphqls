@@ -54,10 +54,13 @@ input UserInput {
 
 type Review {
   id: ID!
-  product: Product
-  user: User
+  productId: ID!
+  reviewerDisplay: String
   rating: Int!
   description: String
+  createdAt: String
+  product: Product
+  user: User
 }
 
 input ReviewInput {

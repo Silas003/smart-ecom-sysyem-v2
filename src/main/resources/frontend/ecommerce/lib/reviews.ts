@@ -70,9 +70,10 @@ export async function getReviewsForProduct(productId: number): Promise<ResponseD
       reviewsByProduct(productId: $productId) {
         id
         rating
+        productId
+        reviewerDisplay
         description
-        product { id }
-        user { id username email userRole }
+        createdAt
       }
     }
   `;
@@ -90,40 +91,31 @@ export async function getReviewsForProduct(productId: number): Promise<ResponseD
 }
 
 export async function createReview(body: ReviewRequest): Promise<ResponseDto<Review>> {
-  const mutation = `
-    mutation CreateReview($input: ReviewInput!, $userId: ID!) {
-      createReview(input: $input, userId: $userId) {
-        id
-        rating
-        description
-        product { id }
-        user { id username email userRole }
-      }
-    }
-  `;
-
-  const variables = {
-    input: {
-      productId: String(body.productId),
-      userId: String(body.userId),
-      rating: body.rating,
-      description: body.description ?? "",
+  const response = await authorizedFetch(`${API_BASE_URL}/api/v1/reviews`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
-    userId: String(body.userId),
-  };
+    body: JSON.stringify(body),
+  });
 
-  const data = await handleGraphQL<{ createReview: Review }>(
-    (input, init) => authorizedFetch(input.toString(), init as RequestInit) as Promise<Response>,
-    {
-      query: mutation,
-      variables,
-    }
-  );
+  if (!response.ok) {
+    const errorBody = await response.json();
+    const error = new Error(errorBody.message || "Failed to create review") as Error & {
+      status?: number;
+      body?: unknown;
+    };
+    error.status = response.status;
+    error.body = errorBody;
+    throw error;
+  }
+
+  const data = (await response.json()) as Review;
 
   return {
     status: 201,
     message: "review created",
-    data: data.createReview,
+    data,
   };
 }
 

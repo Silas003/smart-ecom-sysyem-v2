@@ -1,10 +1,10 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dao.interfaces.ReviewsDao;
 import com.amalitech.demo.dto.request.ReviewRequest;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.models.User;
+import com.amalitech.demo.repository.ReviewsRepository;
 import com.amalitech.demo.utils.Sorter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 public class ReviewsServiceTest {
 
     @Mock
-    private ReviewsDao reviewsDao;
+    private ReviewsRepository reviewsRepository;
 
     @Mock
     private ProductService productService;
@@ -50,7 +50,7 @@ public class ReviewsServiceTest {
         User ub = new User(); ub.setId(200L); ub.setUsername("userB");
         b.setProduct(pb); b.setUser(ub);
 
-        when(reviewsDao.findAll()).thenReturn(List.of(b,a));
+        when(reviewsRepository.findAll()).thenReturn(List.of(b,a));
         when(sorter.sort(anyList(), any())).thenReturn(List.of(a,b));
         // lenient stubbings: these are not required by this test's verification but
         // keep them to avoid NPEs if internal calls occur
@@ -69,13 +69,12 @@ public class ReviewsServiceTest {
         Product product = new Product(); product.setId(1L);
         when(productService.getProductById(1L)).thenReturn(product);
         when(userService.getUserByIdForReview(2L)).thenReturn(user);
-        when(reviewsDao.save(any())).thenReturn(11L);
+
         Reviews saved = new Reviews(); saved.setId(11L);
-        // ensure saved review has product and user for toResponse
-        Product sp = new Product(); sp.setId(1L);
-        User su = new User(); su.setId(2L); su.setUsername("tester");
-        saved.setProduct(sp); saved.setUser(su);
-        when(reviewsDao.findById(11L)).thenReturn(Optional.of(saved));
+        saved.setProduct(product);
+        saved.setUser(user);
+        when(reviewsRepository.save(any())).thenReturn(saved);
+
         var resp = reviewsService.createReview(req);
         assertNotNull(resp);
         assertEquals(11L, resp.getId());
@@ -83,22 +82,22 @@ public class ReviewsServiceTest {
 
     @Test
     void getReview_notFound_throws() {
-        when(reviewsDao.findById(9L)).thenReturn(Optional.empty());
+        when(reviewsRepository.findById(9L)).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class, () -> reviewsService.getReview(9L));
     }
 
     @Test
-    void getReviewsByProduct_valid_callsDao() {
+    void getReviewsByProduct_valid_callsRepository() {
         when(productService.getProductById(5L)).thenReturn(new Product());
-        when(reviewsDao.findByProductIdOrderByIdDesc(5L)).thenReturn(List.of());
+        when(reviewsRepository.findByProduct_IdOrderByIdDesc(5L)).thenReturn(List.of());
         var list = reviewsService.getReviewsByProduct(5L);
         assertNotNull(list);
-        verify(reviewsDao, times(1)).findByProductIdOrderByIdDesc(5L);
+        verify(reviewsRepository, times(1)).findByProduct_IdOrderByIdDesc(5L);
     }
 
     @Test
     void deleteReview_notFound_throws() {
-        when(reviewsDao.findById(99L)).thenReturn(Optional.empty());
+        when(reviewsRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class, () -> reviewsService.deleteReview(99L));
     }
 }

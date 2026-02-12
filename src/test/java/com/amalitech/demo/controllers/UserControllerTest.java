@@ -5,13 +5,18 @@ import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.restcontroller.UserController;
+import com.amalitech.demo.security.JwtAuthenticationFilter;
+import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -26,21 +31,20 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 
 @WebMvcTest(UserController.class)
+@Import({JwtAuthenticationFilter.class, JwtService.class})
+@AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
 public class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
 
-    @MockitoBean
+    @MockBean
     private UserMapper userMapper;
 
-    @MockitoBean
+    @MockBean
     private UserService userService;
-
-    @MockitoBean
-    private com.amalitech.demo.dao.interfaces.UserDao userDao;
-
 
     @Test
     void shouldReturnUserById() throws Exception {
@@ -134,9 +138,6 @@ public class UserControllerTest {
 
         // userService.createUser is void; stub to do nothing
         org.mockito.Mockito.doNothing().when(userService).createUser(any());
-        // UniqueUserValidator depends on UserDao; ensure it returns empty so validation passes
-        when(userDao.findByEmail(anyString())).thenReturn(java.util.Optional.empty());
-        when(userDao.findByUsername(anyString())).thenReturn(java.util.Optional.empty());
 
         mockMvc.perform(post("/api/v1/users/create_user")
                         .contentType("application/json")
@@ -146,3 +147,4 @@ public class UserControllerTest {
 
     }
 }
+

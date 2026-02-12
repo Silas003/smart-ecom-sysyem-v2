@@ -3,10 +3,15 @@ package com.amalitech.demo.controllers;
 import com.amalitech.demo.dto.request.ReviewRequest;
 import com.amalitech.demo.dto.response.ReviewResponse;
 import com.amalitech.demo.restcontroller.ReviewsController;
+import com.amalitech.demo.security.JwtAuthenticationFilter;
+import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.ReviewsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -18,6 +23,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ReviewsController.class)
+@Import({
+        JwtAuthenticationFilter.class, JwtService.class})
+@AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
 public class ReviewsControllerTest {
 
     @Autowired

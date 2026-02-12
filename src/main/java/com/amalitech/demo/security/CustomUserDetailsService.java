@@ -1,7 +1,7 @@
 package com.amalitech.demo.security;
 
-import com.amalitech.demo.dao.interfaces.UserDao;
 import com.amalitech.demo.models.User;
+import com.amalitech.demo.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,15 +15,15 @@ import java.util.List;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserDao userDao;
+    private final UserRepository userRepository;
 
-    public CustomUserDetailsService(UserDao userDao) {
-        this.userDao = userDao;
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userDao.findByEmail(username).orElseThrow(
+        User user = userRepository.findByEmail(username).orElseThrow(
                 () -> new UsernameNotFoundException("User not found with email: " + username)
         );
 
@@ -38,4 +38,3 @@ public class CustomUserDetailsService implements UserDetailsService {
         );
     }
 }
-

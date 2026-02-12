@@ -1,6 +1,5 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dao.interfaces.UserDao;
 import com.amalitech.demo.dto.UserRole;
 import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
@@ -10,6 +9,7 @@ import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.exceptions.UserExists;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.User;
+import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
@@ -28,55 +28,52 @@ import java.util.List;
 @Service
 public class UserService implements UserServiceInterface {
 
-    private final UserDao userDao;
+    private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final Sorter<User> sorter;
     private final JwtService jwtService;
 
     @Override
     public void createUser(UserRequest userRequest) {
-        // perform uniqueness checks using DAO
-        if(userDao.existsByEmail(userRequest.getEmail()) || userDao.existsByUsername(userRequest.getUsername())){
+        if (userRepository.existsByEmail(userRequest.getEmail()) || userRepository.existsByUsername(userRequest.getUsername())) {
             throw new UserExists("User with given email or username already exists");
         }
         User user = userMapper.toEntity(userRequest);
         String password = PasswordUtils.hashPassword(user.getPassword());
         user.setPassword(password);
-        userDao.save(user);
+        userRepository.save(user);
     }
 
     @Override
     public UserResponse getUserById(Long id) {
-       User user = userDao.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
-       return userMapper.toResponse(user);
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return userMapper.toResponse(user);
     }
+
     @Override
     public User getUserByIdForReview(Long id) {
-        return userDao.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
-
+        return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
-
 
     @Override
     public Page<UserResponse> getAllUsers(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        int offset = pageNumber * pageSize;
-        List<User> content = userDao.findAll(pageSize, offset);
+        Page<User> page = userRepository.findAll(pageable);
+        List<User> content = page.getContent();
         if (content == null) content = List.of();
 
-        // apply merge-sort by username (default)
         if (!content.isEmpty()) {
             Comparator<User> cmp = Comparator.comparing(User::getUsername, Comparator.nullsLast(String::compareToIgnoreCase));
             content = sorter.sort(content, cmp);
         }
 
-        long total = content.size();
+        long total = page.getTotalElements();
         return new PageImpl<>(userMapper.toResponse(content), pageable, total);
     }
 
     @Override
     public UserResponse updateUser(Long id, UserRequest userRequest) {
-        User existingUser = userDao.findById(id)
+        User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         String password = PasswordUtils.hashPassword(userRequest.getPassword());
@@ -85,23 +82,23 @@ public class UserService implements UserServiceInterface {
         existingUser.setEmail(userRequest.getEmail());
         existingUser.setPassword(password);
         existingUser.setUserRole(UserRole.valueOf(userRequest.getUserRole()));
-        userDao.update(existingUser);
+        userRepository.save(existingUser);
         return userMapper.toResponse(existingUser);
     }
 
     @Override
     public void deleteUser(Long id) {
-        User existingUser = userDao.findById(id)
+        User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("user not found"));
 
-        userDao.deleteById(existingUser.getId());
+        userRepository.deleteById(existingUser.getId());
     }
 
     @Override
     public LoginResponse loginUser(UserLoginRequest userRequest) {
         String email = userRequest.email();
         String password = userRequest.password();
-        User user = userDao.findByEmail(email).orElse(null);
+        User user = userRepository.findByEmail(email).orElse(null);
         if (user != null) {
             boolean authenticated = PasswordUtils.verifyPassword(password, user.getPassword());
             if (!authenticated) {

@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { registerUser, loginUser } from "../../lib/auth-api";
 import { useAuthStore } from "../../lib/auth-store";
+import { useToast } from "../../components/ui/toaster";
 
 export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams?.get("redirect") || "/";
   const setUser = useAuthStore((state) => state.setUser);
-
+  const { addToast } = useToast();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

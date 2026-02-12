@@ -6,7 +6,6 @@ import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.services.ProductService;
 import com.amalitech.demo.services.ReviewsService;
-import com.amalitech.demo.services.UserService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -20,11 +19,9 @@ import java.util.List;
 public class  ReviewGraphqlController {
 
     private final ReviewsService reviewsService;
-    private final UserService userService;
     private  final ProductService productService;
-    public ReviewGraphqlController(ReviewsService reviewsService, UserService userService, ProductService productService) {
+    public ReviewGraphqlController(ReviewsService reviewsService, ProductService productService) {
         this.reviewsService = reviewsService;
-            this.userService = userService;
             this.productService = productService;
     }
 

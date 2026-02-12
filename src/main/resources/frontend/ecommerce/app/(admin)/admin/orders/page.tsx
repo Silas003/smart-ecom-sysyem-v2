@@ -106,9 +106,10 @@ export default function AdminOrdersPage() {
                   onChange={(e) => handleStatusChange(o.id, e.target.value)}
                   className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-[11px] outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                 >
-                  <option value="PENDING">PENDING</option>
-                  <option value="COMPLETED">COMPLETED</option>
-                  <option value="CANCELLED">CANCELLED</option>
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
                 </select>
               </td>
             </tr>

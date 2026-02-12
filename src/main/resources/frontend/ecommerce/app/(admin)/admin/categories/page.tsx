@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAllCategories, type Category } from "../../../../lib/categories";
+import { getAllCategories, type Category, createCategory } from "../../../../lib/categories";
 import { useAuthStore } from "../../../../lib/auth-store";
 import { useToast } from "../../../../components/ui/toaster";
 
@@ -13,6 +13,18 @@ export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState<string>("");
+
+  const refreshCategories = async () => {
+    try {
+      const res = await getAllCategories();
+      setCategories(res.data);
+    } catch (err) {
+      console.error("Failed to load categories", err);
+      const message = err instanceof Error ? err.message : "Failed to load categories";
+      setError(message);
+      addToast(message, "error");
+    }
+  };
 
   useEffect(() => {
     hydrate();
@@ -30,17 +42,10 @@ export default function AdminCategoriesPage() {
       return;
     }
 
-    getAllCategories()
-      .then((res) => setCategories(res.data))
-      .catch((err) => {
-        console.error("Failed to load categories", err);
-        const message = err instanceof Error ? err.message : "Failed to load categories";
-        setError(message);
-        addToast(message, "error");
-      });
+    void refreshCategories();
   }, [isLoading, router, user, addToast, hydrate]);
 
-  const handleCreateCategory = (e: React.FormEvent) => {
+  const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCategoryName.trim()) {
       const message = "Category name is required";
@@ -48,10 +53,19 @@ export default function AdminCategoriesPage() {
       addToast(message, "error");
       return;
     }
-    // Placeholder for create category API call; show optimistic toast
-    setNewCategoryName("");
-    setError(null);
-    addToast("Category created (stub)", "success");
+
+    try {
+      setError(null);
+      await createCategory({ name: newCategoryName.trim() });
+      setNewCategoryName("");
+      addToast("Category created", "success");
+      await refreshCategories();
+    } catch (err) {
+      console.error("Failed to create category", err);
+      const message = err instanceof Error ? err.message : "Failed to create category";
+      setError(message);
+      addToast(message, "error");
+    }
   };
 
   if (isLoading || !user || user.userRole !== "admin") {

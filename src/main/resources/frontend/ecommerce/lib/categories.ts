@@ -1,9 +1,12 @@
 import type { ResponseDto } from "./api";
-// public category APIs (GET) remain unauthenticated
-// import { authorizedFetch } from "./secured-fetch";
+import { authorizedFetch } from "./secured-fetch";
 
 export type Category = {
   id: number;
+  name: string;
+};
+
+export type CategoryRequest = {
   name: string;
 };
 
@@ -47,4 +50,46 @@ export async function getCategoryById(id: number): Promise<ResponseDto<Category>
   });
 
   return handleCategoryResponse<ResponseDto<Category>>(res);
+}
+
+export async function createCategory(
+  body: CategoryRequest
+): Promise<ResponseDto<Category>> {
+  const res = await authorizedFetch(
+    `${API_BASE_URL}/api/v1/categories/create_category`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }
+  );
+
+  return handleCategoryResponse<ResponseDto<Category>>(res as Response);
+}
+
+export async function updateCategory(
+  id: number,
+  body: CategoryRequest
+): Promise<ResponseDto<Category>> {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/categories/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  return handleCategoryResponse<ResponseDto<Category>>(res as Response);
+}
+
+export async function deleteCategory(id: number): Promise<void> {
+  const res = await authorizedFetch(`${API_BASE_URL}/api/v1/categories/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!(res as Response).ok && (res as Response).status !== 204) {
+    await handleCategoryResponse(res as Response);
+  }
 }

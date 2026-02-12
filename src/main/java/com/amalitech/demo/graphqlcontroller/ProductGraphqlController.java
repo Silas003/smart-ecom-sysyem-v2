@@ -5,7 +5,9 @@ import com.amalitech.demo.dto.request.ProductRequest;
 import com.amalitech.demo.dto.response.ProductPageResponse;
 import com.amalitech.demo.dto.response.ProductResponse;
 import com.amalitech.demo.mapper.ProductMapper;
+import com.amalitech.demo.models.Category;
 import com.amalitech.demo.models.Product;
+import com.amalitech.demo.services.CategoryService;
 import com.amalitech.demo.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,8 +32,10 @@ public class ProductGraphqlController {
 
         private final ProductService productService;
         private final ProductMapper productMapper;
+        private final CategoryService categoryService;
 
-        public ProductGraphqlController(ProductService productService, ProductMapper productMapper) {
+        public ProductGraphqlController(ProductService productService, ProductMapper productMapper, CategoryService categoryService) {
+                this.categoryService = categoryService;
                 this.productService = productService;
                 this.productMapper = productMapper;
         }
@@ -95,4 +100,9 @@ public class ProductGraphqlController {
                 productService.deleteProduct(id);
                 return true;
         }
+
+    @SchemaMapping(typeName = "Product", field = "category")
+    public Category category(Product product) {
+        return categoryService.getCategoryByIdForProduct(product.getCategory().getId());
+    }
 }

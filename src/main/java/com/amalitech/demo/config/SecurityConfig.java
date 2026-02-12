@@ -40,12 +40,12 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
-                                "/graphql",
                                 "/api/v1/users/login",
                                 "/api/v1/users",
                                 "/api/v1/reviews/**",
                                 "/api/v1/categories/**",
-                                "/api/v1/products/**"
+                                "/api/v1/products/**",
+                                "graphql"
                         ).permitAll()
 
                         // Everything else requires authentication; fine-grained access is handled via @PreAuthorize

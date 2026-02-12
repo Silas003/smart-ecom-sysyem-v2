@@ -31,6 +31,11 @@ public class  ReviewGraphqlController {
         return reviewsService.getReview(id);
     }
 
+    @QueryMapping
+    public List<ReviewResponse> reviewsByProduct(@Argument Long productId) {
+        return reviewsService.getReviewsByProduct(productId);
+    }
+
     // Authenticated customers/admins can create reviews
     @PreAuthorize("hasAnyRole('customer','admin')")
     @MutationMapping

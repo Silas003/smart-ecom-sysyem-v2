@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAllCategories, type Category, createCategory } from "../../../../lib/categories";
+import {
+  getAllCategories,
+  type Category,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "../../../../lib/categories";
 import { useAuthStore } from "../../../../lib/auth-store";
 import { useToast } from "../../../../components/ui/toaster";
 
@@ -15,17 +21,12 @@ export default function AdminCategoriesPage() {
   const [newCategoryName, setNewCategoryName] = useState<string>("");
   const [creating, setCreating] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState<string>("");
 
   const refreshCategories = async () => {
-    try {
-      const res = await getAllCategories();
-      setCategories(res.data);
-    } catch (err) {
-      console.error("Failed to load categories", err);
-      const message = err instanceof Error ? err.message : "Failed to load categories";
-      setError(message);
-      addToast(message, "error");
-    }
+    const res = await getAllCategories();
+    setCategories(res.data);
   };
 
   useEffect(() => {
@@ -45,14 +46,32 @@ export default function AdminCategoriesPage() {
     }
 
     refreshCategories()
-      .catch(() => {})
+      .catch((err) => {
+        console.error("Failed to load categories", err);
+        const message = err instanceof Error ? err.message : "Failed to load categories";
+        setError(message);
+        addToast(message, "error");
+      })
       .finally(() => setInitialLoading(false));
   }, [isLoading, router, user, addToast, hydrate]);
 
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCategoryName.trim()) {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) {
       const message = "Category name is required";
+      setError(message);
+      addToast(message, "error");
+      return;
+    }
+    if (trimmed.length < 3) {
+      const message = "Category name must be at least 3 characters";
+      setError(message);
+      addToast(message, "error");
+      return;
+    }
+    if (categories.some((c) => c.name.toLowerCase() === trimmed.toLowerCase())) {
+      const message = "A category with this name already exists";
       setError(message);
       addToast(message, "error");
       return;
@@ -61,7 +80,7 @@ export default function AdminCategoriesPage() {
     try {
       setCreating(true);
       setError(null);
-      await createCategory({ name: newCategoryName.trim() });
+      await createCategory({ name: trimmed });
       setNewCategoryName("");
       addToast("Category created", "success");
       await refreshCategories();
@@ -72,6 +91,71 @@ export default function AdminCategoriesPage() {
       addToast(message, "error");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const startEdit = (category: Category) => {
+    setEditingId(category.id);
+    setEditingName(category.name);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingName("");
+  };
+
+  const handleUpdateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingId === null) return;
+    const trimmed = editingName.trim();
+    if (!trimmed) {
+      const message = "Category name is required";
+      setError(message);
+      addToast(message, "error");
+      return;
+    }
+    if (trimmed.length < 3) {
+      const message = "Category name must be at least 3 characters";
+      setError(message);
+      addToast(message, "error");
+      return;
+    }
+    if (
+      categories.some(
+        (c) => c.id !== editingId && c.name.toLowerCase() === trimmed.toLowerCase()
+      )
+    ) {
+      const message = "Another category with this name already exists";
+      setError(message);
+      addToast(message, "error");
+      return;
+    }
+
+    try {
+      setError(null);
+      await updateCategory(editingId, { name: trimmed });
+      addToast("Category updated", "success");
+      await refreshCategories();
+      cancelEdit();
+    } catch (err) {
+      console.error("Failed to update category", err);
+      const message = err instanceof Error ? err.message : "Failed to update category";
+      setError(message);
+      addToast(message, "error");
+    }
+  };
+
+  const handleDeleteCategory = async (id: number) => {
+    if (!window.confirm("Delete this category? Products using it may be affected.")) return;
+    try {
+      await deleteCategory(id);
+      setCategories((prev) => prev.filter((c) => c.id !== id));
+      addToast("Category deleted", "success");
+    } catch (err) {
+      console.error("Failed to delete category", err);
+      const message = err instanceof Error ? err.message : "Failed to delete category";
+      setError(message);
+      addToast(message, "error");
     }
   };
 
@@ -155,6 +239,7 @@ export default function AdminCategoriesPage() {
               <tr className="border-b border-zinc-200 text-xs uppercase tracking-[0.18em] text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
                 <th className="py-2 pl-3 pr-4">ID</th>
                 <th className="py-2 pr-4">Name</th>
+                <th className="py-2 pr-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -164,7 +249,57 @@ export default function AdminCategoriesPage() {
                   className="border-b border-zinc-100 text-xs text-zinc-700 last:border-0 dark:border-zinc-800 dark:text-zinc-200"
                 >
                   <td className="py-2 pl-3 pr-4">{c.id}</td>
-                  <td className="py-2 pr-4">{c.name}</td>
+                  <td className="py-2 pr-4">
+                    {editingId === c.id ? (
+                      <form onSubmit={handleUpdateCategory} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          className="flex-1 rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                        />
+                      </form>
+                    ) : (
+                      c.name
+                    )}
+                  </td>
+                  <td className="py-2 pr-3 text-right space-x-2">
+                    {editingId === c.id ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handleUpdateCategory}
+                          className="rounded-full border border-zinc-300 px-3 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="text-[11px] text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => startEdit(c)}
+                          className="rounded-full border border-zinc-300 px-3 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCategory(c.id)}
+                          className="rounded-full border border-red-300 px-3 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -123,5 +123,5 @@ export default async function ProductPage(
 ) {
   const resolvedParams =
     props.params instanceof Promise ? await props.params : props.params;
-  return renderProductPage(resolvedParams.id);
+  return await renderProductPage(resolvedParams.id);
 }

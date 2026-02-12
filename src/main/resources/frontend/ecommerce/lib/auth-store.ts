@@ -10,6 +10,7 @@ type AuthState = {
   login: (payload: LoginResponse) => void;
   logout: () => void;
   hydrate: () => void;
+  setUser: (user: User) => void;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -44,6 +45,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     } else {
       set({ token: null, user: null, isLoading: false });
     }
+  },
+  setUser: (user: User) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("auth_user", JSON.stringify(user));
+    }
+    set((state) => ({ ...state, user }));
   },
 }));
 

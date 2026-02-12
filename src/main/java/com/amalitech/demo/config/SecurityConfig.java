@@ -43,7 +43,7 @@ public class SecurityConfig {
                                 "/graphql",
                                 "/api/v1/users/login",
                                 "/api/v1/users",
-                                "/api/v1/reviews",
+                                "/api/v1/reviews/**",
                                 "/api/v1/categories",
                                 "/api/v1/products"
                         ).permitAll()

@@ -171,3 +171,32 @@ export async function registerUser(
 ): Promise<RegisterUserResponse> {
   return createUser(request);
 }
+
+export async function resetPasswordWithUserId(userId: string, password: string): Promise<void> {
+  const res = await authorizedFetch(
+    `${API_BASE_URL}/api/v1/users/${userId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    }
+  );
+
+  if (!res.ok) {
+    let body: unknown = null;
+    try {
+      body = await res.json();
+    } catch {
+      // ignore
+    }
+    const message =
+      typeof body === "object" && body !== null && "message" in body
+        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (body as any).message
+        : `Failed to reset password (status ${res.status})`;
+    const error = new Error(message) as Error & { status?: number; body?: unknown };
+    error.status = res.status;
+    error.body = body;
+    throw error;
+  }
+}

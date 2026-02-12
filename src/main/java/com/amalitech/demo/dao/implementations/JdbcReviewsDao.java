@@ -84,31 +84,76 @@ public class JdbcReviewsDao implements ReviewsDao {
     @Override
     public long save(Reviews reviews) {
         String sql = "INSERT INTO reviews(stars, description, user_id, product_id) VALUES(?, ?, ?, ?)";
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, reviews.getRating());
-            ps.setString(2, reviews.getDescription());
-            ps.setLong(3, reviews.getUser().getId());
-            ps.setLong(4, reviews.getProduct().getId());
-            ps.executeUpdate();
-            try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) return keys.getLong(2);
+        Connection conn = null;
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+
+            long generatedId = -1;
+            try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setInt(1, reviews.getRating());
+                ps.setString(2, reviews.getDescription());
+                ps.setLong(3, reviews.getUser().getId());
+                ps.setLong(4, reviews.getProduct().getId());
+                ps.executeUpdate();
+                try (ResultSet keys = ps.getGeneratedKeys()) {
+                    if (keys.next()) generatedId = keys.getLong(2);
+                }
             }
+
+            conn.commit();
+            return generatedId;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException rollbackEx) {
+                    throw new RuntimeException("Failed to rollback review save", rollbackEx);
+                }
+            }
+            throw new RuntimeException("Failed to save review", e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ignored) {
+                }
+            }
         }
-        return -1;
     }
 
     @Override
     public void deleteById(Long id) {
         String sql = "DELETE FROM reviews WHERE id = ?";
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, id);
-            ps.executeUpdate();
+        Connection conn = null;
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException rollbackEx) {
+                    throw new RuntimeException("Failed to rollback review deletion", rollbackEx);
+                }
+            }
+            throw new RuntimeException("Failed to delete review", e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ignored) {
+                }
+            }
         }
     }
 

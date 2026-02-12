@@ -15,7 +15,7 @@ export default function AccountPage() {
   const [loading, setLoading] = useState(!initialUserId);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
-  const { user, hydrate } = useAuthStore();
+  const { user, hydrate, setUser } = useAuthStore();
   const { addToast } = useToast();
 
   const [username, setUsername] = useState("");
@@ -88,11 +88,12 @@ export default function AccountPage() {
 
     try {
       setSavingProfile(true);
-      await updateUser(user.id, {
+      const res = await updateUser(user.id, {
         username: username.trim(),
         email: email.trim(),
         userRole: user.userRole,
       });
+      setUser(res.data);
       addToast("Profile updated", "success");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to update profile";

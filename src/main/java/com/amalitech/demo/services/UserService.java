@@ -3,11 +3,13 @@ package com.amalitech.demo.services;
 import com.amalitech.demo.dto.UserRole;
 import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
+import com.amalitech.demo.dto.response.LoginResponse;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.dao.interfaces.UserDao;
+import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
 import com.amalitech.demo.utils.Sorter;
@@ -28,6 +30,7 @@ public class UserService implements UserServiceInterface {
     private final UserDao userDao;
     private final UserMapper userMapper;
     private final Sorter<User> sorter;
+    private final JwtService jwtService;
 
     @Override
     public void createUser(UserRequest userRequest) {
@@ -94,19 +97,20 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    public UserResponse loginUser(UserLoginRequest userRequest) {
+    public LoginResponse loginUser(UserLoginRequest userRequest) {
         String email = userRequest.email();
         String password = userRequest.password();
         User user = userDao.findByEmail(email).orElse(null);
-        if(user != null){
-          boolean authenticated =   PasswordUtils.verifyPassword(password, user.getPassword());
-            if(!authenticated){
+        if (user != null) {
+            boolean authenticated = PasswordUtils.verifyPassword(password, user.getPassword());
+            if (!authenticated) {
                 throw new IllegalArgumentException("Invalid credentials");
+            } else {
+                UserResponse userResponse = userMapper.toResponse(user);
+                String token = jwtService.generateToken(user);
+                return new LoginResponse(token, userResponse);
             }
-            else {
-                return userMapper.toResponse(user);
-            }
-        }else{
+        } else {
             throw new IllegalArgumentException("User with given email does not exist");
         }
     }

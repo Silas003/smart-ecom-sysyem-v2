@@ -38,7 +38,7 @@ export default function AdminDashboardPage() {
     async function loadCounts() {
       try {
         const [usersRes, productsRes, ordersRes] = await Promise.all([
-          getUsers({ page: 0, size: 1 }),
+          getUsers({ page: 0, size: 100 }),
           listProducts({ page: 0, size: 1, sort: "price,asc" }),
           getAllOrders({ page: 0, size: 5 }),
         ]);

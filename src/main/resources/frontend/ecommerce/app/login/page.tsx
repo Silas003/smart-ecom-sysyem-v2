@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loginUser } from "../../lib/auth-api";
 import { useAuthStore } from "../../lib/auth-store";
+import { useToast } from "../../../../components/ui/toaster";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function LoginPage() {
       const res = await loginUser({ email, password });
       auth.login(res.data);
       if (typeof window !== "undefined") {
-        window.alert("Logged in successfully");
+        addToast("Logged in successfully","success");
       }
       const role = res.data.user.userRole?.toLowerCase();
       if (role === "admin") {
@@ -32,7 +33,7 @@ export default function LoginPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed";
       if (typeof window !== "undefined") {
-        window.alert(message);
+        addToast(message,"error");
       }
     } finally {
       setLoading(false);

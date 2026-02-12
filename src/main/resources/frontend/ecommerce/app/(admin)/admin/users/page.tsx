@@ -16,6 +16,16 @@ export default function AdminUsersPage() {
   const [form, setForm] = useState<{ username: string; email: string; password: string; userRole: UserRole }>(
     { username: "", email: "", password: "", userRole: "customer" }
   );
+  const [page, setPage] = useState(0);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const loadPage = async (pageIndex: number) => {
+    const res = await getUsers({ page: pageIndex, size: pageSize });
+    setUsers(res.data.content);
+    setTotalPages(res.data.totalPages);
+    setPage(res.data.number);
+  };
 
   useEffect(() => {
     hydrate();
@@ -33,27 +43,15 @@ export default function AdminUsersPage() {
       return;
     }
 
-    getUsers({ page: 0, size: 50 })
-      .then((res) => setUsers(res.data.content))
-      .catch((err) => {
-        console.error("Failed to load users", err);
-        setError(err instanceof Error ? err.message : "Failed to load users");
-      });
+    loadPage(0).catch((err) => {
+      console.error("Failed to load users", err);
+      setError(err instanceof Error ? err.message : "Failed to load users");
+    });
   }, [isLoading, router, user, hydrate]);
-
-  if (isLoading || !user || user.userRole !== "admin") {
-    return (
-      <div className="space-y-3">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Users</h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">Checking permissions...</p>
-      </div>
-    );
-  }
 
   const refresh = async () => {
     try {
-      const res = await getUsers({ page: 0, size: 50 });
-      setUsers(res.data.content);
+      await loadPage(page);
     } catch (err) {
       console.error("Failed to refresh users", err);
     }
@@ -188,6 +186,30 @@ export default function AdminUsersPage() {
           ))}
         </tbody>
       </table>
+
+      <div className="flex items-center justify-between pt-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <span>
+          Page {page + 1} of {totalPages || 1}
+        </span>
+        <div className="space-x-2">
+          <button
+            type="button"
+            disabled={page <= 0}
+            onClick={() => loadPage(page - 1).catch(() => {})}
+            className="rounded-full border border-zinc-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700"
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            disabled={page + 1 >= totalPages}
+            onClick={() => loadPage(page + 1).catch(() => {})}
+            className="rounded-full border border-zinc-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -12,6 +12,16 @@ export default function AdminOrdersPage() {
   const { addToast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const loadPage = async (pageIndex: number) => {
+    const res = await getAllOrders({ page: pageIndex, size: pageSize });
+    setOrders(res.data.content);
+    setTotalPages(res.data.totalPages);
+    setPage(res.data.number);
+  };
 
   useEffect(() => {
     hydrate();
@@ -29,24 +39,11 @@ export default function AdminOrdersPage() {
       return;
     }
 
-    getAllOrders({ page: 0, size: 50 })
-      .then((res) => setOrders(res.data.content))
-      .catch((err) => {
-        console.error("Failed to load orders", err);
-        setError(err instanceof Error ? err.message : "Failed to load orders");
-      });
+    loadPage(0).catch((err) => {
+      console.error("Failed to load orders", err);
+      setError(err instanceof Error ? err.message : "Failed to load orders");
+    });
   }, [isLoading, router, user, hydrate]);
-
-  if (isLoading || !user || user.userRole !== "admin") {
-    return (
-      <div className="space-y-3">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Orders
-        </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">Checking permissions...</p>
-      </div>
-    );
-  }
 
   const handleStatusChange = async (id: number, status: string) => {
     try {
@@ -61,6 +58,21 @@ export default function AdminOrdersPage() {
       addToast(message, "error");
     }
   };
+
+  const handlePageChange = (nextPage: number) => {
+    loadPage(nextPage).catch(() => {});
+  };
+
+  if (isLoading || !user || user.userRole !== "admin") {
+    return (
+      <div className="space-y-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Orders
+        </h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">Checking permissions...</p>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -116,6 +128,29 @@ export default function AdminOrdersPage() {
           ))}
         </tbody>
       </table>
+      <div className="flex items-center justify-between pt-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <span>
+          Page {page + 1} of {totalPages || 1}
+        </span>
+        <div className="space-x-2">
+          <button
+            type="button"
+            disabled={page <= 0}
+            onClick={() => handlePageChange(page - 1)}
+            className="rounded-full border border-zinc-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700"
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            disabled={page + 1 >= totalPages}
+            onClick={() => handlePageChange(page + 1)}
+            className="rounded-full border border-zinc-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

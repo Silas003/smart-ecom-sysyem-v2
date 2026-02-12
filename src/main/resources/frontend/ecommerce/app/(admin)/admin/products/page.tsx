@@ -28,6 +28,16 @@ export default function AdminProductsPage() {
     stockQuantity: number;
     categoryId: number;
   }>({ name: "", price: 0, stockQuantity: 0, categoryId: 0 });
+  const [page, setPage] = useState(0);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const loadPage = async (pageIndex: number) => {
+    const res = await listProducts({ page: pageIndex, size: pageSize, sort: "price,asc" });
+    setProducts(res.data.content);
+    setTotalPages(res.data.totalPages);
+    setPage(res.data.number);
+  };
 
   useEffect(() => {
     hydrate();
@@ -46,7 +56,7 @@ export default function AdminProductsPage() {
     }
 
     const load = async () => {
-      await refresh();
+      await loadPage(0);
       try {
         const res = await getAllCategories();
         setCategories(res.data);
@@ -60,8 +70,7 @@ export default function AdminProductsPage() {
 
   const refresh = async () => {
     try {
-      const res = await listProducts({ page: 0, size: 50, sort: "price,asc" });
-      setProducts(res.data.content);
+      await loadPage(page);
     } catch (err) {
       console.error("Failed to load products", err);
       setError(err instanceof Error ? err.message : "Failed to load products");
@@ -262,6 +271,30 @@ export default function AdminProductsPage() {
           ))}
         </tbody>
       </table>
+
+      <div className="flex items-center justify-between pt-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <span>
+          Page {page + 1} of {totalPages || 1}
+        </span>
+        <div className="space-x-2">
+          <button
+            type="button"
+            disabled={page <= 0}
+            onClick={() => loadPage(page - 1).catch(() => {})}
+            className="rounded-full border border-zinc-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700"
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            disabled={page + 1 >= totalPages}
+            onClick={() => loadPage(page + 1).catch(() => {})}
+            className="rounded-full border border-zinc-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

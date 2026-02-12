@@ -11,6 +11,7 @@ import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.OrdersMapper;
 import com.amalitech.demo.models.*;
+import com.amalitech.demo.security.CurrentUser;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import com.amalitech.demo.utils.Sorter;
 import lombok.AllArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -42,8 +44,31 @@ public class OrderService implements OrderServiceInterface {
                     OrderStatus.cancelled, Set.of()
             );
 
+    private Long getCurrentUserIdOrThrow() {
+        String email = CurrentUser.getEmail();
+        if (email == null) {
+            throw new AccessDeniedException("Unauthenticated");
+        }
+        User user = userDao.findByEmail(email)
+                .orElseThrow(() -> new AccessDeniedException("User not found for current principal"));
+        return user.getId();
+    }
+
+    private boolean isCurrentUserAdmin() {
+        var auth = CurrentUser.getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_admin"));
+    }
+
     @Override
     public List<OrderResponse> getOrderByUserId(Long userId){
+        // Enforce ownership: non-admins can only see their own orders
+        if (!isCurrentUserAdmin()) {
+            Long currentUserId = getCurrentUserIdOrThrow();
+            if (!currentUserId.equals(userId)) {
+                throw new AccessDeniedException("Cannot access other users' orders");
+            }
+        }
         List<Orders> orders = ordersDao.findByUserId(userId);
         if(orders == null || orders.isEmpty()){
             throw new EntityNotFoundException("user does not have any orders");
@@ -54,6 +79,14 @@ public class OrderService implements OrderServiceInterface {
     @Override
     public OrderResponse getOrderById(Long id){
         Orders order = ordersDao.findById(id).orElseThrow(()-> new EntityNotFoundException("order not found"));
+        // Enforce ownership for non-admins based on order.user.id
+        if (!isCurrentUserAdmin()) {
+            Long currentUserId = getCurrentUserIdOrThrow();
+            User orderUser = order.getUser();
+            if (orderUser == null || orderUser.getId() == null || !orderUser.getId().equals(currentUserId)) {
+                throw new AccessDeniedException("Cannot access other users' orders");
+            }
+        }
         return ordersMapper.toResponse(order);
     }
 

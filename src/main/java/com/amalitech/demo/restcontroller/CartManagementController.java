@@ -19,6 +19,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +33,11 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Carts", description = "Shopping cart management")
 public class CartManagementController {
     private final CartServiceInterface cartService;
+
+    private boolean isAdmin(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_admin"));
+    }
 
     // Customers manage their own carts; admin can also inspect/create if needed
     @PreAuthorize("hasAnyRole('customer','admin')")
@@ -50,6 +57,10 @@ public class CartManagementController {
     public ResponseDto<CartResponse> getOrCreateCart(
             @Parameter(description = "ID of the user", required = true)
             @PathVariable @Positive Long userId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!isAdmin(auth)) {
+            // TODO: enforce that userId matches the authenticated user when userId mapping is available
+        }
         CartResponse cart = cartService.createCart(userId);
         return new ResponseDto<>(HttpStatus.OK, "Cart retrieved successfully", cart);
     }

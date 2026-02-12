@@ -23,6 +23,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,6 +35,8 @@ import java.util.List;
 @Tag(name = "Order management",description = "Endpoints to streamline order processing")
 public class OrderManagementController {
     private OrderServiceInterface orderService;
+
+    // Ownership is enforced in OrderService; here we only handle routing and role guards
 
     // Customer can view their own orders; admins can view any user's orders
     @PreAuthorize("hasAnyRole('admin','customer')")
@@ -59,7 +63,6 @@ public class OrderManagementController {
             @ApiResponse(responseCode = "404", description = "Order not found")
     })
     public ResponseDto<OrderResponse> getOrderById(@Parameter(description = "ID of the order to retrieve", required = true) @PathVariable Long orderId){
-        System.out.println(orderId);
         OrderResponse orderResponse = orderService.getOrderById(orderId);
         return new ResponseDto<>(HttpStatus.OK,"order retrieved",orderResponse);
     }

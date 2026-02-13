@@ -22,7 +22,8 @@ public class CacheConfig {
                 "productsByCategory",
                 "product",
                 "category",
-                "allcategories"
+                "allcategories",
+                "activeUserCart"
         );
         caffeineCacheManager.setCaffeine(Caffeine.newBuilder()
                 .initialCapacity(100)

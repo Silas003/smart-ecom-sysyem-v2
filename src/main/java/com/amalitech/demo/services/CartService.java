@@ -33,7 +33,7 @@ public class CartService implements CartServiceInterface {
     private final CartItemMapper cartItemMapper;
     private final InventoryRepository inventoryRepository;
 
-    @CachePut(value = "activeUserCart", key = "#result.id + #userId")
+    @CachePut(value = "activeUserCart", key = "#userId")
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public CartResponse createCart(Long userId) {
@@ -51,7 +51,7 @@ public class CartService implements CartServiceInterface {
         return buildCartResponse(cart);
     }
 
-    @Cacheable(value = "cart", key = "#userId")
+    @Cacheable(value = "activeUserCart", key = "#userId")
     @Override
     public CartResponse getCartByUserId(Long userId) {
         Cart cart = cartRepository.findByUserIdAndStatus(userId, CartStatus.active)
@@ -110,7 +110,7 @@ public class CartService implements CartServiceInterface {
         return cartItemMapper.toResponse(cartItems);
     }
 
-    @CachePut(value = "activeUserCart", key = "#cartId + result.userId")
+    @CachePut(value = "activeUserCart", key = "#result.id")
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public CartResponse updateCartStatus(Long cartId, CartStatus Status) {
@@ -143,8 +143,23 @@ public class CartService implements CartServiceInterface {
             throw new IllegalStateException("Cannot remove items from a " + cart.getStatus() + " cart");
         }
 
-        // 4. Delete the cart item
         cartItemsRepository.deleteById(cartItemId);
+
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void clearCart(Long userId) {
+        // find active cart for user
+        Cart cart = cartRepository.findByUserIdAndStatus(userId, CartStatus.active)
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+        // delete all items for that cart
+        List<CartItems> items = cartItemsRepository.findByCartId(cart.getId());
+        if (!items.isEmpty()) {
+            cartItemsRepository.deleteAll(items);
+        }
+
+        cartRepository.save(cart);
     }
 
     private CartResponse buildCartResponse(Cart cart) {

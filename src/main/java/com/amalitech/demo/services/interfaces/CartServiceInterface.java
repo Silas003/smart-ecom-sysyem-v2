@@ -17,4 +17,7 @@ public interface CartServiceInterface {
 
     @Transactional
     void removeItemFromCart(Long userId, Long cartItemId);
+
+    @Transactional
+    void clearCart(Long userId);
 }

@@ -118,7 +118,7 @@ public class CartManagementController {
     }
 
     // Admin can adjust cart status (e.g., after order processing); customer typically cannot
-    @PreAuthorize("hasRole('admin')")
+    @PreAuthorize("hasAnyRole('admin','customer')")
     @PatchMapping("/{cartId}/status")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
@@ -139,5 +139,26 @@ public class CartManagementController {
             @Valid @RequestBody UpdateCartStatusRquest status) {
         CartResponse cartResponse = cartService.updateCartStatus(cartId, status.status());
         return new ResponseDto<>(HttpStatus.OK, "Cart status updated successfully", null);
+    }
+
+    @PreAuthorize("hasAnyRole('customer','admin')")
+    @DeleteMapping("/users/{userId}/items")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+        summary = "Clear all items from cart",
+        description = "Bulk remove all items from the user's active cart. Cart record is kept but becomes empty."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Cart cleared successfully (no content)"),
+            @ApiResponse(responseCode = "400", description = "Invalid request or unauthorized access"),
+            @ApiResponse(responseCode = "404", description = "Active cart not found for user"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseDto<Void> clearCart(
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable @Positive Long userId) {
+
+        cartService.clearCart(userId);
+        return new ResponseDto<>(HttpStatus.NO_CONTENT, "Cart cleared successfully", null);
     }
 }

@@ -73,7 +73,7 @@ public class OrderManagementControllerTest {
     @WithMockUser(roles = {"admin","customer"})
     void shouldReturnPagedOrders() throws Exception {
         OrderResponse r = new OrderResponse(3L, 5L, "CREATED", 50.0, List.of(), LocalDateTime.now());
-        when(orderService.getAllOrders(any())).thenReturn(new PageImpl<>(List.of(r), PageRequest.of(0,10),1));
+        when(orderService.getAllOrders(any(), any(), any(), any(), any())).thenReturn(new PageImpl<>(List.of(r), PageRequest.of(0,10),1));
 
         mockMvc.perform(get("/api/v1/orders/").param("page","0").param("size","10"))
                 .andExpect(status().isOk());

@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -163,19 +164,17 @@ public class OrderServiceTest {
     }
 
     @Test
-    void getAllOrders_withSorting_usesSorter_and_maps() {
+    void getAllOrders_withSorting_maps() {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("totalAmount").descending());
         Orders o1 = new Orders(); o1.setId(1L); o1.setTotalAmount(5.0);
         Orders o2 = new Orders(); o2.setId(2L); o2.setTotalAmount(15.0);
-        Page<Orders> page = new PageImpl<>(List.of(o1, o2), pageable, 2);
-        when(ordersRepository.findAll(pageable)).thenReturn(page);
-        when(sorter.sort(anyList(), any())).thenReturn(List.of(o2, o1));
+        Page<Orders> page = new PageImpl<>(List.of(o2, o1), pageable, 2);
+        when(ordersRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
         when(ordersMapper.toResponse(any(Orders.class))).thenReturn(new OrderResponse(2L, 1L, "pending", 15.0, List.of(), LocalDateTime.now()));
 
-        var resultPage = orderService.getAllOrders(pageable);
+        var resultPage = orderService.getAllOrders(pageable, null, null, null, null);
         assertNotNull(resultPage);
         assertEquals(2, resultPage.getContent().size());
-        verify(sorter, times(1)).sort(anyList(), any());
         verify(ordersMapper, atLeastOnce()).toResponse(any(Orders.class));
     }
 

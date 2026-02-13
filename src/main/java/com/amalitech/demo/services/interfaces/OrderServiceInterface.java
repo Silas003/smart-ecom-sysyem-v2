@@ -15,7 +15,7 @@ public interface OrderServiceInterface {
 
     OrderResponse getOrderById(Long id);
 
-    Page<OrderResponse> getAllOrders(Pageable pageable);
+    Page<OrderResponse> getAllOrders(Pageable pageable, Long userId, OrderStatus status, LocalDateTime start, LocalDateTime end);
 
     void deleteOrder(Long orderId);
 

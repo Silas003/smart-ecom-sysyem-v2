@@ -67,7 +67,6 @@ public class OrderManagementController {
         return new ResponseDto<>(HttpStatus.OK,"order retrieved",orderResponse);
     }
 
-    // Admin can view all orders (e.g., dashboard)
     @PreAuthorize("hasRole('admin')")
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
@@ -75,11 +74,15 @@ public class OrderManagementController {
             @ApiResponse(responseCode = "200", description = "Orders retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class))))
     })
-    public ResponseDto<Page<OrderResponse>> getAllOrder(@PageableDefault(
-            size = 10,sort = "totalAmount",direction = Sort.Direction.DESC
-    )Pageable pageable){
-        Page<OrderResponse> orders  = orderService.getAllOrders(pageable);
-        return new ResponseDto<>(HttpStatus.OK,"orders retrieved",orders);
+    public ResponseDto<Page<OrderResponse>> getAllOrder(
+            @PageableDefault(size = 10, sort = "totalAmount", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) com.amalitech.demo.dto.OrderStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end
+    ) {
+        Page<OrderResponse> orders = orderService.getAllOrders(pageable, userId, status, start, end);
+        return new ResponseDto<>(HttpStatus.OK, "orders retrieved", orders);
     }
 
     // Admin can delete any order; potentially customer could cancel own in future

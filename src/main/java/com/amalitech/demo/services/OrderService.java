@@ -13,12 +13,14 @@ import com.amalitech.demo.repository.ProductRepository;
 import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.security.CurrentUser;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
+import com.amalitech.demo.services.specification.OrderSpecification;
 import com.amalitech.demo.utils.Sorter;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -95,25 +97,16 @@ public class OrderService implements OrderServiceInterface {
     }
 
     @Override
-    public Page<OrderResponse> getAllOrders(Pageable pageable) {
-        Page<Orders> page = ordersRepository.findAll(pageable);
-        List<Orders> orders = page.getContent();
-        if (orders == null) orders = List.of();
+    public Page<OrderResponse> getAllOrders(Pageable pageable, Long userId, OrderStatus status, LocalDateTime start, LocalDateTime end) {
+        Specification<Orders> spec = Specification.where(OrderSpecification.hasUserId(userId))
+                .and(OrderSpecification.hasStatus(status))
+                .and(OrderSpecification.isBetween(start, end));
 
-        // Apply in-memory merge sort if pageable requests sorting
-        Sort sort = pageable.getSort();
-        if (sort.isSorted() && !orders.isEmpty()) {
-            Sort.Order order = sort.iterator().next();
-            Comparator<Orders> cmp = buildOrdersComparator(order.getProperty());
-            if (cmp != null) {
-                if (order.isDescending()) cmp = cmp.reversed();
-                orders = sorter.sort(orders, cmp);
-            }
-        }
-
-        List<OrderResponse> content = orders.stream().map(ordersMapper::toResponse).toList();
-        long total = page.getTotalElements();
-        return new PageImpl<>(content, pageable, total);
+        Page<Orders> page = ordersRepository.findAll(spec, pageable);
+        List<OrderResponse> content = page.getContent().stream()
+                .map(ordersMapper::toResponse)
+                .toList();
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
     private Comparator<Orders> buildOrdersComparator(String prop) {
@@ -240,8 +233,11 @@ public class OrderService implements OrderServiceInterface {
             }
         }
 
-        Page<Orders> page = ordersRepository.findByUserIdAndCreatedAtBetweenNative(userId, start, end, pageable);
-        List<OrderResponse> content = page.getContent() == null ? List.of() : page.getContent().stream()
+        Specification<Orders> spec = OrderSpecification.hasUserId(userId)
+                .and(OrderSpecification.isBetween(start, end));
+
+        Page<Orders> page = ordersRepository.findAll(spec, pageable);
+        List<OrderResponse> content = page.getContent().stream()
                 .map(ordersMapper::toResponse)
                 .toList();
         return new PageImpl<>(content, pageable, page.getTotalElements());

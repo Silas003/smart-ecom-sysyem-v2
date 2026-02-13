@@ -8,7 +8,10 @@ import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.ReviewsRepository;
 import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
+import com.amalitech.demo.services.specification.ReviewSpecification;
 import com.amalitech.demo.utils.Sorter;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -32,13 +35,12 @@ public class ReviewsService implements ReviewsServiceInterface {
     }
 
     @Override
-    public List<ReviewResponse> getAllReviews() {
-        List<Reviews> list = reviewsRepository.findAll();
-        if (list == null || list.isEmpty()) return List.of();
-        // Ensure stable sorting by id DESC
-        List<Reviews> sorted = sorter.sort(list,
-                Comparator.comparing(Reviews::getId, Comparator.nullsLast(Long::compareTo)).reversed());
-        return sorted.stream().map(this::toResponse).collect(Collectors.toList());
+    public List<ReviewResponse> getAllReviews(Long productId, Long userId) {
+        Specification<Reviews> spec = Specification.where(ReviewSpecification.hasProductId(productId))
+                .and(ReviewSpecification.hasUserId(userId));
+
+        List<Reviews> list = reviewsRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "id"));
+        return list.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
@@ -61,16 +63,12 @@ public class ReviewsService implements ReviewsServiceInterface {
 
     @Override
     public List<ReviewResponse> getReviewsByProduct(Long productId) {
-        productService.getProductById(productId); // validate exists
-        return reviewsRepository.findByProduct_IdOrderByIdDesc(productId)
-                .stream().map(this::toResponse).collect(Collectors.toList());
+        return getAllReviews(productId, null);
     }
 
     @Override
     public List<ReviewResponse> getReviewsByUser(Long userId) {
-        userService.getUserByIdForReview(userId); // validate exists
-        return reviewsRepository.findByUser_IdOrderByIdDesc(userId)
-                .stream().map(this::toResponse).collect(Collectors.toList());
+        return getAllReviews(null, userId);
     }
 
     @Override

@@ -38,7 +38,7 @@ public class ReviewsServiceTest {
     private ReviewsService reviewsService;
 
     @Test
-    void getAllReviews_sorted_returnsResponses() {
+    void getAllReviews_returnsResponses() {
         Reviews a = new Reviews(); a.setId(1L);
         // set product and user to avoid NPE in toResponse
         Product pa = new Product(); pa.setId(10L);
@@ -50,16 +50,15 @@ public class ReviewsServiceTest {
         User ub = new User(); ub.setId(200L); ub.setUsername("userB");
         b.setProduct(pb); b.setUser(ub);
 
-        when(reviewsRepository.findAll()).thenReturn(List.of(b,a));
-        when(sorter.sort(anyList(), any())).thenReturn(List.of(a,b));
+        when(reviewsRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Sort.class))).thenReturn(List.of(b,a));
         // lenient stubbings: these are not required by this test's verification but
         // keep them to avoid NPEs if internal calls occur
         org.mockito.Mockito.lenient().when(userService.getUserByIdForReview(anyLong())).thenReturn(new User());
         org.mockito.Mockito.lenient().when(productService.getProductById(anyLong())).thenReturn(new Product());
         // internal toResponse uses model fields; we'll spy the service behavior by calling getAllReviews
-        var resp = reviewsService.getAllReviews();
+        var resp = reviewsService.getAllReviews(null, null);
         assertNotNull(resp);
-        verify(sorter, times(1)).sort(anyList(), any());
+        verify(reviewsRepository, times(1)).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Sort.class));
     }
 
     @Test
@@ -101,11 +100,10 @@ public class ReviewsServiceTest {
 
     @Test
     void getReviewsByProduct_valid_callsRepository() {
-        when(productService.getProductById(5L)).thenReturn(new Product());
-        when(reviewsRepository.findByProduct_IdOrderByIdDesc(5L)).thenReturn(List.of());
+        when(reviewsRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Sort.class))).thenReturn(List.of());
         var list = reviewsService.getReviewsByProduct(5L);
         assertNotNull(list);
-        verify(reviewsRepository, times(1)).findByProduct_IdOrderByIdDesc(5L);
+        verify(reviewsRepository, times(1)).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Sort.class));
     }
 
     @Test

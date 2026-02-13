@@ -27,8 +27,8 @@ public class  ReviewGraphqlController {
 
     // Public read access to reviews
     @QueryMapping
-    public List<ReviewResponse> reviews() {
-        return reviewsService.getAllReviews();
+    public List<ReviewResponse> reviews(@Argument Long productId, @Argument Long userId) {
+        return reviewsService.getAllReviews(productId, userId);
     }
 
     @QueryMapping

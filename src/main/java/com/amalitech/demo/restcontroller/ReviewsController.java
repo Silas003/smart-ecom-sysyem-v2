@@ -31,15 +31,17 @@ public class ReviewsController {
 
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get all reviews", description = "Retrieve all reviews")
+    @Operation(summary = "Get all reviews", description = "Retrieve all reviews with optional filtering by product or user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reviews retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class))))
     })
-    public ResponseDto<List<ReviewResponse>> getAllReviews( ){
-        List<ReviewResponse> reviews = reviewsService.getAllReviews();
+    public ResponseDto<List<ReviewResponse>> getAllReviews(
+            @RequestParam(required = false) Long productId,
+            @RequestParam(required = false) Long userId
+    ){
+        List<ReviewResponse> reviews = reviewsService.getAllReviews(productId, userId);
         return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",reviews);
-
     }
     @PreAuthorize("hasAnyRole('customer','admin')")
     @PostMapping("")
@@ -79,7 +81,7 @@ public class ReviewsController {
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     public ResponseDto<List<ReviewResponse>> getReviewsByProduct(@Parameter(description = "ID of the product", required = true) @PathVariable Long productId){
-        List<ReviewResponse> resp = reviewsService.getReviewsByProduct(productId);
+        List<ReviewResponse> resp = reviewsService.getAllReviews(productId, null);
         return new ResponseDto<>(HttpStatus.OK,"product reviews retrieved",resp);
 
     }
@@ -93,7 +95,7 @@ public class ReviewsController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseDto<List<ReviewResponse>> getReviewsByUser(@Parameter(description = "ID of the user", required = true) @PathVariable Long userId){
-        List<ReviewResponse> resp = reviewsService.getReviewsByUser(userId);
+        List<ReviewResponse> resp = reviewsService.getAllReviews(null, userId);
         return new ResponseDto<>(HttpStatus.OK,"user reviews retrieved",resp);
 
     }

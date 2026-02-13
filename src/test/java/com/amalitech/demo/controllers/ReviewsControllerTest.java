@@ -44,7 +44,7 @@ public class ReviewsControllerTest {
     void shouldReturnReviews() throws Exception {
         ReviewResponse r = new ReviewResponse();
         r.setId(1L); r.setRating(5); r.setDescription("ok"); r.setProductId(1L); r.setReviewerDisplay("u");
-        when(reviewsService.getAllReviews()).thenReturn(List.of(r));
+        when(reviewsService.getAllReviews(any(), any())).thenReturn(List.of(r));
 
         mockMvc.perform(get("/api/v1/reviews"))
                 .andExpect(status().isOk())

@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
@@ -94,7 +95,7 @@ public class UserServiceTest {
 
         int pageSize = 10;
         int pageNumber = 1;
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("username").ascending());
         Page<User> userPage = new PageImpl<>(List.of(user), pageable, 1);
 
         when(userRepository.findAll(pageable)).thenReturn(userPage);
@@ -105,7 +106,6 @@ public class UserServiceTest {
                 "email@gmail.com",
                 "USER"
         );
-        when(sorter.sort(anyList(), any())).thenReturn(List.of(user));
         when(userMapper.toResponse(List.of(user))).thenReturn(List.of(expectedResponse));
 
         Page<UserResponse> result = userService.getAllUsers(pageNumber, pageSize);
@@ -115,7 +115,6 @@ public class UserServiceTest {
         assertEquals("username", result.getContent().get(0).username());
 
         verify(userRepository, times(1)).findAll(pageable);
-        verify(sorter, times(1)).sort(anyList(), any());
         verify(userMapper, times(1)).toResponse(List.of(user));
     }
 

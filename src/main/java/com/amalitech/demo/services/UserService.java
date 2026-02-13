@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -63,15 +64,9 @@ public class UserService implements UserServiceInterface {
 
     @Override
     public Page<UserResponse> getAllUsers(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("username").ascending());
         Page<User> page = userRepository.findAll(pageable);
         List<User> content = page.getContent();
-        if (content == null) content = List.of();
-
-        if (!content.isEmpty()) {
-            Comparator<User> cmp = Comparator.comparing(User::getUsername, Comparator.nullsLast(String::compareToIgnoreCase));
-            content = sorter.sort(content, cmp);
-        }
 
         long total = page.getTotalElements();
         return new PageImpl<>(userMapper.toResponse(content), pageable, total);

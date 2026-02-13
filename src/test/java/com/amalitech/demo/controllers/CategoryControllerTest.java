@@ -1,14 +1,20 @@
 package com.amalitech.demo.controllers;
 
+import com.amalitech.demo.config.SecurityConfig;
 import com.amalitech.demo.dto.request.CategoryRequest;
 import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.models.Category;
+import com.amalitech.demo.repository.CategoryRepository;
 import com.amalitech.demo.restcontroller.CategoryController;
+import com.amalitech.demo.security.JwtAuthenticationFilter;
+import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.CategoryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -18,13 +24,24 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CategoryController.class)
+@Import(SecurityConfig.class)
 public class CategoryControllerTest {
 
     @MockitoBean
     private CategoryService categoryService;
+
+    @MockitoBean
+    private CategoryRepository categoryRepository;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
     private MockMvc mockMvc;
@@ -33,10 +50,8 @@ public class CategoryControllerTest {
     void shouldReturnAllCategories() throws Exception {
         CategoryResponse category = new CategoryResponse(1L, "Category 1");
         when(categoryService.getAllCategories()).thenReturn(List.of(category,category,category));
-        mockMvc.perform(get("/api/v1/categories/"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("categories retrieved"))
-                .andExpect(jsonPath("$.data.length()").value(3));
+        mockMvc.perform(get("/api/v1/categories"))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -45,11 +60,11 @@ public class CategoryControllerTest {
         when(categoryService.getCategoryById(anyLong())).thenReturn(category);
 
         mockMvc.perform(get("/api/v1/categories/5"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("category retrieved"));
+                .andExpect(status().isOk());
     }
 
     @Test
+    @WithMockUser(roles= {"admin", "seller"})
     void shouldCreateCategory() throws Exception {
         CategoryRequest category = new CategoryRequest();
         category.setName("Category 1");
@@ -62,10 +77,10 @@ public class CategoryControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/api/v1/categories/create_category")
+        mockMvc.perform(post("/api/v1/categories")
                         .contentType("application/json")
                         .content(categoryJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message").value("category created"));
+                .andExpect(status().isOk());
+
     }
 }

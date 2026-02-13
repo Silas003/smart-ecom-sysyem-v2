@@ -48,7 +48,7 @@ public class CategoryServiceTest {
 
         when(categoryRepository.findAll()).thenReturn(categories);
         when(sorter.sort(eq(categories), any())).thenReturn(categories);
-        when(categoryMapper.toResponse(categories)).thenReturn(List.of(response));
+        when(categoryMapper.toResponse(category)).thenReturn(response);
 
         List<CategoryResponse> result = categoryService.getAllCategories();
 
@@ -59,7 +59,7 @@ public class CategoryServiceTest {
 
         verify(categoryRepository, times(1)).findAll();
         verify(sorter, times(1)).sort(eq(categories), any());
-        verify(categoryMapper, times(1)).toResponse(categories);
+        verify(categoryMapper, times(1)).toResponse(category);
     }
 
     @Test

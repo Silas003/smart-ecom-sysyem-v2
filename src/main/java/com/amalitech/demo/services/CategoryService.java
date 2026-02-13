@@ -12,6 +12,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -21,12 +22,10 @@ import java.util.List;
 public class CategoryService implements CategoryServiceInterface {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
-    private final Sorter<Category> sorter;
 
-    public CategoryService(CategoryRepository categoryRepository, CategoryMapper categoryMapper, Sorter<Category> sorter) {
+    public CategoryService(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
-        this.sorter = sorter;
     }
 
     @Cacheable(value = "category", key = "#id")
@@ -56,11 +55,9 @@ public class CategoryService implements CategoryServiceInterface {
     @Cacheable(value = "allcategories")
     @Override
     public List<CategoryResponse> getAllCategories() {
-        List<Category> list = categoryRepository.findAll();
+        List<Category> list = categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
         if (list == null || list.isEmpty()) return List.of();
-        List<Category> sorted = sorter.sort(list,
-                Comparator.comparing(Category::getName, Comparator.nullsLast(String::compareToIgnoreCase)));
-        return sorted.stream().map(categoryMapper::toResponse).toList();
+        return list.stream().map(categoryMapper::toResponse).toList();
     }
 
     @CachePut(value = "category", key = "#id")

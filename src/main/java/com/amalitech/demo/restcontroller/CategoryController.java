@@ -33,7 +33,7 @@ public class CategoryController {
     private final CategoryServiceInterface categoryService;
 
     // Public read endpoints
-    @GetMapping("")
+    @GetMapping()
     @Operation(summary = "Get all categories", description = "Retrieve all categories")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categories retrieved",

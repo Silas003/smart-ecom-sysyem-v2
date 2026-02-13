@@ -7,12 +7,12 @@ import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.CategoryMapper;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.repository.CategoryRepository;
-import com.amalitech.demo.utils.Sorter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +35,6 @@ public class CategoryServiceTest {
     @Mock
     private CategoryMapper categoryMapper;
 
-    @Mock
-    private Sorter<Category> sorter;
-
     @Test
     void shouldReturnAllCategories() {
         Category category = new Category(1L, "Electronics");
@@ -46,8 +43,7 @@ public class CategoryServiceTest {
         List<Category> categories = new ArrayList<>();
         categories.add(category);
 
-        when(categoryRepository.findAll()).thenReturn(categories);
-        when(sorter.sort(eq(categories), any())).thenReturn(categories);
+        when(categoryRepository.findAll(any(Sort.class))).thenReturn(categories);
         when(categoryMapper.toResponse(category)).thenReturn(response);
 
         List<CategoryResponse> result = categoryService.getAllCategories();
@@ -57,19 +53,17 @@ public class CategoryServiceTest {
         assertEquals(1L, result.get(0).id());
         assertEquals("Electronics", result.get(0).name());
 
-        verify(categoryRepository, times(1)).findAll();
-        verify(sorter, times(1)).sort(eq(categories), any());
+        verify(categoryRepository, times(1)).findAll(any(Sort.class));
         verify(categoryMapper, times(1)).toResponse(category);
     }
 
     @Test
     void getAllCategories_empty_returnsEmptyList() {
-        when(categoryRepository.findAll()).thenReturn(List.of());
+        when(categoryRepository.findAll(any(Sort.class))).thenReturn(List.of());
         List<CategoryResponse> result = categoryService.getAllCategories();
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(categoryRepository, times(1)).findAll();
-        verifyNoInteractions(sorter);
+        verify(categoryRepository, times(1)).findAll(any(Sort.class));
     }
 
     @Test

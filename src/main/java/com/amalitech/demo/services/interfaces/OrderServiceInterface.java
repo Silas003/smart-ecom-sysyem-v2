@@ -6,6 +6,7 @@ import com.amalitech.demo.dto.response.OrderResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OrderServiceInterface {
@@ -25,4 +26,6 @@ public interface OrderServiceInterface {
     OrderResponse createOrder(OrderRequest req);
 
 
+    // Native-query-backed reporting: get a user's orders within a date range using pagination
+    Page<OrderResponse> getUserOrdersWithinPeriod(Long userId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 }

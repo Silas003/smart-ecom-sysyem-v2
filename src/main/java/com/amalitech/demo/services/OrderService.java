@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -227,6 +228,23 @@ public class OrderService implements OrderServiceInterface {
                         inventoryRepository.save(inv);
                     });
         }
+    }
+
+    @Override
+    public Page<OrderResponse> getUserOrdersWithinPeriod(Long userId, LocalDateTime start, LocalDateTime end, Pageable pageable) {
+        // Enforce ownership: non-admins can only see their own orders
+        if (!isCurrentUserAdmin()) {
+            Long currentUserId = getCurrentUserIdOrThrow();
+            if (!currentUserId.equals(userId)) {
+                throw new AccessDeniedException("Cannot access other users' orders");
+            }
+        }
+
+        Page<Orders> page = ordersRepository.findByUserIdAndCreatedAtBetweenNative(userId, start, end, pageable);
+        List<OrderResponse> content = page.getContent() == null ? List.of() : page.getContent().stream()
+                .map(ordersMapper::toResponse)
+                .toList();
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
 }

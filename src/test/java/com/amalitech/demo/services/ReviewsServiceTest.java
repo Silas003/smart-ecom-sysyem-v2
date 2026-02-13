@@ -64,21 +64,34 @@ public class ReviewsServiceTest {
 
     @Test
     void createReview_success_returnsResponse() {
-        ReviewRequest req = new ReviewRequest(); req.setProductId(1L); req.setRating(5); req.setDescription("ok");
-        User user = new User(); user.setId(2L);
-        Product product = new Product(); product.setId(1L);
+        ReviewRequest req = new ReviewRequest();
+        req.setProductId(1L);
+        req.setUserId(2L);
+        req.setRating(5);
+        req.setDescription("ok");
+
+        User user = new User();
+        user.setId(2L);
+
+        Product product = new Product();
+        product.setId(1L);
+
         when(productService.getProductById(1L)).thenReturn(product);
         when(userService.getUserByIdForReview(2L)).thenReturn(user);
 
-        Reviews saved = new Reviews(); saved.setId(11L);
+        Reviews saved = new Reviews();
+        saved.setId(11L);
         saved.setProduct(product);
         saved.setUser(user);
+
         when(reviewsRepository.save(any())).thenReturn(saved);
 
         var resp = reviewsService.createReview(req);
+
         assertNotNull(resp);
         assertEquals(11L, resp.getId());
     }
+
 
     @Test
     void getReview_notFound_throws() {

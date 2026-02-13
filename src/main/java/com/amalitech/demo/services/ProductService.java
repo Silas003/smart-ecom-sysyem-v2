@@ -9,6 +9,9 @@ import com.amalitech.demo.models.Product;
 import com.amalitech.demo.repository.ProductRepository;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
 import com.amalitech.demo.utils.Sorter;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +37,8 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
+    @CachePut(value = "product", key = "#result.id")
+    @CacheEvict(value = "productsByCategory", key = "#result.category.id", beforeInvocation = false)
     public Product createProduct(ProductRequest request) {
         if (productRepository.existsByName(request.getName())) {
             throw new IllegalArgumentException("Product with given name already exists");
@@ -46,6 +51,7 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
+    @Cacheable(value = "product", key = "#id")
     public Product getProductById(Long id) {
         return productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
@@ -88,6 +94,8 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
+    @CachePut(value = "product", key = "#id")
+    @CacheEvict(value = "productsByCategory", allEntries = true)
     public Product updateProduct(Long id, ProductRequest request) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
@@ -104,6 +112,7 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
+    @CacheEvict(value = {"product", "productsByCategory"}, allEntries = true)
     public void deleteProduct(Long id) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("product not found"));
@@ -112,6 +121,7 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
+    @Cacheable(value = "productsByCategory", key = "#categoryId")
     public Page<ProductResponse> getProductsByCategoryId(Long categoryId) {
         Page<Product> page = productRepository.findByCategory_Id(categoryId, Pageable.unpaged());
         List<Product> products = page.getContent();

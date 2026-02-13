@@ -15,6 +15,9 @@ import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
 import com.amalitech.demo.utils.Sorter;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +37,7 @@ public class UserService implements UserServiceInterface {
     private final JwtService jwtService;
 
     @Override
+    @CacheEvict(value = {"user"}, allEntries = true)
     public void createUser(UserRequest userRequest) {
         if (userRepository.existsByEmail(userRequest.getEmail()) || userRepository.existsByUsername(userRequest.getUsername())) {
             throw new UserExists("User with given email or username already exists");
@@ -45,6 +49,7 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
+    @Cacheable(value = "user", key = "#id")
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
         return userMapper.toResponse(user);
@@ -52,6 +57,7 @@ public class UserService implements UserServiceInterface {
 
     @Override
     public User getUserByIdForReview(Long id) {
+        // no cache to avoid confusion with DTO vs entity
         return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
@@ -72,6 +78,7 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
+    @CachePut(value = "user", key = "#id")
     public UserResponse updateUser(Long id, UserRequest userRequest) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -87,6 +94,7 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
+    @CacheEvict(value = "user", key = "#id")
     public void deleteUser(Long id) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("user not found"));

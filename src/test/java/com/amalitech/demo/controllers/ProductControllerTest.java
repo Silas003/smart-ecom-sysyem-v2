@@ -6,9 +6,14 @@ import com.amalitech.demo.mapper.ProductMapper;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.restcontroller.ProductController;
 import com.amalitech.demo.services.ProductService;
+import com.amalitech.demo.security.JwtAuthenticationFilter;
+import com.amalitech.demo.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.data.domain.PageImpl;
@@ -23,6 +28,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProductController.class)
+@AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
 public class ProductControllerTest {
 
     @Autowired
@@ -34,6 +41,12 @@ public class ProductControllerTest {
     @MockitoBean
     private ProductMapper productMapper;
 
+    @MockitoBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockitoBean
+    private JwtService jwtService;
+
     @Test
     void shouldReturnPagedProducts() throws Exception {
         Product p = new Product(); p.setId(1L); p.setName("P1"); p.setPrice(9.99);
@@ -41,7 +54,7 @@ public class ProductControllerTest {
         when(productService.getAllProducts(any(),any())).thenReturn(new PageImpl<>(List.of(p), PageRequest.of(0,10),1));
         when(productMapper.toResponse(any(Product.class))).thenReturn(pr);
 
-        mockMvc.perform(get("/api/v1/products/").param("page","0").param("size","10"))
+        mockMvc.perform(get("/api/v1/products").param("page","0").param("size","10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("products retrieved"))
                 .andExpect(jsonPath("$.data.content[0].id").value(1));
@@ -61,6 +74,7 @@ public class ProductControllerTest {
     }
 
     @Test
+    @WithMockUser(roles= {"admin"})
     void shouldCreateProduct() throws Exception {
         // include required fields: name, price, stockQuantity, categoryId
         String req = "{\"name\":\"New\",\"description\":\"d\",\"price\":10.0,\"stockQuantity\":5,\"categoryId\":1}";
@@ -69,12 +83,13 @@ public class ProductControllerTest {
         when(productService.createProduct(any(ProductRequest.class))).thenReturn(created);
         when(productMapper.toResponse(created)).thenReturn(pr);
 
-        mockMvc.perform(post("/api/v1/products/create_product").contentType("application/json").content(req))
+        mockMvc.perform(post("/api/v1/products").contentType("application/json").content(req))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value("product created "));
     }
 
     @Test
+    @WithMockUser(roles= {"admin"})
     void shouldDeleteProduct() throws Exception {
         mockMvc.perform(delete("/api/v1/products/7"))
                 .andExpect(status().isNoContent());

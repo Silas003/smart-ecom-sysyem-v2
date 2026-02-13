@@ -21,6 +21,8 @@ public interface ReviewsServiceInterface {
 
     void deleteReview(Long id);
 
+    Double getAverageRating(Long productId);
+
     default ReviewResponse toResponse(Reviews r) {
         ReviewResponse resp = new ReviewResponse();
         resp.setId(r.getId());

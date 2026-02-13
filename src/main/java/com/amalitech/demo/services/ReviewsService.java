@@ -21,17 +21,13 @@ import java.util.stream.Collectors;
 @Service
 public class ReviewsService implements ReviewsServiceInterface {
     private final ReviewsRepository reviewsRepository;
-
     private final ProductService productService;
     private final UserService userService;
-    private final Sorter<Reviews> sorter;
 
-    public ReviewsService(ReviewsRepository reviewsRepository, ProductService productService, UserService userService,
-                          Sorter<Reviews> sorter) {
+    public ReviewsService(ReviewsRepository reviewsRepository, ProductService productService, UserService userService) {
         this.reviewsRepository = reviewsRepository;
         this.userService = userService;
         this.productService = productService;
-        this.sorter = sorter;
     }
 
     @Override
@@ -75,6 +71,11 @@ public class ReviewsService implements ReviewsServiceInterface {
     public void deleteReview(Long id) {
         if (reviewsRepository.findById(id).isEmpty()) throw new EntityNotFoundException("Review not found");
         reviewsRepository.deleteById(id);
+    }
+
+    @Override
+    public Double getAverageRating(Long productId) {
+        return reviewsRepository.getAverageRatingByProductId(productId);
     }
 
     public ReviewResponse toResponse(Reviews r) {

@@ -29,7 +29,7 @@ public class ReviewsController {
     private final ReviewsServiceInterface reviewsService;
 
 
-    @GetMapping("")
+    @GetMapping()
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all reviews", description = "Retrieve all reviews with optional filtering by product or user")
     @ApiResponses(value = {
@@ -44,7 +44,7 @@ public class ReviewsController {
         return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",reviews);
     }
     @PreAuthorize("hasAnyRole('customer','admin')")
-    @PostMapping("")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create review", description = "Create a new review for a product")
     @ApiResponses(value = {
@@ -98,6 +98,14 @@ public class ReviewsController {
         List<ReviewResponse> resp = reviewsService.getAllReviews(null, userId);
         return new ResponseDto<>(HttpStatus.OK,"user reviews retrieved",resp);
 
+    }
+
+    @GetMapping("/products/{productId}/average-rating")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get average rating", description = "Retrieve the average rating for a product")
+    public ResponseDto<Double> getAverageRating(@PathVariable Long productId) {
+        Double avg = reviewsService.getAverageRating(productId);
+        return new ResponseDto<>(HttpStatus.OK, "average rating retrieved", avg);
     }
 
     @PreAuthorize("hasRole('admin')")

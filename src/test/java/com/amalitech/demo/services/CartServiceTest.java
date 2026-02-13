@@ -129,10 +129,24 @@ public class CartServiceTest {
     @Test
     void updateCartStatus_updatesAndReturns() {
         Cart cart = new Cart(new User(), "active"); cart.setId(11L);
-        when(cartDao.findByUserIdAndStatus(11L, CartStatus.active)).thenReturn(Optional.of(cart));
+        when(cartDao.findById(11L)).thenReturn(Optional.of(cart));
         when(cartItemsDao.findByCartId(11L)).thenReturn(List.of());
         when(cartMapper.toResponse(any(), anyList())).thenReturn(new CartResponse(11L,11L,"deactivated", List.of()));
         cartService.updateCartStatus(11L, CartStatus.deactivated);
         verify(cartDao, times(1)).update(cart);
+    }
+
+    @Test
+    void clearCart_deletesAllItems() {
+        Long userId = 1L;
+        Long cartId = 10L;
+        Cart cart = new Cart();
+        cart.setId(cartId);
+        when(cartDao.findByUserIdAndStatus(userId, CartStatus.active)).thenReturn(Optional.of(cart));
+
+        cartService.clearCart(userId);
+
+        verify(cartItemsDao, times(1)).deleteAllByCartId(cartId);
+        verify(cartDao, never()).save(any());
     }
 }

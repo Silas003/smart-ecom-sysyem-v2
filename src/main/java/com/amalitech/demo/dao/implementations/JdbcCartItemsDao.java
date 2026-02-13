@@ -119,6 +119,18 @@ public class JdbcCartItemsDao implements CartItemsDao {
         }
     }
 
+    @Override
+    public void deleteAllByCartId(Long cartId) {
+        String sql = "DELETE FROM cart_items WHERE cart_id = ?";
+        try (Connection conn = DataSourceUtils.getConnection(dataSource);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, cartId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private CartItems mapRow(ResultSet rs) throws SQLException {
         CartItems ci = new CartItems();
         ci.setId(rs.getLong("id"));

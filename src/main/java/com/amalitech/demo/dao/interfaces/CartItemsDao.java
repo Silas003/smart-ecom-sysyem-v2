@@ -13,4 +13,5 @@ public interface CartItemsDao {
     long save(CartItems cartItems);
     void update(CartItems cartItems);
     void deleteById(Long id);
+    void deleteAllByCartId(Long cartId);
 }

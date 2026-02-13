@@ -105,7 +105,7 @@ public class CartService implements CartServiceInterface {
 
     @Override
     public CartResponse updateCartStatus(Long cartId, CartStatus Status){
-        Cart cart = cartDao.findByUserIdAndStatus(cartId,CartStatus.active).orElseThrow(
+        Cart cart = cartDao.findById(cartId).orElseThrow(
                 ()-> new EntityNotFoundException("cart not found"));
 
         cart.setStatus(Status);
@@ -143,5 +143,13 @@ public class CartService implements CartServiceInterface {
                 .map(cartItemMapper::toResponse)
                 .toList();
         return cartMapper.toResponse(cart, items);
+    }
+
+    public void clearCart(Long userId) {
+        // find active cart for user
+        Cart cart = cartDao.findByUserIdAndStatus(userId, CartStatus.active)
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+        // delete all items for that cart
+        cartItemsDao.deleteAllByCartId(cart.getId());
     }
 }

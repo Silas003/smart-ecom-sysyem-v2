@@ -7,7 +7,6 @@ import com.amalitech.demo.mapper.ProductMapper;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.repository.ProductRepository;
-import com.amalitech.demo.utils.Sorter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,9 +37,6 @@ public class ProductServiceTest {
 
     @Mock
     private ProductMapper productMapper;
-
-    @Mock
-    private Sorter<Product> sorter;
 
     @InjectMocks
     private ProductService productService;
@@ -99,12 +95,10 @@ public class ProductServiceTest {
         Product p2 = new Product(); p2.setId(2L); p2.setPrice(10.0);
         Page<Product> pageData = new PageImpl<>(List.of(p1, p2), pageable, 2);
         when(productRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(pageData);
-        when(sorter.sort(anyList(), any())).thenReturn(List.of(p2, p1));
 
         Page<Product> result = productService.getAllProducts(pageable, null, null, null, null);
         assertNotNull(result);
         assertEquals(2, result.getContent().size());
-        verify(sorter, times(1)).sort(anyList(), any());
         verify(productRepository, times(1)).findAll(any(Specification.class), any(Pageable.class));
     }
 
@@ -143,9 +137,8 @@ public class ProductServiceTest {
     void shouldGetProductsByCategoryId_sortedAndMapped() {
         Product a = new Product(); a.setId(1L); a.setName("A");
         Product b = new Product(); b.setId(2L); b.setName("B");
-        Page<Product> page = new PageImpl<>(List.of(b, a), Pageable.unpaged(), 2);
-        when(productRepository.findByCategory_Id(3L, Pageable.unpaged())).thenReturn(page);
-        when(sorter.sort(anyList(), any())).thenReturn(List.of(a, b));
+        Page<Product> page = new PageImpl<>(List.of(a, b), PageRequest.of(0, 10, Sort.by("name").ascending()), 2);
+        when(productRepository.findByCategory_Id(eq(3L), any(Pageable.class))).thenReturn(page);
         ProductResponse ra = new ProductResponse(1L, "A", 5.0, 2, 10L);
         ProductResponse rb = new ProductResponse(2L, "B", 7.0, 3, 10L);
         when(productMapper.toResponse(a)).thenReturn(ra);
@@ -155,7 +148,6 @@ public class ProductServiceTest {
         assertNotNull(resultPage);
         assertEquals(2, resultPage.getContent().size());
         assertEquals("A", resultPage.getContent().get(0).name());
-        verify(sorter, times(1)).sort(anyList(), any());
         verify(productMapper, times(2)).toResponse(any());
     }
 }

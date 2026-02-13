@@ -9,7 +9,6 @@ import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.security.JwtService;
-import com.amalitech.demo.utils.Sorter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,9 +35,6 @@ public class UserServiceTest {
 
     @Mock
     private UserMapper userMapper;
-
-    @Mock
-    private Sorter<User> sorter;
 
     @Mock
     private JwtService jwtService;

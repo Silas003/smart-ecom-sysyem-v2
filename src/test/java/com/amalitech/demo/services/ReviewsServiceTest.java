@@ -5,7 +5,6 @@ import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.ReviewsRepository;
-import com.amalitech.demo.utils.Sorter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,9 +29,6 @@ public class ReviewsServiceTest {
 
     @Mock
     private UserService userService;
-
-    @Mock
-    private Sorter<Reviews> sorter;
 
     @InjectMocks
     private ReviewsService reviewsService;

@@ -12,6 +12,18 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@NamedEntityGraph(
+        name = "orders-with-items-and-user",
+        attributeNodes = {
+                @NamedAttributeNode("user"),
+                @NamedAttributeNode(value = "items", subgraph = "items-with-product")
+        },
+        subgraphs = {
+                @NamedSubgraph(name = "items-with-product", attributeNodes = {
+                        @NamedAttributeNode("product")
+                })
+        }
+)
 @Entity
 @Getter
 @Setter

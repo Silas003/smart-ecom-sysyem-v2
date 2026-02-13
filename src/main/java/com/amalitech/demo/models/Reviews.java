@@ -10,6 +10,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Data
+@NamedEntityGraph(
+        name = "reviews-with-product",
+        attributeNodes = {@NamedAttributeNode("product")}
+)
+@NamedEntityGraph(
+        name = "reviews-with-user",
+        attributeNodes = {@NamedAttributeNode("user")}
+)
 @Entity
 @Table(name = "reviews")
 public class Reviews {

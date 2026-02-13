@@ -14,6 +14,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import com.amalitech.demo.services.specification.ProductSpecification;
@@ -29,13 +30,11 @@ public class ProductService implements ProductServiceInterface {
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
     private final ProductMapper productMapper;
-    private final Sorter<Product> sorter;
 
-    public ProductService(ProductRepository productRepository, CategoryService categoryService, ProductMapper productMapper, Sorter<Product> sorter) {
+    public ProductService(ProductRepository productRepository, CategoryService categoryService, ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.categoryService = categoryService;
         this.productMapper = productMapper;
-        this.sorter = sorter;
     }
 
     @Override
@@ -64,24 +63,7 @@ public class ProductService implements ProductServiceInterface {
                 .and(ProductSpecification.hasName(name))
                 .and(ProductSpecification.hasPriceBetween(minPrice, maxPrice));
 
-        Page<Product> page = productRepository.findAll(spec, pageable);
-
-
-        List<Product> content = page.getContent();
-        if (content == null) content = List.of();
-
-        // Apply merge-sort if pageable has sorting criteria
-        Sort sort = pageable.getSort();
-        if (sort.isSorted() && !content.isEmpty()) {
-            Sort.Order order = sort.iterator().next();
-            Comparator<Product> cmp = buildProductComparator(order.getProperty());
-            if (cmp != null) {
-                if (order.isDescending()) cmp = cmp.reversed();
-                content = sorter.sort(content, cmp);
-            }
-        }
-
-        return new PageImpl<>(content, pageable, page.getTotalElements());
+        return productRepository.findAll(spec, pageable);
     }
 
     private Comparator<Product> buildProductComparator(String prop) {
@@ -125,15 +107,15 @@ public class ProductService implements ProductServiceInterface {
     @Override
     @Cacheable(value = "productsByCategory", key = "#categoryId")
     public Page<ProductResponse> getProductsByCategoryId(Long categoryId) {
-        Page<Product> page = productRepository.findByCategory_Id(categoryId, Pageable.unpaged());
-        List<Product> products = page.getContent();
-        if (products == null) products = List.of();
-        // apply stable, service-level sorting by product name before mapping
-        if (!products.isEmpty()) {
-            products = sorter.sort(products, Comparator.comparing(Product::getName, Comparator.nullsLast(String::compareToIgnoreCase)));
-        }
-        long total = page.getTotalElements();
-        return new PageImpl<>(products.stream().map(productMapper::toResponse).toList(), Pageable.ofSize(products.size()), total);
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
+        Page<Product> page = productRepository.findByCategory_Id(categoryId, pageable);
+        return page.map(productMapper::toResponse);
+    }
+
+    @Override
+    public Page<ProductResponse> getLowStockProducts(int threshold, Pageable pageable) {
+        return productRepository.findLowStockProducts(threshold, pageable)
+                .map(productMapper::toResponse);
     }
 
 }

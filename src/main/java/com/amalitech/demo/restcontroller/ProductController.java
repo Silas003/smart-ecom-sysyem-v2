@@ -35,7 +35,7 @@ public class ProductController {
     private final ProductMapper productMapper;
 
     // Public catalog endpoints
-    @GetMapping("")
+    @GetMapping()
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "List products", description = "List products with pagination and sorting")
     @ApiResponses(value = {
@@ -98,7 +98,7 @@ public class ProductController {
     }
 
     @PreAuthorize("hasAnyRole('admin','seller')")
-    @PostMapping("")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create product", description = "Create a new product")
     @ApiResponses(value = {
@@ -124,5 +124,20 @@ public class ProductController {
     ) {
         Page<ProductResponse> products = productService.getProductsByCategoryId(categoryId);
         return new ResponseDto<>(HttpStatus.OK, "products retrieved", products);
+    }
+
+    @PreAuthorize("hasAnyRole('admin','seller')")
+    @GetMapping("/low-stock")
+    @Operation(summary = "Get low stock products", description = "Retrieve products with stock quantity below a threshold")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Low stock products retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class))))
+    })
+    public ResponseDto<Page<ProductResponse>> getLowStockProducts(
+            @RequestParam(defaultValue = "10") int threshold,
+            @PageableDefault(size = 10, sort = "stockQuantity", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        Page<ProductResponse> products = productService.getLowStockProducts(threshold, pageable);
+        return new ResponseDto<>(HttpStatus.OK, "low stock products retrieved", products);
     }
 }

@@ -19,4 +19,6 @@ public interface ProductServiceInterface {
     void deleteProduct(Long id);
 
     Page<ProductResponse> getProductsByCategoryId(Long categoryId);
+
+    Page<ProductResponse> getLowStockProducts(int threshold, Pageable pageable);
 }

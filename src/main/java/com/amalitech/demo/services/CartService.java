@@ -18,6 +18,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class CartService implements CartServiceInterface {
     private final InventoryRepository inventoryRepository;
 
     @CachePut(value = "activeUserCart", key = "#result.id + #userId")
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public CartResponse createCart(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(
@@ -58,7 +59,7 @@ public class CartService implements CartServiceInterface {
         return buildCartResponse(cart);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public CartItemsReponse addItemToCart(Long userId, Long productId, int quantity) {
         // 1. Validate and get cart
@@ -110,7 +111,7 @@ public class CartService implements CartServiceInterface {
     }
 
     @CachePut(value = "activeUserCart", key = "#cartId + result.userId")
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public CartResponse updateCartStatus(Long cartId, CartStatus Status) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(
@@ -122,6 +123,7 @@ public class CartService implements CartServiceInterface {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public void removeItemFromCart(Long userId, Long cartItemId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));

@@ -13,6 +13,8 @@ import com.amalitech.demo.utils.Sorter;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -34,6 +36,7 @@ public class InventoryService implements InventoryServiceInterface {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     @CachePut(value = "inventory", key = "#result.id")
     public InventoryResponse createInventory(InventoryRequest request) {
         Product product = productService.getProductById(request.getProductId());
@@ -47,6 +50,7 @@ public class InventoryService implements InventoryServiceInterface {
     }
 
     @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "inventory", key = "#id", sync = true)
     public InventoryResponse getInventoryById(Long id) {
         Inventory inv = inventoryRepository.findById(id)
@@ -55,6 +59,7 @@ public class InventoryService implements InventoryServiceInterface {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<InventoryResponse> getAllInventories() {
         List<Inventory> list = inventoryRepository.findAll();
         if (list == null || list.isEmpty()) return List.of();
@@ -65,6 +70,7 @@ public class InventoryService implements InventoryServiceInterface {
     }
 
     @Override
+    @Transactional(propagation = Propagation.MANDATORY)
     @CachePut(value = "inventory", key = "#id")
     public InventoryResponse updateInventory(Long id, InventoryRequest request) {
         Inventory existingInventory = inventoryRepository.findById(id)
@@ -81,6 +87,7 @@ public class InventoryService implements InventoryServiceInterface {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     @CachePut(value = "inventory", key = "#id")
     public void deleteInventory(Long id) {
         Inventory inventory = inventoryRepository.findById(id)

@@ -23,6 +23,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -114,6 +116,27 @@ public class OrderServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(req));
         verify(inventoryRepository, never()).save(any());
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.REQUIRED)
+    void createOrder_insufficientStock_doesNotPersistOrderOrInventoryChanges() {
+        User user = new User(); user.setId(1L);
+        Product prod = new Product(); prod.setId(10L); prod.setPrice(5.0);
+        Inventory inv = new Inventory(); inv.setId(100L); inv.setProduct(prod); inv.setStockQuantity(1);
+
+        OrderItemRequest itemReq = new OrderItemRequest(); itemReq.setProductId(prod.getId()); itemReq.setQuantity(2);
+        OrderRequest req = new OrderRequest(); req.setUserId(user.getId()); req.setItems(List.of(itemReq));
+
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(productRepository.findById(prod.getId())).thenReturn(Optional.of(prod));
+        when(inventoryRepository.findByProductId(prod.getId())).thenReturn(Optional.of(inv));
+
+        assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(req));
+
+        // verify that no inventory or order changes are persisted when exception is thrown
+        verify(inventoryRepository, never()).save(any());
+        verify(ordersRepository, never()).save(any());
     }
 
     @Test

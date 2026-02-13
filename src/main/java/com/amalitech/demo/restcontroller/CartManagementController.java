@@ -17,12 +17,18 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 
 @RestController
@@ -160,5 +166,16 @@ public class CartManagementController {
 
         cartService.clearCart(userId);
         return new ResponseDto<>(HttpStatus.NO_CONTENT, "Cart cleared successfully", null);
+    }
+
+    @PreAuthorize("hasRole('admin')")
+    @GetMapping("/abandoned")
+    @Operation(summary = "Get abandoned carts", description = "Retrieve active carts that haven't been updated for a specified period")
+    public ResponseDto<Page<CartResponse>> getAbandonedCarts(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since,
+            @PageableDefault(size = 10) Pageable pageable
+    ) {
+        Page<CartResponse> carts = cartService.getAbandonedCarts(since, pageable);
+        return new ResponseDto<>(HttpStatus.OK, "abandoned carts retrieved", carts);
     }
 }

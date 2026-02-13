@@ -16,10 +16,13 @@ import com.amalitech.demo.services.interfaces.CartServiceInterface;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -160,6 +163,12 @@ public class CartService implements CartServiceInterface {
         }
 
         cartRepository.save(cart);
+    }
+
+    @Override
+    public Page<CartResponse> getAbandonedCarts(LocalDateTime date, Pageable pageable) {
+        return cartRepository.findAbandonedCarts(date, pageable)
+                .map(this::buildCartResponse);
     }
 
     private CartResponse buildCartResponse(Cart cart) {

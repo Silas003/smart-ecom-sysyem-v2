@@ -152,7 +152,7 @@ public class OrderService implements OrderServiceInterface {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.READ_COMMITTED)
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
     public OrderResponse createOrder(OrderRequest req) {
         // 1. Validate user
         Long userId = req.getUserId();
@@ -241,6 +241,11 @@ public class OrderService implements OrderServiceInterface {
                 .map(ordersMapper::toResponse)
                 .toList();
         return new PageImpl<>(content, pageable, page.getTotalElements());
+    }
+
+    @Override
+    public Double getTotalRevenue(LocalDateTime start, LocalDateTime end) {
+        return ordersRepository.calculateTotalRevenue(start, end);
     }
 
 }

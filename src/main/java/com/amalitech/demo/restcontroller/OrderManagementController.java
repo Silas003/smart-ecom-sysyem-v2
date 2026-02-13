@@ -68,7 +68,7 @@ public class OrderManagementController {
     }
 
     @PreAuthorize("hasRole('admin')")
-    @GetMapping("")
+    @GetMapping()
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Orders retrieved",
@@ -115,7 +115,7 @@ public class OrderManagementController {
 
     // Customers create orders; admin could also for support
     @PreAuthorize("hasAnyRole('admin','customer')")
-    @PostMapping("")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create order", description = "Create a new order")
     @ApiResponses(value = {
@@ -148,6 +148,18 @@ public class OrderManagementController {
     ) {
         Page<OrderResponse> page = orderService.getUserOrdersWithinPeriod(userId, start, end, pageable);
         return new ResponseDto<>(HttpStatus.OK, "user order history retrieved", page);
+    }
+
+    @PreAuthorize("hasRole('admin')")
+    @GetMapping("/reports/revenue")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get total revenue", description = "Calculate total revenue from delivered orders within a period")
+    public ResponseDto<Double> getTotalRevenue(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end
+    ) {
+        Double total = orderService.getTotalRevenue(start, end);
+        return new ResponseDto<>(HttpStatus.OK, "total revenue retrieved", total);
     }
 
 }

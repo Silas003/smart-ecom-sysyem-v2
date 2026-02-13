@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -23,4 +24,7 @@ public interface OrdersRepository extends JpaRepository<Orders, Long>, JpaSpecif
             countQuery = "SELECT COUNT(*) FROM orders o WHERE o.user_id = :userId AND o.created_at BETWEEN :start AND :end",
             nativeQuery = true)
     Page<Orders> findByUserIdAndCreatedAtBetweenNative(Long userId, LocalDateTime start, LocalDateTime end, Pageable pageable);
+
+    @Query("SELECT SUM(o.totalAmount) FROM Orders o WHERE o.status = 'delivered' AND o.createdAt BETWEEN :start AND :end")
+    Double calculateTotalRevenue(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

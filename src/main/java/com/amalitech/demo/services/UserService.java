@@ -25,17 +25,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
-@AllArgsConstructor
 @Service
 public class UserService implements UserServiceInterface {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final Sorter<User> sorter;
     private final JwtService jwtService;
+
+    public UserService(UserRepository userRepository, UserMapper userMapper, JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+        this.jwtService = jwtService;
+    }
 
     @Override
     @CacheEvict(value = {"user"}, allEntries = true)
@@ -95,6 +100,12 @@ public class UserService implements UserServiceInterface {
                 .orElseThrow(() -> new EntityNotFoundException("user not found"));
 
         userRepository.deleteById(existingUser.getId());
+    }
+
+    @Override
+    public Page<UserResponse> getInactiveUsers(LocalDateTime date, Pageable pageable) {
+        return userRepository.findInactiveUsers(date, pageable)
+                .map(userMapper::toResponse);
     }
 
     @Override

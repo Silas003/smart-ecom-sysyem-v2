@@ -6,6 +6,9 @@ import com.amalitech.demo.dto.response.LoginResponse;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.models.User;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDateTime;
 
 public interface UserServiceInterface {
     void createUser(UserRequest userRequest);
@@ -21,4 +24,6 @@ public interface UserServiceInterface {
     void deleteUser(Long id);
 
     LoginResponse loginUser(UserLoginRequest userRequest);
+
+    Page<UserResponse> getInactiveUsers(LocalDateTime date, Pageable pageable);
 }

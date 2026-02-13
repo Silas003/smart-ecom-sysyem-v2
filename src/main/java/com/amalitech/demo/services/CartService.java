@@ -46,7 +46,7 @@ public class CartService implements CartServiceInterface {
             );
             return buildCartResponse(cart);
         }
-        Cart cart = cartRepository.save(new Cart(user, "active"));
+        Cart cart = cartRepository.save(new Cart(user));
 
         return buildCartResponse(cart);
     }

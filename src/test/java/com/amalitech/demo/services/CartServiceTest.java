@@ -57,7 +57,7 @@ public class CartServiceTest {
         User user = new User(); user.setId(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(cartRepository.existsByUserIdAndStatus(1L, CartStatus.active)).thenReturn(false);
-        Cart cart = new Cart(user, "active"); cart.setId(10L);
+        Cart cart = new Cart(user); cart.setId(10L);
         when(cartRepository.save(any())).thenReturn(cart);
         when(cartItemsRepository.findByCartId(10L)).thenReturn(List.of());
         when(cartMapper.toResponse(any(), anyList())).thenReturn(new CartResponse(10L,1L,"active", List.of()));
@@ -71,7 +71,7 @@ public class CartServiceTest {
     @Test
     void createCart_existing_returnsExisting() {
         User user = new User(); user.setId(1L);
-        Cart cart = new Cart(user, "active"); cart.setId(20L);
+        Cart cart = new Cart(user); cart.setId(20L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(cartRepository.existsByUserIdAndStatus(1L, CartStatus.active)).thenReturn(true);
         when(cartRepository.findByUserIdAndStatus(1L, CartStatus.active)).thenReturn(Optional.of(cart));
@@ -87,7 +87,7 @@ public class CartServiceTest {
     @Test
     void addItemToCart_newItem_savesAndReturns() {
         User user = new User(); user.setId(1L);
-        Cart cart = new Cart(user, "active"); cart.setId(5L);
+        Cart cart = new Cart(user); cart.setId(5L);
         Product product = new Product(); product.setId(3L); product.setPrice(2.0);
         Inventory inventory = new Inventory(); inventory.setProduct(product); inventory.setStockQuantity(10);
         when(cartRepository.findByUserIdAndStatus(1L, CartStatus.active)).thenReturn(Optional.of(cart));
@@ -107,7 +107,7 @@ public class CartServiceTest {
     @Test
     void addItemToCart_existingItem_updatesQuantity() {
         User user = new User(); user.setId(1L);
-        Cart cart = new Cart(user, "active"); cart.setId(5L);
+        Cart cart = new Cart(user); cart.setId(5L);
         Product product = new Product(); product.setId(3L); product.setPrice(2.0);
         Inventory inventory = new Inventory(); inventory.setProduct(product); inventory.setStockQuantity(10);
         CartItems existing = new CartItems(); existing.setId(7L); existing.setQuantity(1);
@@ -126,12 +126,30 @@ public class CartServiceTest {
 
     @Test
     void updateCartStatus_updatesAndReturns() {
-        Cart cart = new Cart(new User(), "active"); cart.setId(11L);
-        when(cartRepository.findById(11L)).thenReturn(Optional.of(cart));
-        when(cartItemsRepository.findByCartId(11L)).thenReturn(List.of());
-        when(cartMapper.toResponse(any(), anyList())).thenReturn(new CartResponse(11L,11L,"deactivated", List.of()));
+        Cart cart = new Cart(new User());
+        cart.setId(11L);
 
-        cartService.updateCartStatus(11L, CartStatus.deactivated);
+        when(cartRepository.findById(11L))
+                .thenReturn(Optional.of(cart));
+
+        when(cartItemsRepository.findByCartId(11L))
+                .thenReturn(List.of());
+
+        when(cartRepository.save(any(Cart.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        when(cartMapper.toResponse(eq(cart), anyList()))
+                .thenReturn(new CartResponse(
+                        11L,
+                        11L,
+                        "checkout",
+                        List.of()
+                ));
+
+        CartResponse resp = cartService.updateCartStatus(11L, CartStatus.checkout);
+
+        assertEquals(CartStatus.checkout.name(), resp.status());
         verify(cartRepository, times(1)).save(cart);
     }
+
 }

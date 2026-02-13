@@ -31,7 +31,7 @@ private CartStatus status;
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public Cart(User user, String active) {
+    public Cart(User user) {
         this.user = user;
         this.status = CartStatus.active;
     }

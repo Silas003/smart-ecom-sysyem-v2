@@ -51,7 +51,7 @@ public class ProductControllerTest {
     void shouldReturnPagedProducts() throws Exception {
         Product p = new Product(); p.setId(1L); p.setName("P1"); p.setPrice(9.99);
         ProductResponse pr = new ProductResponse(1L, "P1", 9.99, 5, 1L);
-        when(productService.getAllProducts(any(),any())).thenReturn(new PageImpl<>(List.of(p), PageRequest.of(0,10),1));
+        when(productService.getAllProducts(any(),any(),any(),any(),any())).thenReturn(new PageImpl<>(List.of(p), PageRequest.of(0,10),1));
         when(productMapper.toResponse(any(Product.class))).thenReturn(pr);
 
         mockMvc.perform(get("/api/v1/products").param("page","0").param("size","10"))

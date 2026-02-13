@@ -44,9 +44,12 @@ public class ProductController {
     })
     public ResponseDto<Page<ProductResponse>> getAllProducts(
             @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable,
-            @RequestParam(required = false) Long categoryId
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice
     ) {
-        Page<Product> products = productService.getAllProducts(pageable, categoryId);
+        Page<Product> products = productService.getAllProducts(pageable, categoryId, name, minPrice, maxPrice);
         Page<ProductResponse> resp = products.map(productMapper::toResponse);
         return new ResponseDto<>(HttpStatus.OK, "products retrieved", resp);
     }

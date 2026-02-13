@@ -47,11 +47,18 @@ public class ProductGraphqlController {
             @ApiResponse(responseCode = "200", description = "Products retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class))))
     })
-        public ProductPageResponse products(@Argument Integer page, @Argument Integer size,@RequestParam(required = false) Long categoryId) {
-                Page<Product> p = productService.getAllProducts(PageRequest.of(page,size),categoryId);
-                var items = p.getContent().stream().map(productMapper::toResponse).toList();
-                return new ProductPageResponse(items, p.getTotalElements());
-        }
+    public ProductPageResponse products(
+            @Argument Integer page,
+            @Argument Integer size,
+            @Argument Long categoryId,
+            @Argument String name,
+            @Argument Double minPrice,
+            @Argument Double maxPrice
+    ) {
+        Page<Product> p = productService.getAllProducts(PageRequest.of(page, size), categoryId, name, minPrice, maxPrice);
+        var items = p.getContent().stream().map(productMapper::toResponse).toList();
+        return new ProductPageResponse(items, p.getTotalElements());
+    }
 
     @QueryMapping
     @Operation(summary = "Get product by id (GraphQL)", description = "Retrieve a single product by id via GraphQL")

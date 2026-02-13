@@ -16,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import com.amalitech.demo.services.specification.ProductSpecification;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -57,13 +59,13 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
-    public Page<Product> getAllProducts(Pageable pageable, Long categoryId) {
-        Page<Product> page;
-        if (categoryId != null) {
-            page = productRepository.findByCategory_Id(categoryId, pageable);
-        } else {
-            page = productRepository.findAll(pageable);
-        }
+    public Page<Product> getAllProducts(Pageable pageable, Long categoryId, String name, Double minPrice, Double maxPrice) {
+        Specification<Product> spec = Specification.where(ProductSpecification.hasCategoryId(categoryId))
+                .and(ProductSpecification.hasName(name))
+                .and(ProductSpecification.hasPriceBetween(minPrice, maxPrice));
+
+        Page<Product> page = productRepository.findAll(spec, pageable);
+
 
         List<Product> content = page.getContent();
         if (content == null) content = List.of();

@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 import java.util.Optional;
@@ -97,14 +98,14 @@ public class ProductServiceTest {
         Product p1 = new Product(); p1.setId(1L); p1.setPrice(5.0);
         Product p2 = new Product(); p2.setId(2L); p2.setPrice(10.0);
         Page<Product> pageData = new PageImpl<>(List.of(p1, p2), pageable, 2);
-        when(productRepository.findAll(pageable)).thenReturn(pageData);
+        when(productRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(pageData);
         when(sorter.sort(anyList(), any())).thenReturn(List.of(p2, p1));
 
-        Page<Product> result = productService.getAllProducts(pageable, null);
+        Page<Product> result = productService.getAllProducts(pageable, null, null, null, null);
         assertNotNull(result);
         assertEquals(2, result.getContent().size());
         verify(sorter, times(1)).sort(anyList(), any());
-        verify(productRepository, times(1)).findAll(pageable);
+        verify(productRepository, times(1)).findAll(any(Specification.class), any(Pageable.class));
     }
 
     @Test

@@ -9,12 +9,11 @@ import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.ReviewsRepository;
 import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
 import com.amalitech.demo.services.specification.ReviewSpecification;
-import com.amalitech.demo.utils.Sorter;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,6 +72,7 @@ public class ReviewsService implements ReviewsServiceInterface {
         reviewsRepository.deleteById(id);
     }
 
+    @CachePut(value = "averageRating", key = "#productId")
     @Override
     public Double getAverageRating(Long productId) {
         return reviewsRepository.getAverageRatingByProductId(productId);

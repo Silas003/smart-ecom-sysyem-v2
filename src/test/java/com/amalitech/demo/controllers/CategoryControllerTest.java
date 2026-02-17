@@ -3,8 +3,6 @@ package com.amalitech.demo.controllers;
 import com.amalitech.demo.config.SecurityConfig;
 import com.amalitech.demo.dto.request.CategoryRequest;
 import com.amalitech.demo.dto.response.CategoryResponse;
-import com.amalitech.demo.dto.response.CategoryResponse;
-import com.amalitech.demo.models.Category;
 import com.amalitech.demo.repository.CategoryRepository;
 import com.amalitech.demo.restcontroller.CategoryController;
 import com.amalitech.demo.security.JwtAuthenticationFilter;
@@ -22,10 +20,9 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CategoryController.class)
 @Import(SecurityConfig.class)

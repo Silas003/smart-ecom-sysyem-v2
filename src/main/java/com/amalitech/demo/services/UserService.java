@@ -102,6 +102,7 @@ public class UserService implements UserServiceInterface {
         userRepository.deleteById(existingUser.getId());
     }
 
+    @CachePut(value = "userCount", key = "'totalUsers'")
     @Override
     public Page<UserResponse> getInactiveUsers(LocalDateTime date, Pageable pageable) {
         return userRepository.findInactiveUsers(date, pageable)

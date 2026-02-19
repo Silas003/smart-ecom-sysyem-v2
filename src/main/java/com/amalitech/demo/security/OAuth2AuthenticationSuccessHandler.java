@@ -42,7 +42,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         Map<String,String> jwtToken = jwtService.generateToken(user);
 
-=
+
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("token", jwtToken)
                 .build()

@@ -53,7 +53,6 @@ public class TokenBlacklistService {
                 Cache cache = cacheManager.getCache("tokenBlacklist");
                 if (cache != null) {
                     cache.put(token, "blacklisted_at_" + System.currentTimeMillis());
-                        token.substring(0, Math.min(20, token.length())), ttlMs / 1000);
                 }
             }
         } catch (Exception e) {

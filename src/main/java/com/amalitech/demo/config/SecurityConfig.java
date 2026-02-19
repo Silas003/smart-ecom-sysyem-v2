@@ -1,6 +1,9 @@
 package com.amalitech.demo.config;
 
 import com.amalitech.demo.security.JwtAuthenticationFilter;
+import com.amalitech.demo.security.OAuth2AuthenticationSuccessHandler;
+import com.amalitech.demo.services.CustomOidcUserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,6 +20,12 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private CustomOidcUserService customOidcUserService;
+
+    @Autowired
+    private  OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -25,39 +34,40 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // Enable CORS (expects a CorsConfigurationSource bean if customized)
                 .cors(cors -> {})
-
-                // Disable CSRF for stateless REST APIs
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // Stateless session management
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(sm -> sm
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
 
-                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints: API docs, Swagger UI, login/registration, and GraphQL entry point
-                        .requestMatchers(HttpMethod.GET,"/api/v1/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/api/v1/categories/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/api/v1/reviews/**").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/api/v1/users/login",
+                                "/api/v1/users/logout",
                                 "/api/v1/users",
-
-                                "graphql"
+                                "/api/v1/users/refresh",
+                                "graphql",
+                                "/oauth2/**",
+                                "/login/oauth2/**"
                         ).permitAll()
-
-                        // Everything else requires authentication; fine-grained access is handled via @PreAuthorize
                         .anyRequest().authenticated()
                 )
-
-                // JWT filter before username/password auth filter
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .oidcUserService(customOidcUserService)
+                        )
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
+

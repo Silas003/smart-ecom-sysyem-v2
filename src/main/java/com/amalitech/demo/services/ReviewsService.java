@@ -9,7 +9,10 @@ import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.ReviewsRepository;
 import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
 import com.amalitech.demo.services.specification.ReviewSpecification;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -30,8 +33,9 @@ public class ReviewsService implements ReviewsServiceInterface {
     }
 
     @Override
+    @Cacheable(value = "reviews", keyGenerator = "reviewKeyGenerator")
     public List<ReviewResponse> getAllReviews(Long productId, Long userId) {
-        Specification<Reviews> spec = Specification.where(ReviewSpecification.hasProductId(productId))
+        Specification<Reviews> spec = Specification.anyOf(ReviewSpecification.hasProductId(productId))
                 .and(ReviewSpecification.hasUserId(userId));
 
         List<Reviews> list = reviewsRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "id"));
@@ -39,7 +43,14 @@ public class ReviewsService implements ReviewsServiceInterface {
     }
 
     @Override
-    public ReviewResponse createReview(ReviewRequest request) {
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "review", key = "#id"),
+                    @CacheEvict(value = "reviewsByProduct", allEntries = true),
+                    @CacheEvict(value = "reviewsByUser", allEntries = true),
+                    @CacheEvict(value = "averageRating", allEntries = true)
+            }
+    )    public ReviewResponse createReview(ReviewRequest request) {
         Product product = productService.getProductById(request.getProductId());
         User user = userService.getUserByIdForReview(request.getUserId());
 
@@ -50,6 +61,7 @@ public class ReviewsService implements ReviewsServiceInterface {
     }
 
     @Override
+    @Cacheable(value = "review", key = "#id")
     public ReviewResponse getReview(Long id) {
         Reviews review = reviewsRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Review not found"));
@@ -57,16 +69,26 @@ public class ReviewsService implements ReviewsServiceInterface {
     }
 
     @Override
+    @Cacheable(value = "reviewsByProduct", key = "#productId")
     public List<ReviewResponse> getReviewsByProduct(Long productId) {
         return getAllReviews(productId, null);
     }
 
     @Override
+    @Cacheable(value = "reviewsByUser", key = "#userId")
     public List<ReviewResponse> getReviewsByUser(Long userId) {
         return getAllReviews(null, userId);
     }
 
     @Override
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "review", key = "#id"),
+                    @CacheEvict(value = "reviewsByProduct", allEntries = true),
+                    @CacheEvict(value = "reviewsByUser", allEntries = true),
+                    @CacheEvict(value = "averageRating", allEntries = true)
+            }
+    )
     public void deleteReview(Long id) {
         if (reviewsRepository.findById(id).isEmpty()) throw new EntityNotFoundException("Review not found");
         reviewsRepository.deleteById(id);

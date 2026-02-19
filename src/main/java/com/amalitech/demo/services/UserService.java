@@ -13,37 +13,30 @@ import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
-import com.amalitech.demo.utils.Sorter;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserService implements UserServiceInterface {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper, JwtService jwtService) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.jwtService = jwtService;
-    }
 
     @Override
     @CacheEvict(value = {"user"}, allEntries = true)
+    @Transactional
     public void createUser(UserRequest userRequest) {
         if (userRepository.existsByEmail(userRequest.getEmail()) || userRepository.existsByUsername(userRequest.getUsername())) {
             throw new UserExists("User with given email or username already exists");
@@ -68,6 +61,7 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
+    @Cacheable(value = "users", keyGenerator = "userKeyGenerator")
     public Page<UserResponse> getAllUsers(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("username").ascending());
         Page<User> page = userRepository.findAll(pageable);
@@ -78,7 +72,16 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    @CachePut(value = "user", key = "#id")
+    @Caching(
+            put = {
+                    @CachePut(value = "user", key = "#id"),
+            },
+            evict = {
+                    @CacheEvict(value = "users", allEntries = true)
+            }
+
+    )
+    @Transactional
     public UserResponse updateUser(Long id, UserRequest userRequest) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -94,7 +97,11 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    @CacheEvict(value = "user", key = "#id")
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "user", key = "#id"),
+            @CacheEvict(value = "users", allEntries = true)}
+    )
     public void deleteUser(Long id) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("user not found"));

@@ -65,53 +65,24 @@ public class CartService implements CartServiceInterface {
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public CartItemsReponse addItemToCart(Long userId, Long productId, int quantity) {
-        // 1. Validate and get cart
-        Cart cart = cartRepository.findByUserIdAndStatus(userId, CartStatus.active)
-                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
 
-        // 2. Validate product exists
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+        Cart cart = getActiveCartOrThrow(userId);
 
-        // 3. VALIDATE INVENTORY AVAILABILITY - CRITICAL!
-        Inventory inventory = inventoryRepository.findByProductId(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Inventory not found for product"));
+        Product product = getProductOrThrow(productId);
 
-        // 4. Check if product already in cart
-        CartItems cartItems = cartItemsRepository.findByProductIdAndCartId(productId, cart.getId())
-                .orElse(null);
+        Inventory inventory = getInventoryOrThrow(productId);
 
-        int newQuantity = quantity;
-        if (cartItems != null) {
-            newQuantity = cartItems.getQuantity() + quantity;
-        }
+        CartItems cartItem = getCartItem(cart.getId(), productId);
 
-        // 5. Validate sufficient stock for new total quantity
-        if (inventory.getStockQuantity() < newQuantity) {
-            throw new IllegalArgumentException(
-                    "Insufficient stock for product: " + product.getName()
-                            + ". Available: " + inventory.getStockQuantity()
-                            + ", Requested: " + newQuantity
-            );
-        }
+        int newQuantity = calculateNewQuantity(cartItem, quantity);
 
-        // 6. Update existing item or create new one
-        if (cartItems != null) {
-            cartItems.setQuantity(newQuantity);
-            cartItems.setTotalPrice(newQuantity * product.getPrice());
-            cartItemsRepository.save(cartItems);
-        } else {
-            cartItems = new CartItems();
-            cartItems.setCart(cart);
-            cartItems.setProduct(product);
-            cartItems.setQuantity(newQuantity);
-            cartItems.setUnitPrice(product.getPrice());
-            cartItems.setTotalPrice(newQuantity * product.getPrice());
-            cartItems = cartItemsRepository.save(cartItems);
-        }
+        validateStockAvailability(inventory, newQuantity, product.getName());
 
-        return cartItemMapper.toResponse(cartItems);
+        CartItems savedCartItem = saveOrUpdateCartItem(cartItem, cart, product, newQuantity);
+
+        return cartItemMapper.toResponse(savedCartItem);
     }
+
 
     @CachePut(value = "activeUserCart", key = "#result.id")
     @Transactional(propagation = Propagation.REQUIRED)
@@ -177,5 +148,66 @@ public class CartService implements CartServiceInterface {
                 .toList();
         return cartMapper.toResponse(cart, items);
     }
+    private Cart getActiveCartOrThrow(Long userId) {
+        return cartRepository.findByUserIdAndStatus(userId, CartStatus.active)
+                .orElseThrow(() -> new EntityNotFoundException("Active cart not found for user ID: " + userId));
+    }
+    private Product getProductOrThrow(Long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + productId));
+    }
+    private Inventory getInventoryOrThrow(Long productId) {
+        return inventoryRepository.findByProductId(productId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Inventory not found for product ID: " + productId));
+    }
+    private CartItems getCartItem(Long cartId, Long productId) {
+        return cartItemsRepository.findByProductIdAndCartId(productId, cartId)
+                .orElse(null);
+    }
+    private int calculateNewQuantity(CartItems existingItem, int requestedQuantity) {
+
+        if (existingItem == null) {
+            return requestedQuantity;
+        }
+
+        return existingItem.getQuantity() + requestedQuantity;
+    }
+    private void validateStockAvailability(Inventory inventory, int requestedQuantity, String productName) {
+
+        if (inventory.getStockQuantity() < requestedQuantity) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Insufficient stock for product: %s. Available: %d, Requested: %d",
+                            productName,
+                            inventory.getStockQuantity(),
+                            requestedQuantity
+                    )
+            );
+        }
+    }
+    private CartItems saveOrUpdateCartItem(
+            CartItems existingItem,
+            Cart cart,
+            Product product,
+            int quantity
+    ) {
+
+        CartItems cartItem = existingItem != null ? existingItem : new CartItems();
+
+        if (existingItem == null) {
+            cartItem.setCart(cart);
+            cartItem.setProduct(product);
+            cartItem.setUnitPrice(product.getPrice());
+        }
+
+        cartItem.setQuantity(quantity);
+        cartItem.setTotalPrice(quantity * product.getPrice());
+
+        return cartItemsRepository.save(cartItem);
+    }
+
+
+
 
 }

@@ -14,6 +14,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -43,6 +44,7 @@ public class CategoryService implements CategoryServiceInterface {
 
     @Override
     @CachePut(value = "category", key = "#result.id")
+    @Transactional
     public CategoryResponse createCategory(CategoryRequest request) {
         if (categoryRepository.findByName(request.getName()).isPresent()) {
             throw new IllegalArgumentException("category with given name already exists");
@@ -62,6 +64,7 @@ public class CategoryService implements CategoryServiceInterface {
 
     @CachePut(value = "category", key = "#id")
     @Override
+    @Transactional
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("category not found"));
@@ -77,6 +80,7 @@ public class CategoryService implements CategoryServiceInterface {
             @CacheEvict(value = "allcategories", allEntries = true)
     })
     @Override
+    @Transactional
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
             throw new EntityNotFoundException("Category not found with id: " + id);
@@ -84,8 +88,4 @@ public class CategoryService implements CategoryServiceInterface {
         categoryRepository.deleteById(id);
     }
 
-    public Category getProductCategoryById(Long id) {
-        return categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
-    }
 }

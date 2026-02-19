@@ -1,11 +1,124 @@
-# Smart Ecom System
+# Smart E-Commerce System
 
-Smart Ecom System is a full‑stack e‑commerce application built with:
+**A Production-Ready Secure E-Commerce Platform**
 
-- **Backend**: Spring Boot 3, Java 21, JDBC/JPA, PostgreSQL/H2, Spring Security (JWT), Spring GraphQL, SpringDoc/OpenAPI.
-- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Zustand.
+Smart E-Commerce System is a full-stack, enterprise-grade e-commerce application built with:
 
-The backend exposes both a **REST API** and a **GraphQL API** for products, categories, users, carts, orders, inventory, and reviews. The Next.js app (included in this repository) provides a storefront and an admin console that talk to the same backend.
+- **Backend**: Spring Boot 3, Java 21, JDBC/JPA, PostgreSQL/H2, Spring Security 3 (JWT + OAuth2), Spring GraphQL, SpringDoc/OpenAPI
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Zustand
+- **Security**: HMAC SHA-256 JWT tokens, OAuth2 Google login, BCrypt password hashing, Role-Based Access Control (RBAC), Token Blacklist/Logout, Comprehensive error handling
+
+The backend exposes both a **REST API** and a **GraphQL API** for products, categories, users, carts, orders, inventory, and reviews. The Next.js app (included in this repository) provides a storefront and an admin console that communicate securely with the same backend via JWT and OAuth2 authentication.
+
+---
+
+## 🔒 Security Overview (implementation-accurate)
+
+This section documents exactly how security is implemented in this codebase (file references included). Read this section to understand runtime behavior and any caveats to watch for.
+
+Important files (canonical)
+- `src/main/java/com/amalitech/demo/security/JwtService.java` — JWT generation and validation
+- `src/main/java/com/amalitech/demo/security/JwtAuthenticationFilter.java` — request filter that validates JWT and sets SecurityContext
+- `src/main/java/com/amalitech/demo/security/JwtAuthenticationEntryPoint.java` — produces JSON 401 responses for JWT errors
+- `src/main/java/com/amalitech/demo/security/TokenBlacklistService.java` — blacklists/revokes tokens on logout
+- `src/main/java/com/amalitech/demo/config/CacheConfig.java` — Spring Cache + Caffeine configuration (including `tokenBlacklist` cache)
+- `src/main/java/com/amalitech/demo/config/SecurityConfig.java` — Spring Security filter chain and OAuth2 wiring
+- `src/main/java/com/amalitech/demo/models/Inventory.java` — includes `@Version` optimistic-locking field
+
+1) JWT (exact behavior)
+- Signing algorithm: HMAC-SHA256 (`SignatureAlgorithm.HS256` via jjwt).
+- Secret: read from `security.jwt.secret` property and passed to `Keys.hmacShaKeyFor(secret.getBytes(UTF_8))` (SecretKey used for sign/verify).
+- Token generation (`JwtService`):
+  - `generateToken(User)` returns a Map with two entries: `access` and `refresh`.
+  - Access token (`generateAccessToken`) sets claims:
+    - `sub` = user.getEmail()
+    - `iss` = issuer (property)
+    - `type` = "access"
+    - `iat` = now
+    - `exp` = now + 7 hours (the code uses 1000L * 60 * 60 * 7)
+    - signed with HS256
+  - Refresh token (`generateRefreshToken`) sets `type` = "refresh" and expiration = now + 7 days
+- Validation and parsing:
+  - `extractSubject(token)` returns the `sub` claim.
+  - `isTokenValid(token, expectedSubject)` checks that subject equals expectedSubject and `exp` is after now.
+  - `extractRoles(token)` reads a `roles` claim if present — however, **the current generator does not add a `roles` claim**. In this codebase the filter loads `UserDetails` from the DB for authorities rather than relying solely on token roles.
+
+2) Request filter: `JwtAuthenticationFilter` (exact flow)
+- Runs once per request and executes the following logic:
+  1. Read `Authorization` header. If header is missing or doesn't start with "Bearer " → call `filterChain.doFilter(request,response)` and return (no exception). This allows OAuth2 flow and unauthenticated redirects to continue.
+  2. If header present: extract raw token string (strip "Bearer ").
+  3. Extract subject via `jwtService.extractSubject(token)`; if subject null → throw `BadCredentialsException("Invalid token: cannot extract subject")`.
+  4. Check blacklist: `tokenBlacklistService.isTokenBlacklisted(token)`; if true → throw `BadCredentialsException("Token has been revoked")`.
+  5. Validate signature & expiry via `jwtService.isTokenValid(token, subject)`; if false → throw `BadCredentialsException("Token expired or invalid")`.
+  6. Load `UserDetails` via `userDetailsService.loadUserByUsername(subject)` and set an authenticated `UsernamePasswordAuthenticationToken` into `SecurityContextHolder` (authorities come from `UserDetails`).
+  7. Any `BadCredentialsException` or other caught exceptions are rethrown to be handled by the authentication entry point.
+
+- Important behavior: If no token is provided the filter does not throw; that design intentionally allows OAuth2 redirect/login flows for browser clients.
+
+3) Authentication entry point: `JwtAuthenticationEntryPoint` (exact behavior)
+- Receives `AuthenticationException`s and returns JSON for JWT-specific errors.
+- It considers an error a JWT error if:
+  - `authException instanceof BadCredentialsException` AND the exception message contains "Token", "token" or "Authentication failed".
+- For JWT errors: returns structured JSON 401 with fields: `statusCode`, `message` ("Unauthorized - Invalid or expired JWT token"), `error`, `timestamp`, `details` (exception message).
+- For other auth failures: delegates to default `sendError(401, message)` (which can trigger OAuth2 redirect in browser flows depending on security configuration).
+
+4) Token blacklist (exact implementation)
+- `TokenBlacklistService.blacklistToken(token)` does:
+  1. Parse token expiration (using the same secret) and compute `ttlMs = expirationTime - now`.
+  2. If `ttlMs > 0` then `cacheManager.getCache("tokenBlacklist").put(token, "blacklisted_at_<timestamp>")`.
+- `isTokenBlacklisted(token)`:
+  - Gets the `tokenBlacklist` cache and returns `cache.get(token) != null`.
+  - If the cache is missing or an exception occurs the method returns `true` (conservative fail-safe: treat as blacklisted).
+
+5) Caffeine cache configuration (exact)
+- `CacheConfig` registers named caches and a dedicated `tokenBlacklist` cache. The active code registers these names (see file):
+  - `orderByUser`, `order`, `user`, `productsByCategory`, `product`, `category`, `allcategories`, `activeUserCart`, `userCount`, `averageRating`, and `tokenBlacklist`.
+- Global/default Caffeine builder applied (for caches created by the manager):
+  - `initialCapacity = 100`
+  - `maximumSize = 500`
+  - `expireAfterAccess = 5 minutes`
+  - `expireAfterWrite = 5 minutes`
+  - `recordStats()` enabled
+- Additionally, `CacheConfig` registers a custom cache instance named `tokenBlacklist` with a Caffeine instance configured as:
+  - `initialCapacity = 100`, `maximumSize = 10000`, `expireAfterWrite(jwtExpirationMs)` where `jwtExpirationMs` is set in the file as `3600000L` (1 hour) and `recordStats()` enabled.
+
+  Note: This means the `tokenBlacklist` cache is configured with 1-hour expiry whereas access tokens are currently generated with 7-hour expiry (see above). That mismatch means blacklisted tokens could outlive the `tokenBlacklist` entry (if `jwtExpirationMs` were shorter than token exp) or vice versa. In the provided code `tokenBlacklist` TTL is 1 hour while access token TTL is 7 hours — see Implementation notes.
+
+6) Cache usage in services (exact)
+- Per-entity caches (single-object caching): e.g., `@Cacheable("product", key="#id")`, `@CachePut` on create/update methods.
+- Collection/small-list caches: `@Cacheable("allcategories")`, `reviewsByProduct`, `reviewsByUser`, `averageRating`.
+- Page/search caches: `products`, `orders`, `users` use custom `KeyGenerator`s (ProductKeyGenerator, UserKeyGenerator, OrderSearchKeyGenerator) that include pageable parameters and filters in the key.
+- `InventoryService.getInventoryById` uses `@Cacheable(..., sync = true)` to avoid cache stampedes.
+- Mutation methods use `@Caching` combining `@CachePut` and `@CacheEvict(allEntries = true)` to keep caches coherent.
+
+7) Transactions and locking (exact)
+- Transactional boundaries are on the service layer:
+  - `OrderService.createOrder` uses `@Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)` to ensure inventory checks and decrements are consistent inside the transaction.
+  - Other create/update/delete methods use `@Transactional` (default isolation) where needed.
+- Optimistic locking: `Inventory` entity has `@Version` field to prevent lost updates.
+- There is no automatic retry on optimistic locking failures — these exceptions will propagate unless handled.
+
+8) Exact runtime caveats (must-read)
+- Token blacklist TTL mismatch (critical):
+  - `JwtService` generates access tokens with a 7-hour expiry, but `CacheConfig` currently registers `tokenBlacklist` with a 1-hour `expireAfterWrite` (3600000 ms). Because tokens and blacklist TTL are not synchronized, a blacklisted token might be removed by cache eviction before the token itself expires — this could allow a revoked token to be accepted after eviction.
+  - Fix options: register `tokenBlacklist` with the same TTL as the access token (inject property) or use Redis with per-key TTL (recommended for multi-instance deployments).
+- Roles claim missing in access token:
+  - `JwtService.generateAccessToken` does not include a `roles` claim. `JwtAuthenticationFilter` loads `UserDetails` from the database to populate authorities, so authorization works, but tokens are not self-contained with role claims.
+- Caching `Page<T>` results:
+  - The project caches pageable search results using custom key generators. This is functional but can cause many keys and stale pages; consider caching entities and small lists instead.
+- Cache vs transaction ordering:
+  - `@CachePut`/`@CacheEvict` run in the AOP proxy; if strict post-commit semantics are required, register cache updates on transaction `afterCommit()` to avoid transient inconsistencies.
+
+9) Short, prioritized recommendations (implementation-aligned)
+- Critical: Align tokenBlacklist TTL with access-token lifetime or move blacklist to Redis with per-key TTL. (Current code registers `tokenBlacklist` with 1 hour; JWT access tokens are 7 hours.)
+- High: Add `roles` claim to access tokens if you want fully stateless role enforcement (or accept current DB lookup approach).
+- High: Reconsider caching `Page<T>` results — prefer entity-level or short-TTL caches for search pages.
+- Medium: Add optimistic-lock retry loop for inventory updates to handle transient concurrency.
+- Medium: Use TransactionSynchronization for post-commit cache updates on critical mutations where necessary.
+
+If you want, I can now:
+- Insert a small note into the README (or update `CacheConfig`) to make TTLs explicit and fix the blacklist TTL-to-token mismatch, or
+- Apply code changes to add `roles` to generated access tokens and/or adjust `CacheConfig` to parameterize the token blacklist TTL based on properties.
 
 ---
 

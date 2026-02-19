@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -117,6 +118,13 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
+    public LoginResponse refreshToken(String refreshToken) {
+        String subject = jwtService.extractSubject(refreshToken);
+        User user = userRepository.findByEmail(subject).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return new LoginResponse(jwtService.generateToken(user), userMapper.toResponse(user));
+    }
+
+    @Override
     public LoginResponse loginUser(UserLoginRequest userRequest) {
         String email = userRequest.email();
         String password = userRequest.password();
@@ -127,7 +135,7 @@ public class UserService implements UserServiceInterface {
                 throw new IllegalArgumentException("Invalid credentials");
             } else {
                 UserResponse userResponse = userMapper.toResponse(user);
-                String token = jwtService.generateToken(user);
+                Map<String,String> token = jwtService.generateToken(user);
                 return new LoginResponse(token, userResponse);
             }
         } else {

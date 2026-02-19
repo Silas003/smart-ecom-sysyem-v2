@@ -6,6 +6,9 @@ import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.LoginResponse;
 import com.amalitech.demo.dto.response.UserResponse;
+import com.amalitech.demo.security.JwtService;
+import com.amalitech.demo.security.JwtUtil;
+import com.amalitech.demo.security.TokenBlacklistService;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,13 +31,16 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/users")
 @AllArgsConstructor
 @Tag(name = "Users", description = "User account management endpoints")
 public class UserController {
+    private final JwtService jwtService;
     private UserServiceInterface userService;
+    private TokenBlacklistService tokenBlacklistService;
 
     @PreAuthorize("hasRole('admin')") // Only allow admins to access this endpoint
     @GetMapping()
@@ -122,6 +129,30 @@ public class UserController {
         return new ResponseDto<>(HttpStatus.OK, "user login successful", loginResponse);
     }
 
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Logout user", description = "Revoke the current JWT token and invalidate session")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logout successful"),
+            @ApiResponse(responseCode = "401", description = "No valid token found")
+    })
+    public ResponseDto<String> logoutUser(HttpServletRequest request) {
+        String token = JwtUtil.extractTokenFromRequest(request);
+
+        if (token == null || token.isEmpty()) {
+            return new ResponseDto<>(HttpStatus.BAD_REQUEST, "No token found in request", null);
+        }
+
+        try {
+            tokenBlacklistService.blacklistToken(token);
+            return new ResponseDto<>(HttpStatus.OK, "Successfully logged out", "Token revoked");
+        } catch (Exception e) {
+            return new ResponseDto<>(HttpStatus.INTERNAL_SERVER_ERROR, "Logout failed", e.getMessage());
+        }
+    }
+
+
+
     @PreAuthorize("hasRole('admin')")
     @GetMapping("/inactive")
     @Operation(summary = "Get inactive users", description = "Retrieve users who haven't placed orders since a specific date")
@@ -132,4 +163,26 @@ public class UserController {
         Page<UserResponse> users = userService.getInactiveUsers(since, pageable);
         return new ResponseDto<>(HttpStatus.OK, "inactive users retrieved", users);
     }
+
+    @PostMapping("/refresh")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Refresh JWT token", description = "Generate a new JWT token using a valid refresh token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token refreshed successfully",
+                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid refresh token"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    public ResponseDto<LoginResponse> refreshToken(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get( "refreshToken");
+        if(!jwtService.isRefreshToken(refreshToken)) return new ResponseDto<>(HttpStatus.UNAUTHORIZED, "Invalid refresh token1", null);
+        try {
+            LoginResponse loginResponse = userService.refreshToken(refreshToken);
+            return new ResponseDto<>(HttpStatus.OK, "Token refreshed successfully", loginResponse);
+        } catch (IllegalArgumentException e) {
+            return new ResponseDto<>(HttpStatus.BAD_REQUEST, "Invalid refresh token2", null);
+        } catch (Exception e) {
+            return new ResponseDto<>(HttpStatus.INTERNAL_SERVER_ERROR, "Error refreshing token",null);
+        }
+        }
 }

@@ -25,7 +25,8 @@ public class CacheConfig {
                 "allcategories",
                 "activeUserCart",
                 "userCount",
-                "averageRating"
+                "averageRating",
+                "tokenBlacklist"  // Cache for storing revoked JWT tokens
         );
         caffeineCacheManager.setCaffeine(Caffeine.newBuilder()
                 .initialCapacity(100)

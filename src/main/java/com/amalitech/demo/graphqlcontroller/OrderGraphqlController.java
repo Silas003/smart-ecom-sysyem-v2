@@ -41,11 +41,18 @@ public class OrderGraphqlController {
             @ApiResponse(responseCode = "200", description = "Orders retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class))))
     })
-        public List<OrderResponse> orders(@Argument Integer page, @Argument Integer size) {
-                var p = orderService.getAllOrders(PageRequest.of(page, size));
-                var items = p.getContent();
-                return items;
-        }
+    public List<OrderResponse> orders(
+            @Argument Integer page,
+            @Argument Integer size,
+            @Argument Long userId,
+            @Argument com.amalitech.demo.dto.OrderStatus status,
+            @Argument java.time.LocalDateTime start,
+            @Argument java.time.LocalDateTime end
+    ) {
+        var p = orderService.getAllOrders(PageRequest.of(page, size), userId, status, start, end);
+        var items = p.getContent();
+        return items;
+    }
 
     @QueryMapping
     @Operation(summary = "Get order by id (GraphQL)", description = "Retrieve a single order by id via GraphQL")

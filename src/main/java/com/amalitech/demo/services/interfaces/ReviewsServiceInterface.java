@@ -7,7 +7,7 @@ import com.amalitech.demo.models.Reviews;
 import java.util.List;
 
 public interface ReviewsServiceInterface {
-    List<ReviewResponse> getAllReviews();
+    List<ReviewResponse> getAllReviews(Long productId, Long userId);
 
 
     ReviewResponse createReview(ReviewRequest request);
@@ -20,6 +20,8 @@ public interface ReviewsServiceInterface {
 
 
     void deleteReview(Long id);
+
+    Double getAverageRating(Long productId);
 
     default ReviewResponse toResponse(Reviews r) {
         ReviewResponse resp = new ReviewResponse();

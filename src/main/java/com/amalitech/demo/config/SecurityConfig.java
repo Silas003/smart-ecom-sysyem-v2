@@ -37,16 +37,17 @@ public class SecurityConfig {
                 // Authorization rules
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints: API docs, Swagger UI, login/registration, and GraphQL entry point
+                        .requestMatchers(HttpMethod.GET,"/api/v1/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/v1/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/v1/reviews/**").permitAll()
 
-                         .requestMatchers(HttpMethod.GET,"api/v1/categories/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,"api/v1/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET,"api/v1/reviews/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/api/v1/users/login",
                                 "/api/v1/users",
+
                                 "graphql"
                         ).permitAll()
 

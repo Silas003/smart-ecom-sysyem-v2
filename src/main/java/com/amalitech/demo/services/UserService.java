@@ -1,6 +1,5 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dao.interfaces.UserDao;
 import com.amalitech.demo.dto.UserRole;
 import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
@@ -10,73 +9,81 @@ import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.exceptions.UserExists;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.User;
+import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
-import com.amalitech.demo.utils.Sorter;
-import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
+import java.time.LocalDateTime;
 import java.util.List;
 
-@AllArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class UserService implements UserServiceInterface {
 
-    private final UserDao userDao;
+    private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final Sorter<User> sorter;
     private final JwtService jwtService;
 
+
     @Override
+    @CacheEvict(value = {"user"}, allEntries = true)
+    @Transactional
     public void createUser(UserRequest userRequest) {
-        // perform uniqueness checks using DAO
-        if(userDao.existsByEmail(userRequest.getEmail()) || userDao.existsByUsername(userRequest.getUsername())){
+        if (userRepository.existsByEmail(userRequest.getEmail()) || userRepository.existsByUsername(userRequest.getUsername())) {
             throw new UserExists("User with given email or username already exists");
         }
         User user = userMapper.toEntity(userRequest);
         String password = PasswordUtils.hashPassword(user.getPassword());
         user.setPassword(password);
-        userDao.save(user);
+        userRepository.save(user);
     }
 
     @Override
+    @Cacheable(value = "user", key = "#id")
     public UserResponse getUserById(Long id) {
-       User user = userDao.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
-       return userMapper.toResponse(user);
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return userMapper.toResponse(user);
     }
+
     @Override
     public User getUserByIdForReview(Long id) {
-        return userDao.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
-
+        // no cache to avoid confusion with DTO vs entity
+        return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
-
     @Override
+    @Cacheable(value = "users", keyGenerator = "userKeyGenerator")
     public Page<UserResponse> getAllUsers(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        int offset = pageNumber * pageSize;
-        List<User> content = userDao.findAll(pageSize, offset);
-        if (content == null) content = List.of();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("username").ascending());
+        Page<User> page = userRepository.findAll(pageable);
+        List<User> content = page.getContent();
 
-        // apply merge-sort by username (default)
-        if (!content.isEmpty()) {
-            Comparator<User> cmp = Comparator.comparing(User::getUsername, Comparator.nullsLast(String::compareToIgnoreCase));
-            content = sorter.sort(content, cmp);
-        }
-
-        long total = content.size();
+        long total = page.getTotalElements();
         return new PageImpl<>(userMapper.toResponse(content), pageable, total);
     }
 
     @Override
+    @Caching(
+            put = {
+                    @CachePut(value = "user", key = "#id"),
+            },
+            evict = {
+                    @CacheEvict(value = "users", allEntries = true)
+            }
+
+    )
+    @Transactional
     public UserResponse updateUser(Long id, UserRequest userRequest) {
-        User existingUser = userDao.findById(id)
+        User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         String password = PasswordUtils.hashPassword(userRequest.getPassword());
@@ -85,23 +92,35 @@ public class UserService implements UserServiceInterface {
         existingUser.setEmail(userRequest.getEmail());
         existingUser.setPassword(password);
         existingUser.setUserRole(UserRole.valueOf(userRequest.getUserRole()));
-        userDao.update(existingUser);
+        userRepository.save(existingUser);
         return userMapper.toResponse(existingUser);
     }
 
     @Override
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "user", key = "#id"),
+            @CacheEvict(value = "users", allEntries = true)}
+    )
     public void deleteUser(Long id) {
-        User existingUser = userDao.findById(id)
+        User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("user not found"));
 
-        userDao.deleteById(existingUser.getId());
+        userRepository.deleteById(existingUser.getId());
+    }
+
+    @CachePut(value = "userCount", key = "'totalUsers'")
+    @Override
+    public Page<UserResponse> getInactiveUsers(LocalDateTime date, Pageable pageable) {
+        return userRepository.findInactiveUsers(date, pageable)
+                .map(userMapper::toResponse);
     }
 
     @Override
     public LoginResponse loginUser(UserLoginRequest userRequest) {
         String email = userRequest.email();
         String password = userRequest.password();
-        User user = userDao.findByEmail(email).orElse(null);
+        User user = userRepository.findByEmail(email).orElse(null);
         if (user != null) {
             boolean authenticated = PasswordUtils.verifyPassword(password, user.getPassword());
             if (!authenticated) {

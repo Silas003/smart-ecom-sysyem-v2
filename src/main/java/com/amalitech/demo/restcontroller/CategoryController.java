@@ -1,7 +1,9 @@
 package com.amalitech.demo.restcontroller;
 
+import com.amalitech.demo.config.SecurityConfig;
 import com.amalitech.demo.dto.ResponseDto;
 import com.amalitech.demo.dto.request.CategoryRequest;
+import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.services.interfaces.CategoryServiceInterface;
@@ -15,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,7 +33,7 @@ public class CategoryController {
     private final CategoryServiceInterface categoryService;
 
     // Public read endpoints
-    @GetMapping("")
+    @GetMapping()
     @Operation(summary = "Get all categories", description = "Retrieve all categories")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categories retrieved",

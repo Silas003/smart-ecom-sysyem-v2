@@ -1,147 +1,136 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dao.interfaces.ProductDao;
 import com.amalitech.demo.dto.request.ProductRequest;
 import com.amalitech.demo.dto.response.ProductResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.ProductMapper;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.models.Product;
+import com.amalitech.demo.repository.ProductRepository;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
 import com.amalitech.demo.utils.Sorter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import com.amalitech.demo.services.specification.ProductSpecification;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService implements ProductServiceInterface {
 
-    private final ProductDao productDao;
+    private final ProductRepository productRepository;
     private final CategoryService categoryService;
     private final ProductMapper productMapper;
-    // use injected sorter bean (generic)
-    private final Sorter<Product> sorter;
 
-    public ProductService(ProductDao productDao, CategoryService categoryService, ProductMapper productMapper, Sorter<Product> sorter){
-        this.productDao = productDao;
-        this.categoryService = categoryService;
-        this.productMapper = productMapper;
-        this.sorter = sorter;
-    }
+
 
     @Override
+    @Caching(
+            put = {
+                    @CachePut(value = "product", key = "#result.id"),
+                    @CachePut(value = "productsByCategory", key = "#result.category.id")
+            },
+            evict = {
+                    @CacheEvict(value = "products", allEntries = true)
+            }
+    )
+    @Transactional
     public Product createProduct(ProductRequest request) {
-        if( productDao.findByName(request.getName()).isPresent()){
+        if (productRepository.existsByName(request.getName())) {
             throw new IllegalArgumentException("Product with given name already exists");
         }
         Category category = categoryService.getCategoryByIdForProduct(request.getCategoryId());
         Product product = productMapper.toEntity(request);
         product.setCategory(category);
-        long id = productDao.save(product);
-        product.setId(id);
-        return product;
+        Product saved = productRepository.save(product);
+        return saved;
     }
 
     @Override
+    @Cacheable(value = "product", key = "#id")
     public Product getProductById(Long id) {
-        return productDao.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
+        return productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
 
     @Override
-    public Page<Product> getAllProducts(Pageable pageable,Long categoryId) {
-        int pageSize = pageable.getPageSize();
-        int pageNumber = pageable.getPageNumber();
-        int offset = pageNumber * pageSize;
-        if(categoryId !=null){
-            List<Product> content = productDao.findByCategoryId(categoryId, pageSize, offset);
-            if (content == null) content = List.of();
+    @Cacheable(value = "products", keyGenerator = "productKeyGenerator")
+    public Page<Product> getAllProducts(Pageable pageable, Long categoryId, String name, Double minPrice, Double maxPrice) {
+        Specification<Product> spec = Specification.anyOf(ProductSpecification.hasCategoryId(categoryId))
+                .and(ProductSpecification.hasName(name))
+                .and(ProductSpecification.hasPriceBetween(minPrice, maxPrice));
 
-            // Apply merge-sort if pageable has sorting criteria
-            Sort sort = pageable.getSort();
-            if (sort.isSorted() && !content.isEmpty()) {
-                // pick the first sort order (supporting single-field sorting)
-                Sort.Order order = sort.iterator().next();
-                Comparator<Product> cmp = buildProductComparator(order.getProperty());
-                if (cmp != null) {
-                    if (order.isDescending()) cmp = cmp.reversed();
-                    content = sorter.sort(content, cmp);
-                }
-            }
-
-            long total = productDao.countByCategoryId(categoryId);
-            return new PageImpl<>(content, pageable, total);
-        }
-        List<Product> content = productDao.findAll(pageSize, offset);
-        if (content == null) content = List.of();
-
-        // Apply merge-sort if pageable has sorting criteria
-        Sort sort = pageable.getSort();
-        if (sort.isSorted() && !content.isEmpty()) {
-            // pick the first sort order (supporting single-field sorting)
-            Sort.Order order = sort.iterator().next();
-            Comparator<Product> cmp = buildProductComparator(order.getProperty());
-            if (cmp != null) {
-                if (order.isDescending()) cmp = cmp.reversed();
-                content = sorter.sort(content, cmp);
-            }
-        }
-
-        long total = productDao.countAll();
-        return new PageImpl<>(content, pageable, total);
+        return productRepository.findAll(spec, pageable);
     }
 
-    private Comparator<Product> buildProductComparator(String prop) {
-        if (prop == null) return null;
-        return switch (prop) {
-            case "price" -> Comparator.comparing(Product::getPrice, Comparator.nullsLast(Double::compareTo));
-            case "name" -> Comparator.comparing(Product::getName, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "stockQuantity", "stock_quantity" -> Comparator.comparing(Product::getStockQuantity, Comparator.nullsLast(Integer::compareTo));
-            case "category", "categoryId" -> Comparator.comparing(p -> p.getCategory() == null ? null : p.getCategory().getId(), Comparator.nullsLast(Long::compareTo));
-            default -> Comparator.comparing(Product::getId, Comparator.nullsLast(Long::compareTo));
-        };
-    }
 
     @Override
+    @CachePut(value = "product", key = "#id")
+    @Caching(
+            put = {
+                    @CachePut(value = "product", key = "#id"),
+            },
+            evict = {
+                    @CacheEvict(value = "productsByCategory", allEntries = true),
+                    @CacheEvict(value = "products", allEntries = true)
+            }
+
+    )
+    @Transactional
     public Product updateProduct(Long id, ProductRequest request) {
-        Product existingProduct = productDao.findById(id)
+        Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
         existingProduct.setName(request.getName());
         existingProduct.setPrice(request.getPrice());
         existingProduct.setStockQuantity(request.getStockQuantity());
-        if (existingProduct.getCategory() == null || !existingProduct.getCategory().getId().equals(request.getCategoryId())){
+        if (existingProduct.getCategory() == null || !existingProduct.getCategory().getId().equals(request.getCategoryId())) {
             Category newCat = categoryService.getCategoryByIdForProduct(request.getCategoryId());
             existingProduct.setCategory(newCat);
         }
 
-        productDao.update(existingProduct);
-        return existingProduct;
+        return productRepository.save(existingProduct);
     }
 
-
     @Override
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "products", allEntries = true),
+                    @CacheEvict(value = {"product", "productsByCategory"}, allEntries = true)
+            }
+    )
+    @Transactional
     public void deleteProduct(Long id) {
-        Product existingProduct = productDao.findById(id)
+        Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("product not found"));
 
-        productDao.deleteById(existingProduct.getId());
+        productRepository.deleteById(existingProduct.getId());
     }
 
     @Override
-    public Page<ProductResponse> getProductsByCategoryId(Long categoryId){
-        List<Product> products = productDao.findByCategoryId(categoryId, Integer.MAX_VALUE, 0);
-        if (products == null) products = List.of();
-        // apply stable, service-level sorting by product name before mapping
-        if (!products.isEmpty()) {
-            products = sorter.sort(products, Comparator.comparing(Product::getName, Comparator.nullsLast(String::compareToIgnoreCase)));
-        }
-        long total = productDao.countByCategoryId(categoryId);
-        return new PageImpl<>(products.stream().map(productMapper::toResponse).toList(), Pageable.ofSize(products.size()), total);
+    @Cacheable(value = "productsByCategory", key = "#categoryId")
+    public Page<ProductResponse> getProductsByCategoryId(Long categoryId) {
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
+        Page<Product> page = productRepository.findByCategory_Id(categoryId, pageable);
+        return page.map(productMapper::toResponse);
+    }
+
+    @Override
+    public Page<ProductResponse> getLowStockProducts(int threshold, Pageable pageable) {
+        return productRepository.findLowStockProducts(threshold, pageable)
+                .map(productMapper::toResponse);
     }
 
 }

@@ -3,7 +3,7 @@ package com.amalitech.demo.validation;
 import com.amalitech.demo.dto.request.UpdateUserRequest;
 import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.models.User;
-import com.amalitech.demo.dao.interfaces.UserDao;
+import com.amalitech.demo.repository.UserRepository;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
 public class UniqueUserValidator implements ConstraintValidator<UniqueUser, Object> {
 
     @Autowired
-    private UserDao userDao;
+    private UserRepository userRepository;
 
     @Override
     public boolean isValid(Object value, ConstraintValidatorContext context) {
@@ -57,7 +57,7 @@ public class UniqueUserValidator implements ConstraintValidator<UniqueUser, Obje
         boolean valid = true;
 
         if (email != null) {
-            User byEmail = userDao.findByEmail(email).orElse(null);
+            User byEmail = userRepository.findByEmail(email).orElse(null);
             if (byEmail != null && (id == null || !byEmail.getId().equals(id))) {
                 valid = false;
                 context.disableDefaultConstraintViolation();
@@ -66,7 +66,7 @@ public class UniqueUserValidator implements ConstraintValidator<UniqueUser, Obje
         }
 
         if (username != null) {
-            User byUsername = userDao.findByUsername(username).orElse(null);
+            User byUsername = userRepository.findByUsername(username).orElse(null);
             if (byUsername != null && (id == null || !byUsername.getId().equals(id))) {
                 valid = false;
                 context.disableDefaultConstraintViolation();

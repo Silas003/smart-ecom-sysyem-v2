@@ -4,13 +4,21 @@ package com.amalitech.demo.controllers;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.UserMapper;
+import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.restcontroller.UserController;
+import com.amalitech.demo.security.JwtAuthenticationFilter;
+import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,6 +34,8 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 
 @WebMvcTest(UserController.class)
+@AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
 public class UserControllerTest {
 
     @Autowired
@@ -39,10 +49,16 @@ public class UserControllerTest {
     private UserService userService;
 
     @MockitoBean
-    private com.amalitech.demo.dao.interfaces.UserDao userDao;
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @Test
+    @WithMockUser(roles= {"admin", "customer"})
     void shouldReturnUserById() throws Exception {
 
         UserResponse userResponse =
@@ -57,6 +73,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(roles= {"admin"})
     void shouldReturnUserList() throws Exception {
 
         UserResponse userResponse =
@@ -72,7 +89,9 @@ public class UserControllerTest {
         );
         when(userService.getAllUsers(pageNumber,pageSize)).thenReturn(page);
 
-        mockMvc.perform(get("/api/v1/users/").param("page","1").param("size","10"))
+        mockMvc.perform(get("/api/v1/users")
+                        .param("page","1")
+                        .param("size","10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("users retrieved"))
                 .andExpect(jsonPath("$.data.content[0].username").value("Alice"));
@@ -91,6 +110,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(roles= {"admin", "customer"})
     void shouldReturnUserAfterUpdate() throws Exception {
 
         UserResponse userResponse =
@@ -119,6 +139,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(roles= {"admin"})
     void shouldReturnNoContentAfterDelete() throws Exception {
 
         doNothing().when(userService).deleteUser(anyLong());
@@ -130,15 +151,12 @@ public class UserControllerTest {
     @Test
     void shouldCreateUser() throws Exception {
         // prepare valid user payload (meets validation)
-        String payload = "{\"username\":\"alice01\",\"email\":\"alice@example.com\",\"password\":\"P@ssw0rd1\",\"userRole\":\"customer\"}";
+        String payload = "{\"username\":\"alice081\",\"email\":\"alice@example.com\",\"password\":\"P@ssw0rd1\",\"userRole\":\"customer\"}";
 
         // userService.createUser is void; stub to do nothing
         org.mockito.Mockito.doNothing().when(userService).createUser(any());
-        // UniqueUserValidator depends on UserDao; ensure it returns empty so validation passes
-        when(userDao.findByEmail(anyString())).thenReturn(java.util.Optional.empty());
-        when(userDao.findByUsername(anyString())).thenReturn(java.util.Optional.empty());
 
-        mockMvc.perform(post("/api/v1/users/create_user")
+        mockMvc.perform(post("/api/v1/users")
                         .contentType("application/json")
                         .content(payload))
                 .andExpect(status().isCreated())

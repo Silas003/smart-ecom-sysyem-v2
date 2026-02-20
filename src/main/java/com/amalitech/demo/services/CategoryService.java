@@ -1,71 +1,91 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dao.interfaces.CategoryDao;
 import com.amalitech.demo.dto.request.CategoryRequest;
 import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.CategoryMapper;
 import com.amalitech.demo.models.Category;
+import com.amalitech.demo.repository.CategoryRepository;
 import com.amalitech.demo.services.interfaces.CategoryServiceInterface;
 import com.amalitech.demo.utils.Sorter;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class CategoryService implements CategoryServiceInterface {
-    private final CategoryDao categoryDao;
+    private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
-    private final Sorter<Category> sorter;
 
-    public CategoryService(CategoryDao categoryDao, CategoryMapper categoryMapper, Sorter<Category> sorter) {
-        this.categoryDao = categoryDao;
+    public CategoryService(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
+        this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
-        this.sorter = sorter;
     }
 
+    @Cacheable(value = "category", key = "#id")
     @Override
     public CategoryResponse getCategoryById(Long id) {
-        Category category = categoryDao.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Category not found with id: " + id)
-        );
-        return  categoryMapper.toDto(category);
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+        return categoryMapper.toResponse(category);
     }
-    public Category getCategoryByIdForProduct(Long id) {
-        return categoryDao.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Category not found with id: " + id)
-        );
 
+    public Category getCategoryByIdForProduct(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
     }
 
     @Override
+    @CachePut(value = "category", key = "#result.id")
+    @Transactional
     public CategoryResponse createCategory(CategoryRequest request) {
-        if(categoryDao.findByName(request.getName()).isPresent()){
+        if (categoryRepository.findByName(request.getName()).isPresent()) {
             throw new IllegalArgumentException("category with given name already exists");
         }
         Category category = categoryMapper.toEntity(request);
-        categoryDao.save(category);
-        return categoryMapper.toDto(category);
+        Category saved = categoryRepository.save(category);
+        return categoryMapper.toResponse(saved);
     }
 
+    @Cacheable(value = "allcategories")
     @Override
     public List<CategoryResponse> getAllCategories() {
-        List<Category> list = categoryDao.findAll();
+        List<Category> list = categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
         if (list == null || list.isEmpty()) return List.of();
-        List<Category> sorted = sorter.sort(list, Comparator.comparing(Category::getName, Comparator.nullsLast(String::compareToIgnoreCase)));
-        return categoryMapper.toDto(sorted);
+        return list.stream().map(categoryMapper::toResponse).toList();
     }
 
+    @CachePut(value = "category", key = "#id")
     @Override
+    @Transactional
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {
-        Category existing = categoryDao.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found"));
-        existing.setName(request.getName());
-        categoryDao.update(existing);
-        return categoryMapper.toDto(existing);
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("category not found"));
+
+        existingCategory.setName(request.getName());
+
+        Category saved = categoryRepository.save(existingCategory);
+        return categoryMapper.toResponse(saved);
     }
+
+    @Caching(evict = {
+            @CacheEvict(value = "category", key = "#id", allEntries = true),
+            @CacheEvict(value = "allcategories", allEntries = true)
+    })
     @Override
+    @Transactional
     public void deleteCategory(Long id) {
-        categoryDao.deleteById(id);
+        if (!categoryRepository.existsById(id)) {
+            throw new EntityNotFoundException("Category not found with id: " + id);
+        }
+        categoryRepository.deleteById(id);
     }
+
 }

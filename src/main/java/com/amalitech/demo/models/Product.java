@@ -11,6 +11,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Data
+@NamedEntityGraph(
+        name="product-with-category",
+        attributeNodes = {
+                @NamedAttributeNode("category")
+        }
+)
 @Entity
 @Table(name = "products",uniqueConstraints = {
         @UniqueConstraint(

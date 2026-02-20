@@ -12,11 +12,13 @@ public interface ProductServiceInterface {
 
     Product getProductById(Long id);
 
-    Page<Product> getAllProducts(Pageable pageable,Long categoryId);
+    Page<Product> getAllProducts(Pageable pageable, Long categoryId, String name, Double minPrice, Double maxPrice);
 
     Product updateProduct(Long id, ProductRequest request);
 
     void deleteProduct(Long id);
 
     Page<ProductResponse> getProductsByCategoryId(Long categoryId);
+
+    Page<ProductResponse> getLowStockProducts(int threshold, Pageable pageable);
 }

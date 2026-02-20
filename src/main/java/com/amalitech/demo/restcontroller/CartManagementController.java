@@ -17,6 +17,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -24,9 +28,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 
-@Slf4j
-@Validated
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/carts")
@@ -120,7 +124,7 @@ public class CartManagementController {
     }
 
     // Admin can adjust cart status (e.g., after order processing); customer typically cannot
-    @PreAuthorize("hasRole('admin')")
+    @PreAuthorize("hasAnyRole('admin','customer')")
     @PatchMapping("/{cartId}/status")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
@@ -140,7 +144,39 @@ public class CartManagementController {
             @Parameter(description = "New cart status", required = true)
             @Valid @RequestBody UpdateCartStatusRquest status) {
         CartResponse cartResponse = cartService.updateCartStatus(cartId, status.status());
-        return new ResponseDto<>(HttpStatus.OK, "Cart status updated successfully", cartResponse);
+        return new ResponseDto<>(HttpStatus.OK, "Cart status updated successfully", null);
+    }
+
+    @PreAuthorize("hasAnyRole('customer','admin')")
+    @DeleteMapping("/users/{userId}/items")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+        summary = "Clear all items from cart",
+        description = "Bulk remove all items from the user's active cart. Cart record is kept but becomes empty."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Cart cleared successfully (no content)"),
+            @ApiResponse(responseCode = "400", description = "Invalid request or unauthorized access"),
+            @ApiResponse(responseCode = "404", description = "Active cart not found for user"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseDto<Void> clearCart(
+            @Parameter(description = "ID of the user", required = true)
+            @PathVariable @Positive Long userId) {
+
+        cartService.clearCart(userId);
+        return new ResponseDto<>(HttpStatus.NO_CONTENT, "Cart cleared successfully", null);
+    }
+
+    @PreAuthorize("hasRole('admin')")
+    @GetMapping("/abandoned")
+    @Operation(summary = "Get abandoned carts", description = "Retrieve active carts that haven't been updated for a specified period")
+    public ResponseDto<Page<CartResponse>> getAbandonedCarts(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since,
+            @PageableDefault(size = 10) Pageable pageable
+    ) {
+        Page<CartResponse> carts = cartService.getAbandonedCarts(since, pageable);
+        return new ResponseDto<>(HttpStatus.OK, "abandoned carts retrieved", carts);
     }
 
     @PreAuthorize("hasAnyRole('customer','admin')")

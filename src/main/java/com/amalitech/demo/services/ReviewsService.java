@@ -1,84 +1,106 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dao.interfaces.ReviewsDao;
 import com.amalitech.demo.dto.request.ReviewRequest;
 import com.amalitech.demo.dto.response.ReviewResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.models.User;
+import com.amalitech.demo.repository.ReviewsRepository;
 import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
-import com.amalitech.demo.utils.Sorter;
+import com.amalitech.demo.services.specification.ReviewSpecification;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class ReviewsService implements ReviewsServiceInterface {
-    private final ReviewsDao reviewsDao;
-
+    private final ReviewsRepository reviewsRepository;
     private final ProductService productService;
     private final UserService userService;
-    private final Sorter<Reviews> sorter;
 
-    public ReviewsService(ReviewsDao reviewsDao,ProductService productService,UserService userService,
-                          Sorter<Reviews> sorter) {
-        this.reviewsDao = reviewsDao;
+    public ReviewsService(ReviewsRepository reviewsRepository, ProductService productService, UserService userService) {
+        this.reviewsRepository = reviewsRepository;
         this.userService = userService;
         this.productService = productService;
-        this.sorter = sorter;
     }
 
     @Override
-    public List<ReviewResponse> getAllReviews() {
-        List<Reviews> list = reviewsDao.findAll();
-        if (list == null || list.isEmpty()) return List.of();
-        // ReviewsDao often returns id DESC via SQL; ensure stable sorting by id DESC
-        List<Reviews> sorted = sorter.sort(list, Comparator.comparing(Reviews::getId, Comparator.nullsLast(Long::compareTo)).reversed());
-        return sorted.stream().map(this::toResponse).collect(Collectors.toList());
+    @Cacheable(value = "reviews", keyGenerator = "reviewKeyGenerator")
+    public List<ReviewResponse> getAllReviews(Long productId, Long userId) {
+        Specification<Reviews> spec = Specification.anyOf(ReviewSpecification.hasProductId(productId))
+                .and(ReviewSpecification.hasUserId(userId));
+
+        List<Reviews> list = reviewsRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "id"));
+        return list.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-
     @Override
-    public ReviewResponse createReview(ReviewRequest request) {
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "review", key = "#id"),
+                    @CacheEvict(value = "reviewsByProduct", allEntries = true),
+                    @CacheEvict(value = "reviewsByUser", allEntries = true),
+                    @CacheEvict(value = "averageRating", allEntries = true)
+            }
+    )    public ReviewResponse createReview(ReviewRequest request) {
         Product product = productService.getProductById(request.getProductId());
         User user = userService.getUserByIdForReview(request.getUserId());
 
-        Reviews review = new Reviews(request.getRating(), request.getDescription(),user, product);
-        long id = reviewsDao.save(review);
-        review.setId(id);
-        return toResponse(review);
+        Reviews review = new Reviews(request.getRating(), request.getDescription(), user, product);
+        Reviews saved = reviewsRepository.save(review);
+        return toResponse(saved);
 
     }
 
     @Override
+    @Cacheable(value = "review", key = "#id")
     public ReviewResponse getReview(Long id) {
-        Reviews review = reviewsDao.findById(id).orElseThrow(() -> new EntityNotFoundException("Review not found"));
+        Reviews review = reviewsRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Review not found"));
         return toResponse(review);
     }
 
     @Override
+    @Cacheable(value = "reviewsByProduct", key = "#productId")
     public List<ReviewResponse> getReviewsByProduct(Long productId) {
-        productService.getProductById(productId); // validate exists
-        return reviewsDao.findByProductIdOrderByIdDesc(productId).stream().map(this::toResponse).collect(Collectors.toList());
+        return getAllReviews(productId, null);
     }
 
     @Override
+    @Cacheable(value = "reviewsByUser", key = "#userId")
     public List<ReviewResponse> getReviewsByUser(Long userId) {
-        userService.getUserByIdForReview(userId); // validate exists
-        return reviewsDao.findByUserIdOrderByIdDesc(userId).stream().map(this::toResponse).collect(Collectors.toList());
+        return getAllReviews(null, userId);
     }
-
 
     @Override
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "review", key = "#id"),
+                    @CacheEvict(value = "reviewsByProduct", allEntries = true),
+                    @CacheEvict(value = "reviewsByUser", allEntries = true),
+                    @CacheEvict(value = "averageRating", allEntries = true)
+            }
+    )
     public void deleteReview(Long id) {
-        if (reviewsDao.findById(id).isEmpty()) throw new EntityNotFoundException("Review not found");
-        reviewsDao.deleteById(id);
+        if (reviewsRepository.findById(id).isEmpty()) throw new EntityNotFoundException("Review not found");
+        reviewsRepository.deleteById(id);
     }
 
-    public ReviewResponse toResponse(Reviews r){
+    @CachePut(value = "averageRating", key = "#productId")
+    @Override
+    public Double getAverageRating(Long productId) {
+        return reviewsRepository.getAverageRatingByProductId(productId);
+    }
+
+    public ReviewResponse toResponse(Reviews r) {
         ReviewResponse resp = new ReviewResponse();
         resp.setId(r.getId());
         resp.setDescription(r.getDescription());

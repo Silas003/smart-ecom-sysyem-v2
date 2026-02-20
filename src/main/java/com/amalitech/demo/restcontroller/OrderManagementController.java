@@ -20,11 +20,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -65,19 +67,22 @@ public class OrderManagementController {
         return new ResponseDto<>(HttpStatus.OK,"order retrieved",orderResponse);
     }
 
-    // Admin can view all orders (e.g., dashboard)
     @PreAuthorize("hasRole('admin')")
-    @GetMapping("")
+    @GetMapping()
     @ResponseStatus(HttpStatus.OK)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Orders retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class))))
     })
-    public ResponseDto<Page<OrderResponse>> getAllOrder(@PageableDefault(
-            size = 10,sort = "totalAmount",direction = Sort.Direction.DESC
-    )Pageable pageable){
-        Page<OrderResponse> orders  = orderService.getAllOrders(pageable);
-        return new ResponseDto<>(HttpStatus.OK,"orders retrieved",orders);
+    public ResponseDto<Page<OrderResponse>> getAllOrder(
+            @PageableDefault(size = 10, sort = "totalAmount", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) com.amalitech.demo.dto.OrderStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end
+    ) {
+        Page<OrderResponse> orders = orderService.getAllOrders(pageable, userId, status, start, end);
+        return new ResponseDto<>(HttpStatus.OK, "orders retrieved", orders);
     }
 
     // Admin can delete any order; potentially customer could cancel own in future
@@ -110,7 +115,7 @@ public class OrderManagementController {
 
     // Customers create orders; admin could also for support
     @PreAuthorize("hasAnyRole('admin','customer')")
-    @PostMapping("")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create order", description = "Create a new order")
     @ApiResponses(value = {
@@ -121,6 +126,40 @@ public class OrderManagementController {
     public ResponseDto<OrderResponse> createOrder( @RequestBody @Valid OrderRequest request){
         OrderResponse resp = orderService.createOrder( request);
         return new ResponseDto<>(HttpStatus.CREATED, "order created", resp);
+    }
+
+    // Customer can view their own orders within a date range; admins can view any user's orders
+    @PreAuthorize("hasAnyRole('admin','customer')")
+    @GetMapping("/user/{userId}/history")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get user orders within period", description = "Fetch a user's orders between start and end timestamps using a native SQL query")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User order history retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class)))),
+            @ApiResponse(responseCode = "404", description = "User or orders not found")
+    })
+    public ResponseDto<Page<OrderResponse>> getUserOrdersWithinPeriod(
+            @Parameter(description = "ID of the user", required = true) @PathVariable @Valid Long userId,
+            @Parameter(description = "Start of the period (ISO-8601)", required = true)
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @Parameter(description = "End of the period (ISO-8601)", required = true)
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<OrderResponse> page = orderService.getUserOrdersWithinPeriod(userId, start, end, pageable);
+        return new ResponseDto<>(HttpStatus.OK, "user order history retrieved", page);
+    }
+
+    @PreAuthorize("hasRole('admin')")
+    @GetMapping("/reports/revenue")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get total revenue", description = "Calculate total revenue from delivered orders within a period")
+    public ResponseDto<Double> getTotalRevenue(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end
+    ) {
+        Double total = orderService.getTotalRevenue(start, end);
+        return new ResponseDto<>(HttpStatus.OK, "total revenue retrieved", total);
     }
 
 }

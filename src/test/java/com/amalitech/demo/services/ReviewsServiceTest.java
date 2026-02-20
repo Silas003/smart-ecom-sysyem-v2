@@ -1,11 +1,10 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dao.interfaces.ReviewsDao;
 import com.amalitech.demo.dto.request.ReviewRequest;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.models.Reviews;
 import com.amalitech.demo.models.User;
-import com.amalitech.demo.utils.Sorter;
+import com.amalitech.demo.repository.ReviewsRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class ReviewsServiceTest {
 
     @Mock
-    private ReviewsDao reviewsDao;
+    private ReviewsRepository reviewsRepository;
 
     @Mock
     private ProductService productService;
@@ -31,14 +30,11 @@ public class ReviewsServiceTest {
     @Mock
     private UserService userService;
 
-    @Mock
-    private Sorter<Reviews> sorter;
-
     @InjectMocks
     private ReviewsService reviewsService;
 
     @Test
-    void getAllReviews_sorted_returnsResponses() {
+    void getAllReviews_returnsResponses() {
         Reviews a = new Reviews(); a.setId(1L);
         // set product and user to avoid NPE in toResponse
         Product pa = new Product(); pa.setId(10L);
@@ -50,55 +46,65 @@ public class ReviewsServiceTest {
         User ub = new User(); ub.setId(200L); ub.setUsername("userB");
         b.setProduct(pb); b.setUser(ub);
 
-        when(reviewsDao.findAll()).thenReturn(List.of(b,a));
-        when(sorter.sort(anyList(), any())).thenReturn(List.of(a,b));
+        when(reviewsRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Sort.class))).thenReturn(List.of(b,a));
         // lenient stubbings: these are not required by this test's verification but
         // keep them to avoid NPEs if internal calls occur
         org.mockito.Mockito.lenient().when(userService.getUserByIdForReview(anyLong())).thenReturn(new User());
         org.mockito.Mockito.lenient().when(productService.getProductById(anyLong())).thenReturn(new Product());
         // internal toResponse uses model fields; we'll spy the service behavior by calling getAllReviews
-        var resp = reviewsService.getAllReviews();
+        var resp = reviewsService.getAllReviews(null, null);
         assertNotNull(resp);
-        verify(sorter, times(1)).sort(anyList(), any());
+        verify(reviewsRepository, times(1)).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Sort.class));
     }
 
     @Test
     void createReview_success_returnsResponse() {
-        ReviewRequest req = new ReviewRequest(); req.setProductId(1L); req.setRating(5); req.setDescription("ok");
-        User user = new User(); user.setId(2L);
-        Product product = new Product(); product.setId(1L);
+        ReviewRequest req = new ReviewRequest();
+        req.setProductId(1L);
+        req.setUserId(2L);
+        req.setRating(5);
+        req.setDescription("ok");
+
+        User user = new User();
+        user.setId(2L);
+
+        Product product = new Product();
+        product.setId(1L);
+
         when(productService.getProductById(1L)).thenReturn(product);
         when(userService.getUserByIdForReview(2L)).thenReturn(user);
-        when(reviewsDao.save(any())).thenReturn(11L);
-        Reviews saved = new Reviews(); saved.setId(11L);
-        // ensure saved review has product and user for toResponse
-        Product sp = new Product(); sp.setId(1L);
-        User su = new User(); su.setId(2L); su.setUsername("tester");
-        saved.setProduct(sp); saved.setUser(su);
-        when(reviewsDao.findById(11L)).thenReturn(Optional.of(saved));
+
+        Reviews saved = new Reviews();
+        saved.setId(11L);
+        saved.setProduct(product);
+        saved.setUser(user);
+
+        when(reviewsRepository.save(any())).thenReturn(saved);
+
         var resp = reviewsService.createReview(req);
+
         assertNotNull(resp);
         assertEquals(11L, resp.getId());
     }
 
+
     @Test
     void getReview_notFound_throws() {
-        when(reviewsDao.findById(9L)).thenReturn(Optional.empty());
+        when(reviewsRepository.findById(9L)).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class, () -> reviewsService.getReview(9L));
     }
 
     @Test
-    void getReviewsByProduct_valid_callsDao() {
-        when(productService.getProductById(5L)).thenReturn(new Product());
-        when(reviewsDao.findByProductIdOrderByIdDesc(5L)).thenReturn(List.of());
+    void getReviewsByProduct_valid_callsRepository() {
+        when(reviewsRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Sort.class))).thenReturn(List.of());
         var list = reviewsService.getReviewsByProduct(5L);
         assertNotNull(list);
-        verify(reviewsDao, times(1)).findByProductIdOrderByIdDesc(5L);
+        verify(reviewsRepository, times(1)).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Sort.class));
     }
 
     @Test
     void deleteReview_notFound_throws() {
-        when(reviewsDao.findById(99L)).thenReturn(Optional.empty());
+        when(reviewsRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class, () -> reviewsService.deleteReview(99L));
     }
 }

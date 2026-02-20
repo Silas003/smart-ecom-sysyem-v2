@@ -29,7 +29,7 @@ public class InventoryController {
     private final InventoryServiceInterface  inventoryService;
 
     @PreAuthorize("hasAnyRole('admin','seller')")
-    @GetMapping("")
+    @GetMapping()
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all inventories", description = "Retrieve all inventory records")
     @ApiResponses(value = {
@@ -88,7 +88,7 @@ public class InventoryController {
     }
 
     @PreAuthorize("hasAnyRole('admin','seller')")
-    @PostMapping("/create_inventory")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create inventory", description = "Create a new inventory record")
     @ApiResponses(value = {

@@ -26,4 +26,7 @@ public interface UserServiceInterface {
     LoginResponse loginUser(UserLoginRequest userRequest);
 
     Page<UserResponse> getInactiveUsers(LocalDateTime date, Pageable pageable);
+
+    LoginResponse refreshToken(String refreshToken);
+    UserResponse getCurrentUser(String email);
 }

@@ -1,5 +1,7 @@
 package com.amalitech.demo.dto.response;
 
-public record LoginResponse(String token, UserResponse user) {
+import java.util.Map;
+
+public record LoginResponse(Map<String,String> token, UserResponse user) {
 }
 

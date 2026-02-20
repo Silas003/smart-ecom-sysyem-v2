@@ -8,24 +8,19 @@ import com.amalitech.demo.models.Category;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.repository.ProductRepository;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
-import com.amalitech.demo.utils.Sorter;
+import com.amalitech.demo.services.specification.ProductSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import com.amalitech.demo.services.specification.ProductSpecification;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Comparator;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +29,6 @@ public class ProductService implements ProductServiceInterface {
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
     private final ProductMapper productMapper;
-
 
 
     @Override

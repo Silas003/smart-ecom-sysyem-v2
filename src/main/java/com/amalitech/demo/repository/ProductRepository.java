@@ -21,9 +21,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @EntityGraph(value = "product-with-category", type = EntityGraph.EntityGraphType.FETCH)
     Page<Product> findAll(Pageable pageable);
 
-    @Query("SELECT p from Product p JOIN p.category c WHERE c.name = :categoryName")
-    Page<Product> findByCategory_Name(String categoryName, Pageable pageable);
-
     @Query("SELECT p FROM Product p WHERE p.stockQuantity < :threshold")
     Page<Product> findLowStockProducts(@Param("threshold") int threshold, Pageable pageable);
 }

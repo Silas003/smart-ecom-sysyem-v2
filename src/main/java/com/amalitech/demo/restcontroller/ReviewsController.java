@@ -39,10 +39,11 @@ public class ReviewsController {
     public ResponseDto<List<ReviewResponse>> getAllReviews(
             @RequestParam(required = false) Long productId,
             @RequestParam(required = false) Long userId
-    ){
+    ) {
         List<ReviewResponse> reviews = reviewsService.getAllReviews(productId, userId);
-        return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",reviews);
+        return new ResponseDto<>(HttpStatus.OK, "reviews retrieved", reviews);
     }
+
     @PreAuthorize("hasAnyRole('customer','admin')")
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
@@ -52,9 +53,9 @@ public class ReviewsController {
                     content = @Content(schema = @Schema(implementation = ReviewResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
-    public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request){
+    public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request) {
         ReviewResponse review = reviewsService.createReview(request);
-        return  new ResponseDto<>(HttpStatus.CREATED,"review created",review);
+        return new ResponseDto<>(HttpStatus.CREATED, "review created", review);
     }
 
 
@@ -66,9 +67,9 @@ public class ReviewsController {
                     content = @Content(schema = @Schema(implementation = ReviewResponse.class))),
             @ApiResponse(responseCode = "404", description = "Review not found")
     })
-    public ResponseDto<ReviewResponse> getReview(@Parameter(description = "ID of the review to retrieve", required = true) @PathVariable Long id){
+    public ResponseDto<ReviewResponse> getReview(@Parameter(description = "ID of the review to retrieve", required = true) @PathVariable Long id) {
         ReviewResponse resp = reviewsService.getReview(id);
-        return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",resp);
+        return new ResponseDto<>(HttpStatus.OK, "reviews retrieved", resp);
 
     }
 
@@ -80,9 +81,9 @@ public class ReviewsController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class)))),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
-    public ResponseDto<List<ReviewResponse>> getReviewsByProduct(@Parameter(description = "ID of the product", required = true) @PathVariable Long productId){
+    public ResponseDto<List<ReviewResponse>> getReviewsByProduct(@Parameter(description = "ID of the product", required = true) @PathVariable Long productId) {
         List<ReviewResponse> resp = reviewsService.getAllReviews(productId, null);
-        return new ResponseDto<>(HttpStatus.OK,"product reviews retrieved",resp);
+        return new ResponseDto<>(HttpStatus.OK, "product reviews retrieved", resp);
 
     }
 
@@ -94,9 +95,9 @@ public class ReviewsController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class)))),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseDto<List<ReviewResponse>> getReviewsByUser(@Parameter(description = "ID of the user", required = true) @PathVariable Long userId){
+    public ResponseDto<List<ReviewResponse>> getReviewsByUser(@Parameter(description = "ID of the user", required = true) @PathVariable Long userId) {
         List<ReviewResponse> resp = reviewsService.getAllReviews(null, userId);
-        return new ResponseDto<>(HttpStatus.OK,"user reviews retrieved",resp);
+        return new ResponseDto<>(HttpStatus.OK, "user reviews retrieved", resp);
 
     }
 
@@ -116,7 +117,7 @@ public class ReviewsController {
             @ApiResponse(responseCode = "204", description = "Review deleted"),
             @ApiResponse(responseCode = "404", description = "Review not found")
     })
-    public ResponseEntity<Void> deleteReview(@Parameter(description = "ID of the review to delete", required = true) @PathVariable Long id){
+    public ResponseEntity<Void> deleteReview(@Parameter(description = "ID of the review to delete", required = true) @PathVariable Long id) {
         reviewsService.deleteReview(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

@@ -34,9 +34,11 @@ public class MergeSorter<T> implements Sorter<T> {
             T left = dest.get(p);
             T right = dest.get(q);
             if (cmp.compare(left, right) <= 0) {
-                src.set(i++, left); p++;
+                src.set(i++, left);
+                p++;
             } else {
-                src.set(i++, right); q++;
+                src.set(i++, right);
+                q++;
             }
         }
         while (p < mid) src.set(i++, dest.get(p++));

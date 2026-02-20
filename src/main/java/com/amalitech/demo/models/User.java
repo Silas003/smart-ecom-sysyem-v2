@@ -1,5 +1,6 @@
 package com.amalitech.demo.models;
 
+import com.amalitech.demo.dto.Provider;
 import com.amalitech.demo.dto.UserRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -42,5 +43,8 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
+
+    @Enumerated(EnumType.STRING)
+    private Provider provider;
 
 }

@@ -185,4 +185,17 @@ public class UserController {
             return new ResponseDto<>(HttpStatus.INTERNAL_SERVER_ERROR, "Error refreshing token",null);
         }
         }
+
+        @GetMapping("/me")
+        @ResponseStatus(HttpStatus.OK)
+        @Operation()
+        public ResponseDto<UserResponse> getCurrentUser(HttpServletRequest request) {
+        String token = JwtUtil.extractTokenFromRequest(request);
+        if(token != null) {
+            String email = jwtService.extractSubject(token);
+            UserResponse user = userService.getCurrentUser(email);
+            return new ResponseDto<>(HttpStatus.OK, "User retrieved successfully", user);
+        }
+        return null;
+        }
 }

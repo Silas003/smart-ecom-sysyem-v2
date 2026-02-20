@@ -73,19 +73,12 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    @Caching(
-            put = {
-                    @CachePut(value = "user", key = "#id"),
-            },
-            evict = {
-                    @CacheEvict(value = "users", allEntries = true)
-            }
+    @Caching(put = {@CachePut(value = "user", key = "#id"),}, evict = {@CacheEvict(value = "users", allEntries = true)}
 
     )
     @Transactional
     public UserResponse updateUser(Long id, UserRequest userRequest) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User existingUser = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         String password = PasswordUtils.hashPassword(userRequest.getPassword());
 
@@ -98,14 +91,9 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    @Caching(
-            evict = {
-                    @CacheEvict(value = "user", key = "#id"),
-            @CacheEvict(value = "users", allEntries = true)}
-    )
+    @Caching(evict = {@CacheEvict(value = "user", key = "#id"), @CacheEvict(value = "users", allEntries = true)})
     public void deleteUser(Long id) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("user not found"));
+        User existingUser = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("user not found"));
 
         userRepository.deleteById(existingUser.getId());
     }
@@ -113,8 +101,7 @@ public class UserService implements UserServiceInterface {
     @CachePut(value = "userCount", key = "'totalUsers'")
     @Override
     public Page<UserResponse> getInactiveUsers(LocalDateTime date, Pageable pageable) {
-        return userRepository.findInactiveUsers(date, pageable)
-                .map(userMapper::toResponse);
+        return userRepository.findInactiveUsers(date, pageable).map(userMapper::toResponse);
     }
 
     @Override
@@ -122,6 +109,13 @@ public class UserService implements UserServiceInterface {
         String subject = jwtService.extractSubject(refreshToken);
         User user = userRepository.findByEmail(subject).orElseThrow(() -> new EntityNotFoundException("User not found"));
         return new LoginResponse(jwtService.generateToken(user), userMapper.toResponse(user));
+    }
+
+    @Override
+    @CachePut(value = "user", key = "result.id")
+    public UserResponse getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return userMapper.toResponse(user);
     }
 
     @Override
@@ -135,7 +129,7 @@ public class UserService implements UserServiceInterface {
                 throw new IllegalArgumentException("Invalid credentials");
             } else {
                 UserResponse userResponse = userMapper.toResponse(user);
-                Map<String,String> token = jwtService.generateToken(user);
+                Map<String, String> token = jwtService.generateToken(user);
                 return new LoginResponse(token, userResponse);
             }
         } else {

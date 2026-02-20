@@ -32,7 +32,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/orders")
 @AllArgsConstructor
-@Tag(name = "Order management",description = "Endpoints to streamline order processing")
+@Tag(name = "Order management", description = "Endpoints to streamline order processing")
 public class OrderManagementController {
     private OrderServiceInterface orderService;
 
@@ -42,45 +42,28 @@ public class OrderManagementController {
     @PreAuthorize("hasAnyRole('admin','customer')")
     @GetMapping("/user/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(method = "GET",tags = "user Orders",description = "Get orders by userId")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User orders retrieved",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class)))),
-            @ApiResponse(responseCode = "404", description = "User not found")
-    })
-    public ResponseDto<List<OrderResponse>> getOrdersByUserId(@Parameter(description = "ID of the user", required = true) @PathVariable @Valid Long userId){
+    @Operation(method = "GET", tags = "user Orders", description = "Get orders by userId")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "User orders retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class)))), @ApiResponse(responseCode = "404", description = "User not found")})
+    public ResponseDto<List<OrderResponse>> getOrdersByUserId(@Parameter(description = "ID of the user", required = true) @PathVariable @Valid Long userId) {
         List<OrderResponse> orders = orderService.getOrderByUserId(userId);
-        return new ResponseDto<>(HttpStatus.OK,"user orders retrieved",orders);
+        return new ResponseDto<>(HttpStatus.OK, "user orders retrieved", orders);
     }
 
     // Customer can view their own order; admins can view any
     @PreAuthorize("hasAnyRole('admin','customer')")
     @GetMapping("/{orderId}")
     @ResponseStatus(HttpStatus.OK)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Order retrieved",
-                    content = @Content(schema = @Schema(implementation = OrderResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Order not found")
-    })
-    public ResponseDto<OrderResponse> getOrderById(@Parameter(description = "ID of the order to retrieve", required = true) @PathVariable Long orderId){
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Order retrieved", content = @Content(schema = @Schema(implementation = OrderResponse.class))), @ApiResponse(responseCode = "404", description = "Order not found")})
+    public ResponseDto<OrderResponse> getOrderById(@Parameter(description = "ID of the order to retrieve", required = true) @PathVariable Long orderId) {
         OrderResponse orderResponse = orderService.getOrderById(orderId);
-        return new ResponseDto<>(HttpStatus.OK,"order retrieved",orderResponse);
+        return new ResponseDto<>(HttpStatus.OK, "order retrieved", orderResponse);
     }
 
     @PreAuthorize("hasRole('admin')")
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Orders retrieved",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class))))
-    })
-    public ResponseDto<Page<OrderResponse>> getAllOrder(
-            @PageableDefault(size = 10, sort = "totalAmount", direction = Sort.Direction.DESC) Pageable pageable,
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) com.amalitech.demo.dto.OrderStatus status,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end
-    ) {
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Orders retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class))))})
+    public ResponseDto<Page<OrderResponse>> getAllOrder(@PageableDefault(size = 10, sort = "totalAmount", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(required = false) Long userId, @RequestParam(required = false) com.amalitech.demo.dto.OrderStatus status, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
         Page<OrderResponse> orders = orderService.getAllOrders(pageable, userId, status, start, end);
         return new ResponseDto<>(HttpStatus.OK, "orders retrieved", orders);
     }
@@ -89,11 +72,8 @@ public class OrderManagementController {
     @PreAuthorize("hasRole('admin')")
     @DeleteMapping("/{orderId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Order deleted"),
-            @ApiResponse(responseCode = "404", description = "Order not found")
-    })
-    public ResponseEntity<Void> deleteOrder(@Parameter(description = "ID of the order to delete", required = true) @PathVariable Long orderId){
+    @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "Order deleted"), @ApiResponse(responseCode = "404", description = "Order not found")})
+    public ResponseEntity<Void> deleteOrder(@Parameter(description = "ID of the order to delete", required = true) @PathVariable Long orderId) {
         orderService.deleteOrder(orderId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -102,15 +82,9 @@ public class OrderManagementController {
     @PreAuthorize("hasAnyRole('admin','seller')")
     @PatchMapping("/{orderId}")
     @ResponseStatus(HttpStatus.OK)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Order updated",
-                    content = @Content(schema = @Schema(implementation = OrderResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Order not found"),
-            @ApiResponse(responseCode = "400", description = "Validation error")
-    })
-    public ResponseDto<OrderResponse> updateOrderStatus(@Parameter(description = "ID of the order to update", required = true) @PathVariable Long orderId,
-                                           @RequestBody @Valid UpdateOrderRequest request) {
-        return new ResponseDto<>(HttpStatus.OK,"order updated",orderService.updateOrderStatus(orderId, request.status()));
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Order updated", content = @Content(schema = @Schema(implementation = OrderResponse.class))), @ApiResponse(responseCode = "404", description = "Order not found"), @ApiResponse(responseCode = "400", description = "Validation error")})
+    public ResponseDto<OrderResponse> updateOrderStatus(@Parameter(description = "ID of the order to update", required = true) @PathVariable Long orderId, @RequestBody @Valid UpdateOrderRequest request) {
+        return new ResponseDto<>(HttpStatus.OK, "order updated", orderService.updateOrderStatus(orderId, request.status()));
     }
 
     // Customers create orders; admin could also for support
@@ -118,13 +92,9 @@ public class OrderManagementController {
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create order", description = "Create a new order")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Order created",
-                    content = @Content(schema = @Schema(implementation = OrderResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Validation error")
-    })
-    public ResponseDto<OrderResponse> createOrder( @RequestBody @Valid OrderRequest request){
-        OrderResponse resp = orderService.createOrder( request);
+    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Order created", content = @Content(schema = @Schema(implementation = OrderResponse.class))), @ApiResponse(responseCode = "400", description = "Validation error")})
+    public ResponseDto<OrderResponse> createOrder(@RequestBody @Valid OrderRequest request) {
+        OrderResponse resp = orderService.createOrder(request);
         return new ResponseDto<>(HttpStatus.CREATED, "order created", resp);
     }
 
@@ -133,19 +103,8 @@ public class OrderManagementController {
     @GetMapping("/user/{userId}/history")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get user orders within period", description = "Fetch a user's orders between start and end timestamps using a native SQL query")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User order history retrieved",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class)))),
-            @ApiResponse(responseCode = "404", description = "User or orders not found")
-    })
-    public ResponseDto<Page<OrderResponse>> getUserOrdersWithinPeriod(
-            @Parameter(description = "ID of the user", required = true) @PathVariable @Valid Long userId,
-            @Parameter(description = "Start of the period (ISO-8601)", required = true)
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @Parameter(description = "End of the period (ISO-8601)", required = true)
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "User order history retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderResponse.class)))), @ApiResponse(responseCode = "404", description = "User or orders not found")})
+    public ResponseDto<Page<OrderResponse>> getUserOrdersWithinPeriod(@Parameter(description = "ID of the user", required = true) @PathVariable @Valid Long userId, @Parameter(description = "Start of the period (ISO-8601)", required = true) @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start, @Parameter(description = "End of the period (ISO-8601)", required = true) @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end, @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<OrderResponse> page = orderService.getUserOrdersWithinPeriod(userId, start, end, pageable);
         return new ResponseDto<>(HttpStatus.OK, "user order history retrieved", page);
     }
@@ -154,10 +113,7 @@ public class OrderManagementController {
     @GetMapping("/reports/revenue")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get total revenue", description = "Calculate total revenue from delivered orders within a period")
-    public ResponseDto<Double> getTotalRevenue(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end
-    ) {
+    public ResponseDto<Double> getTotalRevenue(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
         Double total = orderService.getTotalRevenue(start, end);
         return new ResponseDto<>(HttpStatus.OK, "total revenue retrieved", total);
     }

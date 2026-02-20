@@ -53,8 +53,7 @@ public class InventoryService implements InventoryServiceInterface {
     @Transactional(readOnly = true)
     @Cacheable(value = "inventory", key = "#id", sync = true)
     public InventoryResponse getInventoryById(Long id) {
-        Inventory inv = inventoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
+        Inventory inv = inventoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
         return inventoryMapper.toResponse(inv);
     }
 
@@ -63,9 +62,7 @@ public class InventoryService implements InventoryServiceInterface {
     public List<InventoryResponse> getAllInventories() {
         List<Inventory> list = inventoryRepository.findAll();
         if (list == null || list.isEmpty()) return List.of();
-        List<Inventory> sorted = sorter.sort(list,
-                Comparator.comparing(i -> i.getProduct() == null ? null : i.getProduct().getId(),
-                        Comparator.nullsLast(Long::compareTo)));
+        List<Inventory> sorted = sorter.sort(list, Comparator.comparing(i -> i.getProduct() == null ? null : i.getProduct().getId(), Comparator.nullsLast(Long::compareTo)));
         return sorted.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
     }
 
@@ -73,8 +70,7 @@ public class InventoryService implements InventoryServiceInterface {
     @Transactional(propagation = Propagation.MANDATORY)
     @CachePut(value = "inventory", key = "#id")
     public InventoryResponse updateInventory(Long id, InventoryRequest request) {
-        Inventory existingInventory = inventoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
+        Inventory existingInventory = inventoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
 
         Product product = productService.getProductById(request.getProductId());
         existingInventory.setProduct(product);
@@ -90,8 +86,7 @@ public class InventoryService implements InventoryServiceInterface {
     @Transactional(propagation = Propagation.REQUIRED)
     @CachePut(value = "inventory", key = "#id")
     public void deleteInventory(Long id) {
-        Inventory inventory = inventoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
+        Inventory inventory = inventoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
 
         inventoryRepository.deleteById(inventory.getId());
     }

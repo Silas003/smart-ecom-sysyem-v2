@@ -1,7 +1,7 @@
 package com.amalitech.demo.config;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -32,7 +32,17 @@ public class CacheConfig {
                 "activeUserCart",
                 "userCount",
                 "averageRating",
-                "tokenBlacklist"
+                "tokenBlacklist",
+                "products",
+                "reviewsByProduct",
+                "orders",
+                "ordersByUser",
+                "inventory",
+                "review",
+                "reviewsByUser",
+                "reviews",
+                "reviewsByProduct",
+                "users"
         );
 
         // Global/default builder for regular caches

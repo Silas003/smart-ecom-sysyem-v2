@@ -15,7 +15,6 @@ import com.amalitech.demo.security.CurrentUser;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import com.amalitech.demo.services.specification.OrderSpecification;
 import com.amalitech.demo.utils.Sorter;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -117,7 +116,6 @@ public class OrderService implements OrderServiceInterface {
     }
 
 
-
     @Override
     @Transactional
     @Caching(
@@ -164,66 +162,6 @@ public class OrderService implements OrderServiceInterface {
         return ordersMapper.toResponse(saved);
     }
 
-//    @Override
-//    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
-//    public OrderResponse createOrder(OrderRequest req) {
-//        // 1. Validate user
-//        Long userId = req.getUserId();
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-//
-//        // 2. Validate order items
-//        if (req.getItems() == null || req.getItems().isEmpty()) {
-//            throw new IllegalArgumentException("Order must contain at least one item");
-//        }
-//
-//        // 3. Create order
-//        Orders order = new Orders();
-//        order.setUser(user);
-//        order.setStatus(OrderStatus.pending);
-//
-//        // 4. Process order items and validate inventory
-//        List<OrderItem> items = new ArrayList<>();
-//        double total = 0.0;
-//
-//        for (OrderItemRequest itemReq : req.getItems()) {
-//            // Validate product exists
-//            Product product = productRepository.findById(itemReq.getProductId())
-//                    .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + itemReq.getProductId()));
-//
-//            // Validate inventory exists and has sufficient stock
-//            Inventory inv = inventoryRepository.findByProductId(product.getId())
-//                    .orElseThrow(() -> new EntityNotFoundException("Inventory not found for product ID: " + product.getId()));
-//
-//            if (inv.getStockQuantity() < itemReq.getQuantity()) {
-//                throw new IllegalArgumentException("Insufficient stock for product ID: " + product.getId()
-//                        + ". Available: " + inv.getStockQuantity() + ", Requested: " + itemReq.getQuantity());
-//            }
-//
-//            // Create order item
-//            OrderItem oi = new OrderItem();
-//            oi.setOrder(order);
-//            oi.setProduct(product);
-//            oi.setQuantity(itemReq.getQuantity());
-//            oi.setUnitPrice(product.getPrice());
-//            oi.setTotalPrice(product.getPrice() * itemReq.getQuantity());
-//            items.add(oi);
-//
-//            total += oi.getTotalPrice();
-//
-//            // Decrement inventory
-//            inv.setStockQuantity(inv.getStockQuantity() - itemReq.getQuantity());
-//            inventoryRepository.save(inv);
-//        }
-//
-//        // 5. Set order details
-//        order.setTotalAmount(total);
-//        order.setItems(items);
-//
-//        // 6. Save order and cascade items
-//        Orders savedOrder = ordersRepository.save(order);
-//        return ordersMapper.toResponse(savedOrder);
-//    }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
     @Caching(
@@ -323,16 +261,19 @@ public class OrderService implements OrderServiceInterface {
         order.setStatus(OrderStatus.pending);
         return order;
     }
+
     private Product getProductOrThrow(Long productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Product not found with ID: " + productId));
     }
+
     private Inventory getInventoryOrThrow(Long productId) {
         return inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Inventory not found for product ID: " + productId));
     }
+
     private void validateStock(Inventory inventory, int requestedQty, Long productId) {
 
         if (inventory.getStockQuantity() < requestedQty) {
@@ -346,6 +287,7 @@ public class OrderService implements OrderServiceInterface {
             );
         }
     }
+
     private OrderItem buildOrderItem(Orders order, Product product, int quantity) {
 
         OrderItem item = new OrderItem();
@@ -358,13 +300,13 @@ public class OrderService implements OrderServiceInterface {
 
         return item;
     }
+
     private void decrementInventory(Inventory inventory, int quantity) {
 
         inventory.setStockQuantity(inventory.getStockQuantity() - quantity);
 
         inventoryRepository.save(inventory);
     }
-
 
 
 }

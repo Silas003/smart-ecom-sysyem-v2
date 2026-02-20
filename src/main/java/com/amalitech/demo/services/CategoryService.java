@@ -7,7 +7,6 @@ import com.amalitech.demo.mapper.CategoryMapper;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.repository.CategoryRepository;
 import com.amalitech.demo.services.interfaces.CategoryServiceInterface;
-import com.amalitech.demo.utils.Sorter;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -16,7 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -32,14 +30,12 @@ public class CategoryService implements CategoryServiceInterface {
     @Cacheable(value = "category", key = "#id")
     @Override
     public CategoryResponse getCategoryById(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+        Category category = categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
         return categoryMapper.toResponse(category);
     }
 
     public Category getCategoryByIdForProduct(Long id) {
-        return categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+        return categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
     }
 
     @Override
@@ -66,8 +62,7 @@ public class CategoryService implements CategoryServiceInterface {
     @Override
     @Transactional
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("category not found"));
+        Category existingCategory = categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("category not found"));
 
         existingCategory.setName(request.getName());
 
@@ -75,10 +70,7 @@ public class CategoryService implements CategoryServiceInterface {
         return categoryMapper.toResponse(saved);
     }
 
-    @Caching(evict = {
-            @CacheEvict(value = "category", key = "#id", allEntries = true),
-            @CacheEvict(value = "allcategories", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "category", key = "#id", allEntries = true), @CacheEvict(value = "allcategories", allEntries = true)})
     @Override
     @Transactional
     public void deleteCategory(Long id) {

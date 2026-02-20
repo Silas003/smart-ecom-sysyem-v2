@@ -29,24 +29,21 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private String redirectUri;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
 
         OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
         String email = oidcUser.getAttribute("email");
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found after OAuth2 login"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found after OAuth2 login"));
 
-        Map<String,String> jwtToken = jwtService.generateToken(user);
+        Map<String, String> jwtToken = jwtService.generateToken(user);
 
 
-        String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
-                .queryParam("token", jwtToken)
-                .build()
-                .toUriString();
+        String accessToken = jwtToken.get("access");
+        String refreshToken = jwtToken.get("refresh");
+
+        String targetUrl = UriComponentsBuilder.fromUriString(redirectUri).queryParam("access", accessToken).queryParam("refresh", refreshToken).build().toUriString();
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }

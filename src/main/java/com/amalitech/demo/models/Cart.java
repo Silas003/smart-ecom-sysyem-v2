@@ -2,7 +2,6 @@ package com.amalitech.demo.models;
 
 import com.amalitech.demo.dto.CartStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

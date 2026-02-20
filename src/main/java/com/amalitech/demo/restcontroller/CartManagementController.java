@@ -177,24 +177,5 @@ public class CartManagementController {
         return new ResponseDto<>(HttpStatus.OK, "abandoned carts retrieved", carts);
     }
 
-    @PreAuthorize("hasAnyRole('customer','admin')")
-    @DeleteMapping("/users/{userId}/items")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(
-            summary = "Clear all items from cart",
-            description = "Bulk remove all items from the user's active cart. Cart record is kept but becomes empty."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Cart cleared successfully (no content)"),
-            @ApiResponse(responseCode = "400", description = "Invalid request or unauthorized access"),
-            @ApiResponse(responseCode = "404", description = "Active cart not found for user"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseDto<Void> clearCart(
-            @Parameter(description = "ID of the user", required = true)
-            @PathVariable @Positive Long userId) {
 
-        cartService.clearCart(userId);
-        return new ResponseDto<>(HttpStatus.NO_CONTENT, "Cart cleared successfully", null);
-    }
 }

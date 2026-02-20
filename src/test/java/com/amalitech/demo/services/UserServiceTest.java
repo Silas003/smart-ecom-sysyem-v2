@@ -1,5 +1,6 @@
 package com.amalitech.demo.services;
 
+import com.amalitech.demo.dto.Provider;
 import com.amalitech.demo.dto.UserRole;
 import com.amalitech.demo.dto.request.UserLoginRequest;
 import com.amalitech.demo.dto.request.UserRequest;
@@ -54,7 +55,8 @@ public class UserServiceTest {
                 1L,
                 "username",
                 "email@gmail.com",
-                "USER"
+                "customer",
+                Provider.local.name()
         );
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
@@ -100,7 +102,8 @@ public class UserServiceTest {
                 1L,
                 "username",
                 "email@gmail.com",
-                "USER"
+                "customer",
+                Provider.local.name()
         );
         when(userMapper.toResponse(List.of(user))).thenReturn(List.of(expectedResponse));
 
@@ -176,7 +179,7 @@ public class UserServiceTest {
         user.setEmail("test@example.com");
         user.setUsername("tester");
 
-        UserResponse response = new UserResponse(1L, "tester", "test@example.com", "customer");
+        UserResponse response = new UserResponse(1L, "tester", "test@example.com", "customer", Provider.local.name());
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userMapper.toResponse(user)).thenReturn(response);

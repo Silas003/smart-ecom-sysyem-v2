@@ -13,18 +13,22 @@ import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +37,7 @@ public class UserService implements UserServiceInterface {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
 
     @Override
@@ -108,7 +113,8 @@ public class UserService implements UserServiceInterface {
     public LoginResponse refreshToken(String refreshToken) {
         String subject = jwtService.extractSubject(refreshToken);
         User user = userRepository.findByEmail(subject).orElseThrow(() -> new EntityNotFoundException("User not found"));
-        return new LoginResponse(jwtService.generateToken(user), userMapper.toResponse(user));
+        String access = jwtService.generateToken(user).get("access");
+        return new LoginResponse(access, userMapper.toResponse(user));
     }
 
     @Override
@@ -120,20 +126,28 @@ public class UserService implements UserServiceInterface {
 
     @Override
     public LoginResponse loginUser(UserLoginRequest userRequest) {
-        String email = userRequest.email();
-        String password = userRequest.password();
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (user != null) {
-            boolean authenticated = PasswordUtils.verifyPassword(password, user.getPassword());
-            if (!authenticated) {
-                throw new IllegalArgumentException("Invalid credentials");
-            } else {
-                UserResponse userResponse = userMapper.toResponse(user);
-                Map<String, String> token = jwtService.generateToken(user);
-                return new LoginResponse(token, userResponse);
-            }
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.email(), userRequest.password()));
+        if (authentication.isAuthenticated()) {
+            User user = (User) authentication.getPrincipal();
+            String access = jwtService.generateToken(user).get("access");
+            String refresh = jwtService.generateToken(user).get("refresh");
+
+            return new LoginResponse(access, userMapper.toResponse(user));
         } else {
-            throw new IllegalArgumentException("User with given email does not exist");
+            throw new IllegalArgumentException("Invalid credentials");
         }
     }
+
+    @Override
+    private void setCookie(String token, HttpServletResponse response) {
+        Cookie refreshTokenCookie = new Cookie("refresh",token);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
+
+        // Add cookie to response
+        response.addCookie(refreshTokenCookie);
+    }
+
 }

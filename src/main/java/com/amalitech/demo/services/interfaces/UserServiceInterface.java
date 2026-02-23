@@ -5,6 +5,8 @@ import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.LoginResponse;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.models.User;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -29,4 +31,5 @@ public interface UserServiceInterface {
 
     LoginResponse refreshToken(String refreshToken);
     UserResponse getCurrentUser(String email);
+    void setCookie(String token, HttpServletResponse response);
 }

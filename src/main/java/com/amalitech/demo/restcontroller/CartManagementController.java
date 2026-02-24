@@ -176,4 +176,6 @@ public class CartManagementController {
         Page<CartResponse> carts = cartService.getAbandonedCarts(since, pageable);
         return new ResponseDto<>(HttpStatus.OK, "abandoned carts retrieved", carts);
     }
+
+
 }

@@ -5,6 +5,7 @@ import com.amalitech.demo.dto.request.UserRequest;
 import com.amalitech.demo.dto.response.LoginResponse;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.models.User;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -23,10 +24,15 @@ public interface UserServiceInterface {
 
     void deleteUser(Long id);
 
-    LoginResponse loginUser(UserLoginRequest userRequest);
+    LoginResponse loginUser(UserLoginRequest userRequest, HttpServletResponse response);
 
     Page<UserResponse> getInactiveUsers(LocalDateTime date, Pageable pageable);
 
-    LoginResponse refreshToken(String refreshToken);
+    LoginResponse refreshToken(String refreshToken, HttpServletResponse response);
+
     UserResponse getCurrentUser(String email);
+
+    void setCookie(String token, HttpServletResponse response);
+
+    void clearRefreshCookie(HttpServletResponse response);
 }

@@ -15,17 +15,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -168,7 +163,7 @@ public class UserServiceTest {
 
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
 
-        assertThrows(IllegalArgumentException.class, () -> userService.loginUser(userRequest));
+        assertThrows(IllegalArgumentException.class, () -> userService.loginUser(userRequest, null));
         verify(userRepository, times(1)).findByEmail(user.getEmail());
     }
 

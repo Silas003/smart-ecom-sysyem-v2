@@ -13,12 +13,18 @@ import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserServiceInterface {
@@ -33,6 +40,7 @@ public class UserService implements UserServiceInterface {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
 
     @Override
@@ -105,10 +113,24 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    public LoginResponse refreshToken(String refreshToken) {
-        String subject = jwtService.extractSubject(refreshToken);
-        User user = userRepository.findByEmail(subject).orElseThrow(() -> new EntityNotFoundException("User not found"));
-        return new LoginResponse(jwtService.generateToken(user), userMapper.toResponse(user));
+    public LoginResponse refreshToken(String refreshToken, HttpServletResponse response) {
+        log.info("[REFRESH] Attempting to refresh token");
+        try {
+            String subject = jwtService.extractSubject(refreshToken);
+            User user = userRepository.findByEmail(subject).orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+            Map<String, String> newTokens = jwtService.generateToken(user);
+            String newAccessToken = newTokens.get("access");
+            String newRefreshToken = newTokens.get("refresh");
+
+            setCookie(newRefreshToken, response);
+            log.info("[REFRESH] Token refreshed successfully for user: {}", subject);
+
+            return new LoginResponse(newAccessToken, userMapper.toResponse(user));
+        } catch (Exception e) {
+            log.error("[REFRESH] Token refresh failed: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
@@ -119,21 +141,64 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    public LoginResponse loginUser(UserLoginRequest userRequest) {
-        String email = userRequest.email();
-        String password = userRequest.password();
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (user != null) {
-            boolean authenticated = PasswordUtils.verifyPassword(password, user.getPassword());
-            if (!authenticated) {
-                throw new IllegalArgumentException("Invalid credentials");
+    public LoginResponse loginUser(UserLoginRequest userRequest, HttpServletResponse response) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.email(), userRequest.password()));
+            if (authentication.isAuthenticated()) {
+                User user = (User) authentication.getPrincipal();
+                Map<String, String> tokens = jwtService.generateToken(user);
+                String accessToken = tokens.get("access");
+                String refreshToken = tokens.get("refresh");
+
+                setCookie(refreshToken, response);
+
+                return new LoginResponse(accessToken, userMapper.toResponse(user));
             } else {
-                UserResponse userResponse = userMapper.toResponse(user);
-                Map<String, String> token = jwtService.generateToken(user);
-                return new LoginResponse(token, userResponse);
+                throw new IllegalArgumentException("Invalid credentials");
             }
-        } else {
-            throw new IllegalArgumentException("User with given email does not exist");
+        } catch (Exception e) {
+            throw e;
         }
     }
+
+    @Override
+    public void setCookie(String token, HttpServletResponse response) {
+        if (response == null || token == null || token.isEmpty()) {
+            return;
+        }
+        try {
+            Cookie refreshTokenCookie = new Cookie("refresh", token);
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setSecure(true);
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(30 * 24 * 60 * 60);
+            refreshTokenCookie.setAttribute("SameSite", "Strict");
+
+            response.addCookie(refreshTokenCookie);
+            log.debug("[COOKIE] Refresh token cookie set successfully");
+        } catch (Exception e) {
+            log.error("[COOKIE] Failed to set refresh token cookie: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Clears the refresh token cookie on logout
+     * Used to remove the refresh token from client storage
+     */
+    public void clearRefreshCookie(HttpServletResponse response) {
+        if (response == null) {
+            return;
+        }
+        try {
+            Cookie refreshTokenCookie = new Cookie("refresh", null);
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setSecure(true);
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(0);
+
+            response.addCookie(refreshTokenCookie);
+        } catch (Exception e) {
+        }
+    }
+
 }

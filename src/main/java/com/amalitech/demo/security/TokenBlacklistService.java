@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -26,14 +25,11 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class TokenBlacklistService {
 
-    private final JwtService jwtService;
     private final CacheManager cacheManager;
 
     @Value("${security.jwt.secret:change-me-secret-key-change-me-secret-key-change-me-secret-key}")
     private String jwtSecret;
 
-    @Value("${security.jwt.expiration-ms:3600000}")
-    private long tokenExpirationMs;
 
     /**
      * Add a token to the blacklist (cache)
@@ -80,7 +76,7 @@ public class TokenBlacklistService {
             if (cachedValue != null) {
                 return true;
             } else {
-               return false;
+                return false;
             }
         } catch (Exception e) {
             log.error("[BLACKLIST CHECK ERROR] Failed to check blacklist: {}", e.getMessage(), e);
@@ -96,11 +92,7 @@ public class TokenBlacklistService {
             byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
             SecretKey secretKey = Keys.hmacShaKeyFor(keyBytes);
 
-            Claims claims = Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
+            Claims claims = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
 
             Date expiration = claims.getExpiration();
             if (expiration == null) {

@@ -31,7 +31,9 @@ public class CustomOidcUserService extends OidcUserService {
         String email = oidcUser.getAttribute("email");
         String name = oidcUser.getAttribute("name");
 
+
         User user = userRepository.findByEmail(email).orElseGet(() -> {
+
             User newUser = new User();
             newUser.setEmail(email);
             if (name != null && !name.isEmpty()) {
@@ -43,7 +45,9 @@ public class CustomOidcUserService extends OidcUserService {
             newUser.setPassword(UUID.randomUUID().toString());
             newUser.setUserRole(UserRole.customer);
             newUser.setProvider(Provider.google);
-            return userRepository.save(newUser);
+
+            User savedUser = userRepository.save(newUser);
+            return savedUser;
         });
 
 
@@ -55,3 +59,5 @@ public class CustomOidcUserService extends OidcUserService {
         return new DefaultOidcUser(authorities, oidcUser.getIdToken(), oidcUser.getUserInfo());
     }
 }
+
+

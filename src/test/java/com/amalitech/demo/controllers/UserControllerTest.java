@@ -1,6 +1,7 @@
 package com.amalitech.demo.controllers;
 
 
+import com.amalitech.demo.dto.Provider;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.UserMapper;
@@ -60,7 +61,7 @@ public class UserControllerTest {
     void shouldReturnUserById() throws Exception {
 
         UserResponse userResponse =
-                new UserResponse(1L, "Alice", "a@gmail.com", "customer", "local");
+                new UserResponse(1L, "Alice", "a@gmail.com", "customer", Provider.local.name());
 
         when(userService.getUserById(anyLong())).thenReturn(userResponse);
 
@@ -75,7 +76,7 @@ public class UserControllerTest {
     void shouldReturnUserList() throws Exception {
 
         UserResponse userResponse =
-                new UserResponse(1L, "Alice", "a@gmail.com", "customer", "local");
+                new UserResponse(1L, "Alice", "a@gmail.com", "customer",Provider.local.name());
         int pageNumber = 1;
         int pageSize = 10;
         List<UserResponse> userResponses = new ArrayList<>(Arrays.asList(userResponse, userResponse, userResponse));
@@ -99,7 +100,7 @@ public class UserControllerTest {
     void shouldReturnUserNotFoundError() throws Exception {
 
         UserResponse userResponse =
-                new UserResponse(1L, "Alice", "a@gmail.com", "customer", "local");
+                new UserResponse(1L, "Alice", "a@gmail.com", "customer",Provider.local.name());
         when(userService.getUserById(anyLong())).thenThrow(new EntityNotFoundException("user not found"));
 
         mockMvc.perform(get("/api/v1/users/5"))
@@ -112,7 +113,7 @@ public class UserControllerTest {
     void shouldReturnUserAfterUpdate() throws Exception {
 
         UserResponse userResponse =
-                new UserResponse(1L, "Alice", "a@gmail.com", "admin", "local");
+                new UserResponse(1L, "Alice", "a@gmail.com", "admin",Provider.local.name());
 
         // prepare UpdateUserRequest JSON payload
         String payload = "{\"username\":\"AliceUpdated\",\"email\":\"alice.updated@gmail.com\",\"password\":\"P@ssw0rd1\",\"userRole\":\"admin\"}";

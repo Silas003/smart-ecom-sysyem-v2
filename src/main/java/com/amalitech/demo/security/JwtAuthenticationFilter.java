@@ -8,20 +8,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * JWT Authentication Filter
- * Validates JWT tokens in Authorization header
+ * Validates JWT tokens and extracts claims (roles, email) WITHOUT database queries
  * - No token: Let request continue (OAuth2 may handle)
  * - Invalid/expired token: Throw exception (401 response)
- * - Valid token: Set authentication and proceed
+ * - Valid token: Extract roles from claims and set authentication
  */
 @Component
 @RequiredArgsConstructor
@@ -29,7 +30,6 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
     private final TokenBlacklistService tokenBlacklistService;
 
     @Override
@@ -46,25 +46,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             String token = authHeader.substring(7);
-            String subject = jwtService.extractSubject(token);
+            String email = jwtService.extractSubject(token);
 
-            if (subject == null) {
+            if (email == null) {
                 throw new BadCredentialsException("Invalid token: cannot extract subject");
             }
+
             if (tokenBlacklistService.isTokenBlacklisted(token)) {
                 throw new BadCredentialsException("Token has been revoked");
             }
 
-            if (!jwtService.isTokenValid(token, subject)) {
+            if (!jwtService.isTokenValid(token, email)) {
                 throw new BadCredentialsException("Token expired or invalid");
             }
 
+            // Extract roles from JWT claims (NO DATABASE QUERY)
+            List<String> rolesFromToken = jwtService.extractRolesFromToken(token);
+            if (rolesFromToken == null || rolesFromToken.isEmpty()) {
+                log.warn("No roles found in token for user: {}", email);
+                rolesFromToken = List.of("ROLE_USER");
+            }
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
+            List<SimpleGrantedAuthority> authorities = rolesFromToken.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
 
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
+                    new UsernamePasswordAuthenticationToken(email, null, authorities);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -77,5 +85,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+
+
 
 

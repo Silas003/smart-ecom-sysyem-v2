@@ -13,8 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -22,16 +20,16 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doNothing;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -58,11 +56,11 @@ public class UserControllerTest {
     private UserRepository userRepository;
 
     @Test
-    @WithMockUser(roles= {"admin", "customer"})
+    @WithMockUser(roles = {"admin", "customer"})
     void shouldReturnUserById() throws Exception {
 
         UserResponse userResponse =
-                new UserResponse(1L, "Alice", "a@gmail.com", "customer");
+                new UserResponse(1L, "Alice", "a@gmail.com", "customer", "local");
 
         when(userService.getUserById(anyLong())).thenReturn(userResponse);
 
@@ -73,11 +71,11 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(roles= {"admin"})
+    @WithMockUser(roles = {"admin"})
     void shouldReturnUserList() throws Exception {
 
         UserResponse userResponse =
-                new UserResponse(1L, "Alice", "a@gmail.com", "customer");
+                new UserResponse(1L, "Alice", "a@gmail.com", "customer", "local");
         int pageNumber = 1;
         int pageSize = 10;
         List<UserResponse> userResponses = new ArrayList<>(Arrays.asList(userResponse, userResponse, userResponse));
@@ -87,11 +85,11 @@ public class UserControllerTest {
                 PageRequest.of(Math.max(0, pageNumber - 1), pageSize),
                 userResponses.size()
         );
-        when(userService.getAllUsers(pageNumber,pageSize)).thenReturn(page);
+        when(userService.getAllUsers(pageNumber, pageSize)).thenReturn(page);
 
         mockMvc.perform(get("/api/v1/users")
-                        .param("page","1")
-                        .param("size","10"))
+                        .param("page", "1")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("users retrieved"))
                 .andExpect(jsonPath("$.data.content[0].username").value("Alice"));
@@ -101,7 +99,7 @@ public class UserControllerTest {
     void shouldReturnUserNotFoundError() throws Exception {
 
         UserResponse userResponse =
-                new UserResponse(1L, "Alice", "a@gmail.com", "customer");
+                new UserResponse(1L, "Alice", "a@gmail.com", "customer", "local");
         when(userService.getUserById(anyLong())).thenThrow(new EntityNotFoundException("user not found"));
 
         mockMvc.perform(get("/api/v1/users/5"))
@@ -110,11 +108,11 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(roles= {"admin", "customer"})
+    @WithMockUser(roles = {"admin", "customer"})
     void shouldReturnUserAfterUpdate() throws Exception {
 
         UserResponse userResponse =
-                new UserResponse(1L, "Alice", "a@gmail.com", "admin");
+                new UserResponse(1L, "Alice", "a@gmail.com", "admin", "local");
 
         // prepare UpdateUserRequest JSON payload
         String payload = "{\"username\":\"AliceUpdated\",\"email\":\"alice.updated@gmail.com\",\"password\":\"P@ssw0rd1\",\"userRole\":\"admin\"}";
@@ -139,7 +137,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(roles= {"admin"})
+    @WithMockUser(roles = {"admin"})
     void shouldReturnNoContentAfterDelete() throws Exception {
 
         doNothing().when(userService).deleteUser(anyLong());

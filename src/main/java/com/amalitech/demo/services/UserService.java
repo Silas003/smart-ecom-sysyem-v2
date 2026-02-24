@@ -16,6 +16,7 @@ import com.amalitech.demo.utils.PasswordUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -29,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserServiceInterface {
@@ -110,11 +113,24 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    public LoginResponse refreshToken(String refreshToken) {
-        String subject = jwtService.extractSubject(refreshToken);
-        User user = userRepository.findByEmail(subject).orElseThrow(() -> new EntityNotFoundException("User not found"));
-        String access = jwtService.generateToken(user).get("access");
-        return new LoginResponse(access, userMapper.toResponse(user));
+    public LoginResponse refreshToken(String refreshToken, HttpServletResponse response) {
+        log.info("[REFRESH] Attempting to refresh token");
+        try {
+            String subject = jwtService.extractSubject(refreshToken);
+            User user = userRepository.findByEmail(subject).orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+            Map<String, String> newTokens = jwtService.generateToken(user);
+            String newAccessToken = newTokens.get("access");
+            String newRefreshToken = newTokens.get("refresh");
+
+            setCookie(newRefreshToken, response);
+            log.info("[REFRESH] Token refreshed successfully for user: {}", subject);
+
+            return new LoginResponse(newAccessToken, userMapper.toResponse(user));
+        } catch (Exception e) {
+            log.error("[REFRESH] Token refresh failed: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
@@ -125,29 +141,64 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    public LoginResponse loginUser(UserLoginRequest userRequest) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.email(), userRequest.password()));
-        if (authentication.isAuthenticated()) {
-            User user = (User) authentication.getPrincipal();
-            String access = jwtService.generateToken(user).get("access");
-            String refresh = jwtService.generateToken(user).get("refresh");
+    public LoginResponse loginUser(UserLoginRequest userRequest, HttpServletResponse response) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.email(), userRequest.password()));
+            if (authentication.isAuthenticated()) {
+                User user = (User) authentication.getPrincipal();
+                Map<String, String> tokens = jwtService.generateToken(user);
+                String accessToken = tokens.get("access");
+                String refreshToken = tokens.get("refresh");
 
-            return new LoginResponse(access, userMapper.toResponse(user));
-        } else {
-            throw new IllegalArgumentException("Invalid credentials");
+                setCookie(refreshToken, response);
+
+                return new LoginResponse(accessToken, userMapper.toResponse(user));
+            } else {
+                throw new IllegalArgumentException("Invalid credentials");
+            }
+        } catch (Exception e) {
+            throw e;
         }
     }
 
     @Override
-    private void setCookie(String token, HttpServletResponse response) {
-        Cookie refreshTokenCookie = new Cookie("refresh",token);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
+    public void setCookie(String token, HttpServletResponse response) {
+        if (response == null || token == null || token.isEmpty()) {
+            return;
+        }
+        try {
+            Cookie refreshTokenCookie = new Cookie("refresh", token);
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setSecure(true);
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(30 * 24 * 60 * 60);
+            refreshTokenCookie.setAttribute("SameSite", "Strict");
 
-        // Add cookie to response
-        response.addCookie(refreshTokenCookie);
+            response.addCookie(refreshTokenCookie);
+            log.debug("[COOKIE] Refresh token cookie set successfully");
+        } catch (Exception e) {
+            log.error("[COOKIE] Failed to set refresh token cookie: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Clears the refresh token cookie on logout
+     * Used to remove the refresh token from client storage
+     */
+    public void clearRefreshCookie(HttpServletResponse response) {
+        if (response == null) {
+            return;
+        }
+        try {
+            Cookie refreshTokenCookie = new Cookie("refresh", null);
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setSecure(true);
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(0);
+
+            response.addCookie(refreshTokenCookie);
+        } catch (Exception e) {
+        }
     }
 
 }

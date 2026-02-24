@@ -2,8 +2,8 @@ package com.amalitech.demo.security;
 
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.UserRepository;
-import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +27,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private UserServiceInterface userService;
 
     @Value("${app.oauth2.redirect-uri:http://localhost:3000/oauth2/redirect}")
     private String redirectUri;
@@ -55,7 +52,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             String accessToken = jwtToken.get("access");
             String refreshToken = jwtToken.get("refresh");
 
-            userService.setCookie(refreshToken, response);
+            // Set refresh token in secure HttpOnly cookie (without circular dependency)
+            setRefreshTokenCookie(refreshToken, response);
             log.info("[OAUTH2] Refresh token set in secure cookie for user: {}", email);
 
             // Redirect to frontend with ONLY access token in query param (short-lived, safe)
@@ -72,5 +70,30 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             throw new ServletException("OAuth2 authentication failed", e);
         }
     }
+
+    /**
+     * Set refresh token in secure HttpOnly cookie
+     * Extracted method to avoid circular dependency with UserService
+     */
+    private void setRefreshTokenCookie(String token, HttpServletResponse response) {
+        if (response == null || token == null || token.isEmpty()) {
+            log.warn("[OAUTH2] Cannot set cookie - response or token is null/empty");
+            return;
+        }
+        try {
+            Cookie refreshTokenCookie = new Cookie("refresh", token);
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setSecure(true);
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(30 * 24 * 60 * 60);
+            refreshTokenCookie.setAttribute("SameSite", "Strict");
+
+            response.addCookie(refreshTokenCookie);
+            log.debug("[OAUTH2] Refresh token cookie set successfully");
+        } catch (Exception e) {
+            log.error("[OAUTH2] Failed to set refresh token cookie: {}", e.getMessage(), e);
+        }
+    }
 }
+
 

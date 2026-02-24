@@ -10,6 +10,7 @@ import com.amalitech.demo.exceptions.UserExists;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.UserRepository;
+import com.amalitech.demo.security.CustomUserDetails;
 import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
 import com.amalitech.demo.utils.PasswordUtils;
@@ -134,7 +135,7 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    @CachePut(value = "user", key = "result.id")
+    @CachePut(value = "user", key = "#email")
     public UserResponse getCurrentUser(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
         return userMapper.toResponse(user);
@@ -145,7 +146,8 @@ public class UserService implements UserServiceInterface {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.email(), userRequest.password()));
             if (authentication.isAuthenticated()) {
-                User user = (User) authentication.getPrincipal();
+                CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+                User user = userDetails.getUser();
                 Map<String, String> tokens = jwtService.generateToken(user);
                 String accessToken = tokens.get("access");
                 String refreshToken = tokens.get("refresh");

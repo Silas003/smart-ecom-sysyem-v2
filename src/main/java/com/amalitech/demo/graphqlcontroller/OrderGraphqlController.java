@@ -35,7 +35,7 @@ public class OrderGraphqlController {
         this.productService = productService;
     }
 
-        @QueryMapping
+    @QueryMapping
     @Operation(summary = "List orders (GraphQL)", description = "List orders with pagination via GraphQL")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Orders retrieved",

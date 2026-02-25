@@ -200,6 +200,7 @@ public class UserService implements UserServiceInterface {
 
             response.addCookie(refreshTokenCookie);
         } catch (Exception e) {
+            log.error("[COOKIE] Failed to clear refresh token cookie: {}", e.getMessage(), e);
         }
     }
 

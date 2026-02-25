@@ -42,7 +42,7 @@ public class ReviewsService implements ReviewsServiceInterface {
     }
 
     @Override
-    @Caching(evict = {@CacheEvict(value = "review", key = "#id"), @CacheEvict(value = "reviewsByProduct", allEntries = true), @CacheEvict(value = "reviewsByUser", allEntries = true), @CacheEvict(value = "averageRating", allEntries = true)})
+    @Caching(evict = {@CacheEvict(value = "review", key = "result.id"), @CacheEvict(value = "reviewsByProduct", allEntries = true), @CacheEvict(value = "reviewsByUser", allEntries = true), @CacheEvict(value = "averageRating", allEntries = true)})
     public ReviewResponse createReview(ReviewRequest request) {
         Product product = productService.getProductById(request.getProductId());
         User user = userService.getUserByIdForReview(request.getUserId());

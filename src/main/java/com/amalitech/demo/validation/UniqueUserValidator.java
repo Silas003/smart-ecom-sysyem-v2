@@ -6,7 +6,6 @@ import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.UserRepository;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -14,8 +13,11 @@ import java.lang.reflect.Method;
 @Component
 public class UniqueUserValidator implements ConstraintValidator<UniqueUser, Object> {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public UniqueUserValidator(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public boolean isValid(Object value, ConstraintValidatorContext context) {
@@ -58,7 +60,7 @@ public class UniqueUserValidator implements ConstraintValidator<UniqueUser, Obje
 
         if (email != null) {
             User byEmail = userRepository.findByEmail(email).orElse(null);
-            if (byEmail != null && (id == null || !byEmail.getId().equals(id))) {
+            if (byEmail != null && (!byEmail.getId().equals(id))) {
                 valid = false;
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate("Email already in use").addPropertyNode("email").addConstraintViolation();
@@ -67,7 +69,7 @@ public class UniqueUserValidator implements ConstraintValidator<UniqueUser, Obje
 
         if (username != null) {
             User byUsername = userRepository.findByUsername(username).orElse(null);
-            if (byUsername != null && (id == null || !byUsername.getId().equals(id))) {
+            if (byUsername != null && (!byUsername.getId().equals(id))) {
                 valid = false;
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate("Username already in use").addPropertyNode("username").addConstraintViolation();

@@ -4,7 +4,6 @@ import com.amalitech.demo.dto.Provider;
 import com.amalitech.demo.dto.UserRole;
 import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -20,8 +19,11 @@ import java.util.UUID;
 
 @Service
 public class CustomOidcUserService extends OidcUserService {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public CustomOidcUserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {

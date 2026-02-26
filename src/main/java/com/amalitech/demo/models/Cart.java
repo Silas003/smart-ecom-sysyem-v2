@@ -1,12 +1,11 @@
 package com.amalitech.demo.models;
 
+import com.amalitech.demo.dto.CartStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -20,33 +19,25 @@ public class Cart{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name = "user_id" , referencedColumnName = "id")
-    @NotNull
-    @ManyToOne
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    @NotNull
-    @Column(name = "status",columnDefinition = "VARCHAR(20) DEFAULT 'active' CHECK(status in ('active','checkedout','cancelled'))")
-    private String status;
 
-    @NotNull
-    @Column(name = "update_at", columnDefinition = "TIMESTAMP DEFAULT NOW()")
+@Enumerated(EnumType.STRING)
+private CartStatus status;
+
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public Cart(User user, String active) {
+    public Cart(User user) {
         this.user = user;
-        this.status = active;
+        this.status = CartStatus.active;
     }
 
     @PrePersist
     protected void onCreate() {
-        this.updatedAt = LocalDateTime.now();
-        this.status = "active";
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.status = CartStatus.active;
     }
 
 

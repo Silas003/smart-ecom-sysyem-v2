@@ -1,16 +1,24 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dto.CategoryRequest;
+import com.amalitech.demo.dto.request.CategoryRequest;
+import com.amalitech.demo.dto.response.CategoryResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.CategoryMapper;
 import com.amalitech.demo.models.Category;
 import com.amalitech.demo.repository.CategoryRepository;
+import com.amalitech.demo.services.interfaces.CategoryServiceInterface;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-public class CategoryService {
+public class CategoryService implements CategoryServiceInterface {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
@@ -19,37 +27,57 @@ public class CategoryService {
         this.categoryMapper = categoryMapper;
     }
 
-    public  Category getCategoryById(Long id) {
-        return categoryRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Category not found with id: " + id)
-        );
+    @Cacheable(value = "category", key = "#id")
+    @Override
+    public CategoryResponse getCategoryById(Long id) {
+        Category category = categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+        return categoryMapper.toResponse(category);
     }
 
-    public  Category createCategory(CategoryRequest request) {
-        if(categoryRepository.findByName(request.getName()) != null){
+    public Category getCategoryByIdForProduct(Long id) {
+        return categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
+    }
+
+    @Override
+    @CachePut(value = "category", key = "#result.id")
+    @Transactional
+    public CategoryResponse createCategory(CategoryRequest request) {
+        if (categoryRepository.findByName(request.getName()).isPresent()) {
             throw new IllegalArgumentException("category with given name already exists");
         }
         Category category = categoryMapper.toEntity(request);
-        return categoryRepository.save(category);
+        Category saved = categoryRepository.save(category);
+        return categoryMapper.toResponse(saved);
     }
 
-
-    public  List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    @Cacheable(value = "allcategories")
+    @Override
+    public List<CategoryResponse> getAllCategories() {
+        List<Category> list = categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+        if (list == null || list.isEmpty()) return List.of();
+        return list.stream().map(categoryMapper::toResponse).toList();
     }
 
-    public Category updateCategory(Long id, CategoryRequest request) {
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("category not found"));
+    @CachePut(value = "category", key = "#id")
+    @Override
+    @Transactional
+    public CategoryResponse updateCategory(Long id, CategoryRequest request) {
+        Category existingCategory = categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("category not found"));
 
         existingCategory.setName(request.getName());
 
-        return categoryRepository.save(existingCategory);
+        Category saved = categoryRepository.save(existingCategory);
+        return categoryMapper.toResponse(saved);
     }
-    public void deleteCategory(Long id) {
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("category not found"));
 
-        categoryRepository.delete(existingCategory);
+    @Caching(evict = {@CacheEvict(value = "category", key = "#id", allEntries = true), @CacheEvict(value = "allcategories", allEntries = true)})
+    @Override
+    @Transactional
+    public void deleteCategory(Long id) {
+        if (!categoryRepository.existsById(id)) {
+            throw new EntityNotFoundException("Category not found with id: " + id);
+        }
+        categoryRepository.deleteById(id);
     }
+
 }

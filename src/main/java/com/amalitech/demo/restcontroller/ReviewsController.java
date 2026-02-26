@@ -1,14 +1,22 @@
 package com.amalitech.demo.restcontroller;
 
 import com.amalitech.demo.dto.ResponseDto;
-import com.amalitech.demo.dto.ReviewRequest;
-import com.amalitech.demo.dto.ReviewResponse;
-import com.amalitech.demo.services.ReviewsService;
+import com.amalitech.demo.dto.request.ReviewRequest;
+import com.amalitech.demo.dto.response.ReviewResponse;
+import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,57 +24,100 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/reviews")
 @AllArgsConstructor
+@Tag(name = "Reviews", description = "Manage product reviews")
 public class ReviewsController {
-    private final ReviewsService reviewsService;
+    private final ReviewsServiceInterface reviewsService;
 
 
-    @GetMapping("/")
+    @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get all reviews", description = "Retrieve all reviews")
-    public ResponseDto<List<ReviewResponse>> getAllReviews( ){
-        List<ReviewResponse> reviews = reviewsService.getAllReviews();
-        return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",reviews);
-
+    @Operation(summary = "Get all reviews", description = "Retrieve all reviews with optional filtering by product or user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reviews retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class))))
+    })
+    public ResponseDto<List<ReviewResponse>> getAllReviews(
+            @RequestParam(required = false) Long productId,
+            @RequestParam(required = false) Long userId
+    ) {
+        List<ReviewResponse> reviews = reviewsService.getAllReviews(productId, userId);
+        return new ResponseDto<>(HttpStatus.OK, "reviews retrieved", reviews);
     }
-    @PostMapping("/")
+
+    @PreAuthorize("hasAnyRole('customer','admin')")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Create review", description = "Create a new review for a product. User is inferred from X-User-Id header")
-    public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request, @RequestHeader("X-User-Id") Long userId){
-        ReviewResponse review = reviewsService.createReview(request, userId);
-        return  new ResponseDto<>(HttpStatus.CREATED,"review created",review);
+    @Operation(summary = "Create review", description = "Create a new review for a product")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Review created",
+                    content = @Content(schema = @Schema(implementation = ReviewResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error")
+    })
+    public ResponseDto<ReviewResponse> createReview(@RequestBody @Valid ReviewRequest request) {
+        ReviewResponse review = reviewsService.createReview(request);
+        return new ResponseDto<>(HttpStatus.CREATED, "review created", review);
     }
 
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get review", description = "Retrieve a single review by id")
-    public ResponseDto<ReviewResponse> getReview(@PathVariable Long id){
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Review retrieved",
+                    content = @Content(schema = @Schema(implementation = ReviewResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Review not found")
+    })
+    public ResponseDto<ReviewResponse> getReview(@Parameter(description = "ID of the review to retrieve", required = true) @PathVariable Long id) {
         ReviewResponse resp = reviewsService.getReview(id);
-        return new ResponseDto<>(HttpStatus.OK,"reviews retrieved",resp);
+        return new ResponseDto<>(HttpStatus.OK, "reviews retrieved", resp);
 
     }
 
     @GetMapping("/products/{productId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get reviews by product", description = "Retrieve reviews for a specific product")
-    public ResponseDto<List<ReviewResponse>> getReviewsByProduct(@PathVariable Long productId){
-        List<ReviewResponse> resp = reviewsService.getReviewsByProduct(productId);
-        return new ResponseDto<>(HttpStatus.OK,"product reviews retrieved",resp);
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product reviews retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class)))),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    public ResponseDto<List<ReviewResponse>> getReviewsByProduct(@Parameter(description = "ID of the product", required = true) @PathVariable Long productId) {
+        List<ReviewResponse> resp = reviewsService.getAllReviews(productId, null);
+        return new ResponseDto<>(HttpStatus.OK, "product reviews retrieved", resp);
 
     }
 
     @GetMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get reviews by user", description = "Retrieve reviews written by a specific user")
-    public ResponseDto<List<ReviewResponse>> getReviewsByUser(@PathVariable Long userId){
-        List<ReviewResponse> resp = reviewsService.getReviewsByUser(userId);
-        return new ResponseDto<>(HttpStatus.OK,"user reviews retrieved",resp);
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User reviews retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewResponse.class)))),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseDto<List<ReviewResponse>> getReviewsByUser(@Parameter(description = "ID of the user", required = true) @PathVariable Long userId) {
+        List<ReviewResponse> resp = reviewsService.getAllReviews(null, userId);
+        return new ResponseDto<>(HttpStatus.OK, "user reviews retrieved", resp);
 
     }
 
+    @GetMapping("/products/{productId}/average-rating")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get average rating", description = "Retrieve the average rating for a product")
+    public ResponseDto<Double> getAverageRating(@PathVariable Long productId) {
+        Double avg = reviewsService.getAverageRating(productId);
+        return new ResponseDto<>(HttpStatus.OK, "average rating retrieved", avg);
+    }
+
+    @PreAuthorize("hasRole('admin')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id){
+    @Operation(summary = "Delete review", description = "Delete a review by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Review deleted"),
+            @ApiResponse(responseCode = "404", description = "Review not found")
+    })
+    public ResponseEntity<Void> deleteReview(@Parameter(description = "ID of the review to delete", required = true) @PathVariable Long id) {
         reviewsService.deleteReview(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

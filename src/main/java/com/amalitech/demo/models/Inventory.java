@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 
 
@@ -13,7 +16,7 @@ import java.time.LocalDateTime;
 @Table(name = "inventory")
 public class Inventory {
 
-    @Id
+      @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "inventory_id")
     private Long id;
@@ -29,41 +32,32 @@ public class Inventory {
     private int stockQuantity;
 
     @NotNull
-    @Column(name = "quantity_in_reserved")
+    @Column(name = "quantity_reserved")
     @PositiveOrZero
     private int reservedQuantity;
 
     @NotBlank
-    @NotNull
-    @Column(name="stock_status")
+    @Column(name = "stock_status")
     private String stockStatus;
 
     @Version
     private Long version;
 
-    @Column(name = "created_at" , columnDefinition = "TIMESTAMP DEFAULT NOW()")
-    @NotNull
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at" , columnDefinition = "TIMESTAMP DEFAULT NOW()")
-    @NotNull
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public Inventory(){}
-    public Inventory(Product product, int stockQuantity, int reservedQuantity, String stockStatus){
+    public Inventory() {
+    }
+
+    public Inventory(Product product, int stockQuantity, int reservedQuantity, String stockStatus) {
         this.product = product;
         this.stockQuantity = stockQuantity;
         this.reservedQuantity = reservedQuantity;
         this.stockStatus = stockStatus;
     }
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 }
+

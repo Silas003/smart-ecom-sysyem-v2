@@ -1,18 +1,18 @@
 package com.amalitech.demo.mapper;
 
-import com.amalitech.demo.dto.OrderItemResponse;
-import com.amalitech.demo.dto.OrderResponse;
+import com.amalitech.demo.dto.response.OrderItemResponse;
+import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.models.OrderItem;
 import com.amalitech.demo.models.Orders;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 @Mapper(componentModel="spring")
 public interface OrdersMapper{
     @Mapping(target="userId",source = "user.id")
+    @Mapping(target = "createdAt", source = "createdAt")
     OrderResponse toResponse(Orders orders);
 
     @Mapping(target = "userId",source="user.id")

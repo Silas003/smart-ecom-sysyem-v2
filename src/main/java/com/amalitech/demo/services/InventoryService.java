@@ -1,33 +1,46 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dto.InventoryRequest;
-import com.amalitech.demo.dto.InventoryResponse;
+import com.amalitech.demo.dto.request.InventoryRequest;
+import com.amalitech.demo.dto.response.InventoryResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.InventoryMapper;
 import com.amalitech.demo.models.Inventory;
 import com.amalitech.demo.models.Product;
 import com.amalitech.demo.repository.InventoryRepository;
+import com.amalitech.demo.services.interfaces.InventoryServiceInterface;
+import com.amalitech.demo.services.interfaces.ProductServiceInterface;
+import com.amalitech.demo.utils.Sorter;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class InventoryService {
+public class InventoryService implements InventoryServiceInterface {
 
     private final InventoryRepository inventoryRepository;
-    private final ProductService productService;
+    private final ProductServiceInterface productService;
     private final InventoryMapper inventoryMapper;
+    private final Sorter<Inventory> sorter;
 
-    public InventoryService(InventoryRepository inventoryRepository, ProductService productService, InventoryMapper inventoryMapper){
+    public InventoryService(InventoryRepository inventoryRepository, ProductServiceInterface productService, InventoryMapper inventoryMapper, Sorter<Inventory> sorter) {
         this.inventoryRepository = inventoryRepository;
         this.productService = productService;
         this.inventoryMapper = inventoryMapper;
+        this.sorter = sorter;
     }
 
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    @CachePut(value = "inventory", key = "#result.id")
     public InventoryResponse createInventory(InventoryRequest request) {
         Product product = productService.getProductById(request.getProductId());
-        if( inventoryRepository.existsByProductId(product.getId())){
+        if (inventoryRepository.existsByProductId(product.getId())) {
             throw new IllegalArgumentException("inventory with given product already exists");
         }
         Inventory inventory = inventoryMapper.toEntity(request);
@@ -36,18 +49,28 @@ public class InventoryService {
         return inventoryMapper.toResponse(saved);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "inventory", key = "#id", sync = true)
     public InventoryResponse getInventoryById(Long id) {
         Inventory inv = inventoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
         return inventoryMapper.toResponse(inv);
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public List<InventoryResponse> getAllInventories() {
-        return inventoryRepository.findAll().stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+        List<Inventory> list = inventoryRepository.findAll();
+        if (list == null || list.isEmpty()) return List.of();
+        List<Inventory> sorted = sorter.sort(list, Comparator.comparing(i -> i.getProduct() == null ? null : i.getProduct().getId(), Comparator.nullsLast(Long::compareTo)));
+        return sorted.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    @CachePut(value = "inventory", key = "#id")
     public InventoryResponse updateInventory(Long id, InventoryRequest request) {
-        Inventory existingInventory = inventoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
+        Inventory existingInventory = inventoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
 
         Product product = productService.getProductById(request.getProductId());
         existingInventory.setProduct(product);
@@ -59,10 +82,12 @@ public class InventoryService {
         return inventoryMapper.toResponse(saved);
     }
 
-    public void deleteInventory(Long id){
-        Inventory inventory = inventoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    @CachePut(value = "inventory", key = "#id")
+    public void deleteInventory(Long id) {
+        Inventory inventory = inventoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
 
-        inventoryRepository.deleteById(id);
+        inventoryRepository.deleteById(inventory.getId());
     }
 }

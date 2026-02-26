@@ -1,29 +1,49 @@
 package com.amalitech.demo.services;
 
-import com.amalitech.demo.dto.*;
+import com.amalitech.demo.dto.OrderStatus;
+import com.amalitech.demo.dto.request.OrderItemRequest;
+import com.amalitech.demo.dto.request.OrderRequest;
+import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.OrdersMapper;
 import com.amalitech.demo.models.*;
-import com.amalitech.demo.repository.*;
-import lombok.AllArgsConstructor;
+import com.amalitech.demo.repository.InventoryRepository;
+import com.amalitech.demo.repository.OrdersRepository;
+import com.amalitech.demo.repository.ProductRepository;
+import com.amalitech.demo.repository.UserRepository;
+import com.amalitech.demo.security.CurrentUser;
+import com.amalitech.demo.services.interfaces.OrderServiceInterface;
+import com.amalitech.demo.services.specification.OrderSpecification;
+import com.amalitech.demo.utils.Sorter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
-public class OrderService {
+@RequiredArgsConstructor
+public class OrderService implements OrderServiceInterface {
 
     private final OrdersRepository ordersRepository;
     private final OrdersMapper ordersMapper;
-    private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
     private final UserRepository userRepository;
+
+    private final Sorter<Orders> sorter;
 
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS =
             Map.of(
@@ -33,37 +53,92 @@ public class OrderService {
                     OrderStatus.cancelled, Set.of()
             );
 
-    public List<OrderResponse> getOrderByUserId(Long userId){
-        List<Orders> orders = ordersRepository.findByUser_IdWithItemsAndProducts(userId).orElseThrow(
-                ()-> new EntityNotFoundException("user does not have any orders")
-        );
-        // Use OrdersMapper to convert entities to DTOs (ensures productId is populated)
+    private Long getCurrentUserIdOrThrow() {
+        String email = CurrentUser.getEmail();
+        if (email == null) {
+            throw new AccessDeniedException("Unauthenticated");
+        }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AccessDeniedException("User not found for current principal"));
+        return user.getId();
+    }
+
+    private boolean isCurrentUserAdmin() {
+        var auth = CurrentUser.getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_admin"));
+    }
+
+    @Override
+    @Cacheable(value = "ordersByUser", key = "#userId")
+    public List<OrderResponse> getOrderByUserId(Long userId) {
+        // Enforce ownership: non-admins can only see their own orders
+        if (!isCurrentUserAdmin()) {
+            Long currentUserId = getCurrentUserIdOrThrow();
+            if (!currentUserId.equals(userId)) {
+                throw new AccessDeniedException("Cannot access other users' orders");
+            }
+        }
+        List<Orders> orders = ordersRepository.findByUserId(userId);
+        if (orders == null || orders.isEmpty()) {
+            throw new EntityNotFoundException("user does not have any orders");
+        }
         return ordersMapper.toResponse(orders);
     }
 
-    public OrderResponse getOrderById(Long id){
-        Orders order = ordersRepository.findByIdWithItemsAndProducts(id).orElseThrow(()-> new EntityNotFoundException("order not found"));
+    @Override
+    @Cacheable(value = "order", key = "#id")
+    public OrderResponse getOrderById(Long id) {
+        Orders order = ordersRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("order not found"));
+        // Enforce ownership for non-admins based on order.user.id
+        if (!isCurrentUserAdmin()) {
+            Long currentUserId = getCurrentUserIdOrThrow();
+            User orderUser = order.getUser();
+            if (orderUser == null || orderUser.getId() == null || !orderUser.getId().equals(currentUserId)) {
+                throw new AccessDeniedException("Cannot access other users' orders");
+            }
+        }
         return ordersMapper.toResponse(order);
     }
 
-    public Page<OrderResponse> getAllOrders(Pageable pageable) {
-        Page<Orders> orders = ordersRepository.findAll(pageable);
-        // Ensure items and products are fetched for each order before mapping to DTOs
-        List<OrderResponse> content = orders.getContent().stream().map(o -> {
-            Orders full = ordersRepository.findByIdWithItemsAndProducts(o.getId()).orElse(o);
-            return ordersMapper.toResponse(full);
-        }).toList();
+    @Override
+    @Cacheable(value = "orders", keyGenerator = "orderSearchKeyGenerator")
+    public Page<OrderResponse> getAllOrders(Pageable pageable, Long userId, OrderStatus status, LocalDateTime start, LocalDateTime end) {
+        Specification<Orders> spec = Specification.anyOf(OrderSpecification.hasUserId(userId))
+                .and(OrderSpecification.hasStatus(status))
+                .and(OrderSpecification.isBetween(start, end));
 
-        return new org.springframework.data.domain.PageImpl<>(content, pageable, orders.getTotalElements());
+        Page<Orders> page = ordersRepository.findAll(spec, pageable);
+        List<OrderResponse> content = page.getContent().stream()
+                .map(ordersMapper::toResponse)
+                .toList();
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
-    public void deleteOrder(Long orderId) {
-        Orders order = ordersRepository.findById(orderId)
-                .orElseThrow(()-> new EntityNotFoundException("order not found"));
-        ordersRepository.delete(order);
-    }
 
+    @Override
     @Transactional
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "order", key = "#orderId"),
+                    @CacheEvict(value = "ordersByUser", key = "#result.userId"),
+                    @CacheEvict(value = "orders", allEntries = true)
+            }
+    )
+    public void deleteOrder(Long orderId) {
+        ordersRepository.findById(orderId).orElseThrow(() -> new EntityNotFoundException("order not found"));
+        ordersRepository.deleteById(orderId);
+    }
+
+    @Override
+    @Transactional
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "order", key = "#orderId"),
+                    @CacheEvict(value = "ordersByUser", key = "#result.userId"),
+                    @CacheEvict(value = "orders", allEntries = true)
+            }
+    )
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
         Orders order = ordersRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
@@ -82,72 +157,156 @@ public class OrderService {
         }
 
         order.setStatus(newStatus);
-        Orders updated = ordersRepository.save(order);
-
-        return ordersMapper.toResponse(updated);
-    }
-
-    @Transactional
-    public OrderResponse createOrder( OrderRequest req) {
-        Long userId = req.getUserId();
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-        if (req.getItems() == null || req.getItems().isEmpty()) {
-            throw new IllegalArgumentException("Order must contain at least one item");
-        }
-
-        Orders order = new Orders();
-        order.setUser(user);
-        order.setStatus(OrderStatus.pending);
-
-        List<OrderItem> items = new ArrayList<>();
-        double total = 0.0;
-
-        for (OrderItemRequest it : req.getItems()) {
-            Product product = productRepository.findById(it.getProductId()).orElseThrow(() -> new EntityNotFoundException("Product not found"));
-            // check inventory
-            Inventory inv = inventoryRepository.findByProduct_Id(product.getId()).orElseThrow(() -> new EntityNotFoundException("Inventory not found for product"));
-            if (inv.getStockQuantity() < it.getQuantity()) {
-                throw new IllegalArgumentException("Insufficient stock for product id: " + product.getId());
-            }
-            // decrement
-            inv.setStockQuantity(inv.getStockQuantity() - it.getQuantity());
-            inventoryRepository.save(inv);
-
-            OrderItem oi = new OrderItem();
-            oi.setOrder(order);
-            oi.setProduct(product);
-            oi.setQuantity(it.getQuantity());
-            oi.setUnitPrice(product.getPrice());
-            oi.setTotalPrice(product.getPrice() * it.getQuantity());
-            items.add(oi);
-            total += oi.getTotalPrice();
-        }
-
-        order.setTotalAmount(total);
-        order.setItems(items);
-
         Orders saved = ordersRepository.save(order);
-        // Use mapper to convert saved entity to response (includes item -> itemResponse mapping)
+
         return ordersMapper.toResponse(saved);
     }
 
-    /**
-     * Restore inventory quantities for all items in the given order.
-     * This method will look up the Inventory by product id and add back the ordered quantity.
-     * It is transactional and will throw EntityNotFoundException if an Inventory for a product is missing.
-     */
-    private void restoreInventory(Orders order) {
-        if (order.getItems() == null || order.getItems().isEmpty()) return;
 
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ)
+    @Caching(
+            put = {
+                    @CachePut(value = "order", key = "#result.id"),
+                    @CachePut(value = "ordersByUser", key = "#result.userId")
+            },
+            evict = {
+                    @CacheEvict(value = "orders", allEntries = true)
+            }
+    )
+    public OrderResponse createOrder(OrderRequest req) {
+
+        User user = getUserOrThrow(req.getUserId());
+        validateOrderItems(req.getItems());
+
+        Orders order = buildOrder(user);
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        double totalAmount = 0.0;
+
+        for (OrderItemRequest itemReq : req.getItems()) {
+
+            Product product = getProductOrThrow(itemReq.getProductId());
+            Inventory inventory = getInventoryOrThrow(product.getId());
+
+            validateStock(inventory, itemReq.getQuantity(), product.getId());
+
+            OrderItem orderItem = buildOrderItem(order, product, itemReq.getQuantity());
+
+            decrementInventory(inventory, itemReq.getQuantity());
+
+            orderItems.add(orderItem);
+            totalAmount += orderItem.getTotalPrice();
+        }
+
+        order.setItems(orderItems);
+        order.setTotalAmount(totalAmount);
+
+        Orders savedOrder = ordersRepository.save(order);
+
+        return ordersMapper.toResponse(savedOrder);
+    }
+
+
+    public void restoreInventory(Orders order) {
+        if (order.getItems() == null) return;
         for (OrderItem item : order.getItems()) {
-            Long productId = item.getProduct().getId();
-            Inventory inv = inventoryRepository.findByProduct_Id(productId)
-                    .orElseThrow(() -> new EntityNotFoundException("Inventory not found for product id: " + productId));
-
-            int newStock = inv.getStockQuantity() + (item.getQuantity() == null ? 0 : item.getQuantity());
-            inv.setStockQuantity(newStock);
-            inventoryRepository.save(inv);
+            inventoryRepository.findByProductId(item.getProduct().getId())
+                    .ifPresent(inv -> {
+                        inv.setStockQuantity(inv.getStockQuantity() + item.getQuantity());
+                        inventoryRepository.save(inv);
+                    });
         }
     }
+
+    @Override
+    @Transactional
+    public Page<OrderResponse> getUserOrdersWithinPeriod(Long userId, LocalDateTime start, LocalDateTime end, Pageable pageable) {
+        // Enforce ownership: non-admins can only see their own orders
+        if (!isCurrentUserAdmin()) {
+            Long currentUserId = getCurrentUserIdOrThrow();
+            if (!currentUserId.equals(userId)) {
+                throw new AccessDeniedException("Cannot access other users' orders");
+            }
+        }
+
+        Specification<Orders> spec = OrderSpecification.hasUserId(userId)
+                .and(OrderSpecification.isBetween(start, end));
+
+        Page<Orders> page = ordersRepository.findAll(spec, pageable);
+        List<OrderResponse> content = page.getContent().stream()
+                .map(ordersMapper::toResponse)
+                .toList();
+        return new PageImpl<>(content, pageable, page.getTotalElements());
+    }
+
+    @Override
+    public Double getTotalRevenue(LocalDateTime start, LocalDateTime end) {
+        return ordersRepository.calculateTotalRevenue(start, end);
+    }
+
+    private User getUserOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
+    }
+
+    private void validateOrderItems(List<OrderItemRequest> items) {
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Order must contain at least one item");
+        }
+    }
+
+    private Orders buildOrder(User user) {
+        Orders order = new Orders();
+        order.setUser(user);
+        order.setStatus(OrderStatus.pending);
+        return order;
+    }
+
+    private Product getProductOrThrow(Long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Product not found with ID: " + productId));
+    }
+
+    private Inventory getInventoryOrThrow(Long productId) {
+        return inventoryRepository.findByProductId(productId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Inventory not found for product ID: " + productId));
+    }
+
+    private void validateStock(Inventory inventory, int requestedQty, Long productId) {
+
+        if (inventory.getStockQuantity() < requestedQty) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Insufficient stock for product ID: %d. Available: %d, Requested: %d",
+                            productId,
+                            inventory.getStockQuantity(),
+                            requestedQty
+                    )
+            );
+        }
+    }
+
+    private OrderItem buildOrderItem(Orders order, Product product, int quantity) {
+
+        OrderItem item = new OrderItem();
+
+        item.setOrder(order);
+        item.setProduct(product);
+        item.setQuantity(quantity);
+        item.setUnitPrice(product.getPrice());
+        item.setTotalPrice(product.getPrice() * quantity);
+
+        return item;
+    }
+
+    private void decrementInventory(Inventory inventory, int quantity) {
+
+        inventory.setStockQuantity(inventory.getStockQuantity() - quantity);
+
+        inventoryRepository.save(inventory);
+    }
+
 
 }

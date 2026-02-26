@@ -5,8 +5,19 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Data
+@NamedEntityGraph(
+        name = "reviews-with-product",
+        attributeNodes = {@NamedAttributeNode("product")}
+)
+@NamedEntityGraph(
+        name = "reviews-with-user",
+        attributeNodes = {@NamedAttributeNode("user")}
+)
 @Entity
 @Table(name = "reviews")
 public class Reviews {
@@ -31,6 +42,9 @@ public class Reviews {
     @JoinColumn(name = "product_id", referencedColumnName = "id")
     @NotNull
     private Product product;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
     public Reviews(){}
     public Reviews(Integer rating, String description,User user, Product product) {

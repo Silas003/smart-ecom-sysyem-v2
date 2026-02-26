@@ -1,12 +1,20 @@
 package com.amalitech.demo.restcontroller;
 
 
-import com.amalitech.demo.dto.ProductRequest;
-import com.amalitech.demo.dto.ProductResponse;
 import com.amalitech.demo.dto.ResponseDto;
-import com.amalitech.demo.models.Product;
-import com.amalitech.demo.services.ProductService;
+import com.amalitech.demo.dto.request.ProductRequest;
+import com.amalitech.demo.dto.response.ProductResponse;
 import com.amalitech.demo.mapper.ProductMapper;
+import com.amalitech.demo.models.Product;
+import com.amalitech.demo.services.interfaces.ProductServiceInterface;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,67 +23,121 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping(value = "/api/v1/products")
 @AllArgsConstructor
 @Tag(name = "Products", description = "APIs to manage products")
 public class ProductController {
-    private final ProductService productService;
+    private final ProductServiceInterface productService;
     private final ProductMapper productMapper;
 
-    @GetMapping("/")
+    // Public catalog endpoints
+    @GetMapping()
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "List products", description = "List products with pagination and sorting")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class))))
+    })
     public ResponseDto<Page<ProductResponse>> getAllProducts(
-            @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable
-    )
-    {
-        Page<Product> products = productService.getAllProducts(pageable);
+            @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice
+    ) {
+        Page<Product> products = productService.getAllProducts(pageable, categoryId, name, minPrice, maxPrice);
         Page<ProductResponse> resp = products.map(productMapper::toResponse);
-        return new ResponseDto<>(HttpStatus.OK,"products retrieved",resp);
-
-
+        return new ResponseDto<>(HttpStatus.OK, "products retrieved", resp);
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get product", description = "Retrieve a single product by id")
-    public ResponseDto<ProductResponse> getProductById(@PathVariable Long id){
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product retrieved",
+                    content = @Content(schema = @Schema(implementation = ProductResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    public ResponseDto<ProductResponse> getProductById(@Parameter(description = "ID of the product to retrieve", required = true) @PathVariable Long id) {
         Product product = productService.getProductById(id);
-        return new ResponseDto<>(HttpStatus.OK,"product retrieved",productMapper.toResponse(product));
-
+        return new ResponseDto<>(HttpStatus.OK, "product retrieved", productMapper.toResponse(product));
     }
 
+    // Admin/Seller management endpoints
+    @PreAuthorize("hasAnyRole('admin','seller')")
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update product", description = "Update product details")
-    public ResponseDto<ProductResponse> updateProduct(@PathVariable Long id, @RequestBody @Valid ProductRequest productRequest){
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product updated",
+                    content = @Content(schema = @Schema(implementation = ProductResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Product not found"),
+            @ApiResponse(responseCode = "400", description = "Validation error")
+    })
+    public ResponseDto<ProductResponse> updateProduct(@Parameter(description = "ID of the product to update", required = true) @PathVariable Long id,
+                                                      @RequestBody @Valid ProductRequest productRequest) {
         Product updated = productService.updateProduct(id, productRequest);
-        return new ResponseDto<>(HttpStatus.OK,"product updated",productMapper.toResponse(updated));
+        return new ResponseDto<>(HttpStatus.OK, "product updated", productMapper.toResponse(updated));
     }
 
+    @PreAuthorize("hasAnyRole('admin','seller')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete product", description = "Delete a product by id")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Product deleted"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    public ResponseEntity<Void> deleteProduct(@Parameter(description = "ID of the product to delete", required = true) @PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/create_product")
+    @PreAuthorize("hasAnyRole('admin','seller')")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create product", description = "Create a new product")
-
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Product created",
+                    content = @Content(schema = @Schema(implementation = ProductResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error")
+    })
     public ResponseDto<ProductResponse> createProduct(@RequestBody @Valid ProductRequest productRequest) {
         Product newProduct = productService.createProduct(productRequest);
-        return new ResponseDto<>(HttpStatus.CREATED,"product created ",productMapper.toResponse(newProduct));
+        return new ResponseDto<>(HttpStatus.CREATED, "product created ", productMapper.toResponse(newProduct));
+    }
 
+    @GetMapping("/category/{categoryId}")
+    @Operation(summary = "Get products by category", description = "Retrieve products belonging to a specific category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class)))),
+            @ApiResponse(responseCode = "404", description = "Category not found")
+    })
+    public ResponseDto<Page<ProductResponse>> getProductsByCategory(
+            @Parameter(description = "ID of the category", required = true) @PathVariable Long categoryId,
+            @PageableDefault(size = 10, sort = "price", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        Page<ProductResponse> products = productService.getProductsByCategoryId(categoryId);
+        return new ResponseDto<>(HttpStatus.OK, "products retrieved", products);
+    }
+
+    @PreAuthorize("hasAnyRole('admin','seller')")
+    @GetMapping("/low-stock")
+    @Operation(summary = "Get low stock products", description = "Retrieve products with stock quantity below a threshold")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Low stock products retrieved",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class))))
+    })
+    public ResponseDto<Page<ProductResponse>> getLowStockProducts(
+            @RequestParam(defaultValue = "10") int threshold,
+            @PageableDefault(size = 10, sort = "stockQuantity", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        Page<ProductResponse> products = productService.getLowStockProducts(threshold, pageable);
+        return new ResponseDto<>(HttpStatus.OK, "low stock products retrieved", products);
     }
 }

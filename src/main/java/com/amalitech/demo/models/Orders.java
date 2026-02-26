@@ -7,10 +7,23 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@NamedEntityGraph(
+        name = "orders-with-items-and-user",
+        attributeNodes = {
+                @NamedAttributeNode("user"),
+                @NamedAttributeNode(value = "items", subgraph = "items-with-product")
+        },
+        subgraphs = {
+                @NamedSubgraph(name = "items-with-product", attributeNodes = {
+                        @NamedAttributeNode("product")
+                })
+        }
+)
 @Entity
 @Getter
 @Setter
@@ -19,7 +32,7 @@ import java.util.List;
 public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
+    @Column(nullable =  false)
     private Long id;
 
     @ManyToOne
@@ -36,7 +49,7 @@ public class Orders {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP")
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     public Orders(User u, Double aDouble, OrderStatus orderStatus) {
@@ -47,8 +60,7 @@ public class Orders {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        if (this.status == null) this.status = OrderStatus.pending;
+        this.status = OrderStatus.pending;
     }
 
     public Orders() {}

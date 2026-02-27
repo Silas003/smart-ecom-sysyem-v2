@@ -84,7 +84,8 @@ public class UserController {
                 userRequest.getUsername() == null ? "" : userRequest.getUsername(),
                 userRequest.getEmail() == null ? "" : userRequest.getEmail(),
                 userRequest.getPassword() == null ? "" : userRequest.getPassword(),
-                userRequest.getUserRole() == null ? null : userRequest.getUserRole()
+                userRequest.getUserRole() == null ? null : userRequest.getUserRole(),
+                ""
         );
         UserResponse updatedUser = userService.updateUser(id, ur);
         return new ResponseDto<>(HttpStatus.OK, "user updated", updatedUser);

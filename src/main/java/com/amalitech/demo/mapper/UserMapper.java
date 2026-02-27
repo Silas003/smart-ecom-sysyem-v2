@@ -11,6 +11,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "provider" ,source = "provider")
     User toEntity(UserRequest req);
      UserResponse toResponse(User dto);
     List<UserResponse> toResponse(List<User> dtoList);

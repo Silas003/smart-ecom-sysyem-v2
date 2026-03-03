@@ -128,7 +128,8 @@ public class UserServiceTest {
                 "username",
                 "email@gmail.com",
                 "Testpassword",
-                UserRole.customer.toString()
+                UserRole.customer.toString(),
+                Provider.local.name()
         );
         User user = new User(
                 "username",

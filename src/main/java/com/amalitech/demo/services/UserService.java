@@ -169,6 +169,7 @@ public class UserService implements UserServiceInterface {
                 throw new IllegalArgumentException("Invalid credentials");
             }
         } catch (Exception e) {
+            log.error("[LOGIN] Login failed: {}", e.getMessage());
             throw e;
         }
     }

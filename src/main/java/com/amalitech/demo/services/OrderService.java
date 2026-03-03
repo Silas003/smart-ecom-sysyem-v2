@@ -15,6 +15,7 @@ import com.amalitech.demo.security.CurrentUser;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import com.amalitech.demo.services.specification.OrderSpecification;
 import com.amalitech.demo.utils.Sorter;
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -140,26 +141,30 @@ public class OrderService implements OrderServiceInterface {
             }
     )
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
-        Orders order = ordersRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        try {
+            Orders order = ordersRepository.findById(orderId)
+                    .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        OrderStatus currentStatus = order.getStatus();
+            OrderStatus currentStatus = order.getStatus();
 
-        if (!ALLOWED_TRANSITIONS.getOrDefault(currentStatus, Collections.emptySet()).contains(newStatus)) {
-            throw new IllegalStateException(
-                    "Cannot change order status from " + currentStatus + " to " + newStatus
-            );
+            if (!ALLOWED_TRANSITIONS.getOrDefault(currentStatus, Collections.emptySet()).contains(newStatus)) {
+                throw new IllegalStateException(
+                        "Cannot change order status from " + currentStatus + " to " + newStatus
+                );
+            }
+
+            // If transitioning into cancelled from a non-cancelled state, restore inventory
+            if (currentStatus != OrderStatus.cancelled && newStatus == OrderStatus.cancelled) {
+                restoreInventory(order);
+            }
+
+            order.setStatus(newStatus);
+            Orders saved = ordersRepository.save(order);
+
+            return ordersMapper.toResponse(saved);
+        } catch (OptimisticLockException e) {
+            throw new IllegalStateException("Failed to update order due to concurrent modification. Please retry.");
         }
-
-        // If transitioning into cancelled from a non-cancelled state, restore inventory
-        if (currentStatus != OrderStatus.cancelled && newStatus == OrderStatus.cancelled) {
-            restoreInventory(order);
-        }
-
-        order.setStatus(newStatus);
-        Orders saved = ordersRepository.save(order);
-
-        return ordersMapper.toResponse(saved);
     }
 
 

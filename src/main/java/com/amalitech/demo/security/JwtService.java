@@ -28,7 +28,7 @@ public class JwtService {
     private final String issuer;
     private final JwtParser jwtParser;
 
-    private final Map<String,Claims> claimsCache = new ConcurrentHashMap<>();
+    private final Map<String, Claims> claimsCache = new ConcurrentHashMap<>();
     private final Map<String, TokenValidationResult> validationCache = new ConcurrentHashMap<>();
 
 
@@ -83,27 +83,25 @@ public class JwtService {
 
 
     public TokenValidationResult validateAndExtract(String token) {
-        TokenValidationResult cached = validationCache.get(token);
-        if (cached != null && !cached.isExpired()) {
-            return cached;
-        }
-
         try {
-            Claims claims = getClaimsFromToken(token);
             Date now = new Date();
-            boolean valid = claims.getExpiration().after(now);
+            return validationCache.compute(token, (key, existing) -> {
+                if (existing != null && !existing.isExpired()) {
+                    return existing;
+                }
 
-            TokenValidationResult result = TokenValidationResult.builder()
-                    .subject(claims.getSubject())
-                    .roles(extractRolesFromClaims(claims))
-                    .isValid(valid)
-                    .expiration(claims.getExpiration())
-                    .claims(claims)
-                    .cachedAt(now)
-                    .build();
+                Claims claims = getClaimsFromToken(token);
+                boolean valid = claims.getExpiration().after(now);
 
-            validationCache.put(token, result);
-            return result;
+                return TokenValidationResult.builder()
+                        .subject(claims.getSubject())
+                        .roles(extractRolesFromClaims(claims))
+                        .isValid(valid)
+                        .expiration(claims.getExpiration())
+                        .claims(claims)
+                        .cachedAt(now)
+                        .build();
+            });
         } catch (Exception e) {
             log.debug("Token validation failed: {}", e.getMessage());
             return TokenValidationResult.invalid();
@@ -134,22 +132,17 @@ public class JwtService {
         return result.isValid() ? result.getSubject() : null;
     }
 
-    public boolean isTokenValid(String token, String expectedSubject) {
-        TokenValidationResult result = validateAndExtract(token);
-        return result.isValid() && expectedSubject.equals(result.getSubject());
-    }
-
     private Claims getClaimsFromToken(String token) {
-        Claims cached = claimsCache.get(token);
-        if (cached != null) {
-            if (cached.getExpiration().after(new Date())) {
-                return cached;
-            } else {
-                claimsCache.remove(token);
+        Date now = new Date();
+        return claimsCache.compute(token, (key, existing) -> {
+            if (existing != null && existing.getExpiration().after(now)) {
+                return existing;
             }
-        }
-        Claims claims = jwtParser.parseSignedClaims(token).getPayload();
-        claimsCache.put(token, claims);
-        return claims;
+
+            Claims parsed = jwtParser.parseSignedClaims(token).getPayload();
+
+            // If already expired, don't keep it in the cache
+            return parsed.getExpiration().after(now) ? parsed : null;
+        });
     }
 }

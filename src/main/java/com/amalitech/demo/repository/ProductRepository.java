@@ -11,6 +11,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
+
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
@@ -20,6 +23,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     @EntityGraph(value = "product-with-category", type = EntityGraph.EntityGraphType.FETCH)
     Page<Product> findAll(Pageable pageable);
+
+    List<Product> findByIdIn(Collection<Long> ids);
 
     @Query("SELECT p FROM Product p WHERE p.stockQuantity < :threshold")
     Page<Product> findLowStockProducts(@Param("threshold") int threshold, Pageable pageable);

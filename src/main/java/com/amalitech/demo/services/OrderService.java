@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -185,13 +186,29 @@ public class OrderService implements OrderServiceInterface {
 
         Orders order = buildOrder(user);
 
+        // Collect all product IDs from the request up front
+        List<Long> productIds = req.getItems().stream()
+                .map(OrderItemRequest::getProductId)
+                .collect(Collectors.toList());
+
+        // Batch-load products and inventories to avoid N+1 queries
+        Map<Long, Product> productsById = productRepository.findByIdIn(productIds).stream()
+                .collect(Collectors.toMap(Product::getId, p -> p));
+
+        Map<Long, Inventory> inventoryByProductId = inventoryRepository.findByProductIdIn(productIds).stream()
+                .collect(Collectors.toMap(inv -> inv.getProduct().getId(), inv -> inv));
+
         List<OrderItem> orderItems = new ArrayList<>();
         double totalAmount = 0.0;
 
         for (OrderItemRequest itemReq : req.getItems()) {
+            Long productId = itemReq.getProductId();
 
-            Product product = getProductOrThrow(itemReq.getProductId());
-            Inventory inventory = getInventoryOrThrow(product.getId());
+            Product product = Optional.ofNullable(productsById.get(productId))
+                    .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + productId));
+
+            Inventory inventory = Optional.ofNullable(inventoryByProductId.get(productId))
+                    .orElseThrow(() -> new EntityNotFoundException("Inventory not found for product ID: " + productId));
 
             validateStock(inventory, itemReq.getQuantity(), product.getId());
 

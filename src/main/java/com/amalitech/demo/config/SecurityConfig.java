@@ -56,7 +56,27 @@ public class SecurityConfig {
 
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll().requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll().requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll().requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/api/v1/users/login", "/api/v1/users/logout", "/api/v1/users", "/api/v1/users/refresh", "graphql", "/oauth2/**", "/login/oauth2/**").permitAll().anyRequest().authenticated()).oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfo -> userInfo.oidcUserService(customOidcUserService)).successHandler(oAuth2AuthenticationSuccessHandler).failureHandler(oauth2AuthenticationFailureHandler)).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**")
+                        .permitAll().requestMatchers(HttpMethod.GET, "/api/v1/categories/**")
+                        .permitAll().requestMatchers(HttpMethod.GET, "/api/v1/reviews/**")
+                        .permitAll()
+                        .requestMatchers("/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/api/v1/users/login",
+                                "/api/v1/users/logout",
+                                "/api/v1/users",
+                                "/api/v1/users/refresh",
+                                "graphql", "/oauth2/**", "/login/oauth2/**")
+                        .permitAll()
+                        .anyRequest().authenticated())
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo ->
+                                userInfo.oidcUserService(customOidcUserService))
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureHandler(oauth2AuthenticationFailureHandler))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -1,5 +1,6 @@
 package com.amalitech.demo.config;
 
+import com.amalitech.demo.dto.TokenValidationResult;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 public class CacheConfig {
 
-    // Use application property for JWT expiration so the token blacklist TTL can match token lifetime
     @Value("${security.jwt.expiration-ms:3600000}")
     private long jwtExpirationMs;
 
@@ -45,7 +45,6 @@ public class CacheConfig {
                 "users"
         );
 
-        // Global/default builder for regular caches
         caffeineCacheManager.setCaffeine(Caffeine.newBuilder()
                 .initialCapacity(100)
                 .maximumSize(500)
@@ -64,5 +63,13 @@ public class CacheConfig {
         caffeineCacheManager.registerCustomCache("tokenBlacklist", tokenCache);
 
         return caffeineCacheManager;
+    }
+
+    @Bean
+    public Cache<String, TokenValidationResult> tokenCache() {
+        return Caffeine.newBuilder()
+                .maximumSize(10000)
+                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .build();
     }
 }

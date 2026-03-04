@@ -5,6 +5,8 @@ import com.amalitech.demo.dto.request.AddItemToCartRequest;
 import com.amalitech.demo.dto.request.UpdateCartStatusRquest;
 import com.amalitech.demo.dto.response.CartItemsReponse;
 import com.amalitech.demo.dto.response.CartResponse;
+import com.amalitech.demo.mapper.CartMapper;
+import com.amalitech.demo.models.Cart;
 import com.amalitech.demo.services.interfaces.CartServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,6 +37,7 @@ import java.time.LocalDateTime;
 @Tag(name = "Carts", description = "Shopping cart management")
 public class CartManagementController {
     private final CartServiceInterface cartService;
+    private final CartMapper cartMapper;
 
     private boolean isAdmin(Authentication auth) {
         return auth.getAuthorities().stream()
@@ -63,8 +66,8 @@ public class CartManagementController {
         if (!isAdmin(auth)) {
             // TODO: enforce that userId matches the authenticated user when userId mapping is available
         }
-        CartResponse cart = cartService.createCart(userId);
-        return new ResponseDto<>(HttpStatus.OK, "Cart retrieved successfully", cart);
+        Cart cart = cartService.createCart(userId);
+        return new ResponseDto<>(HttpStatus.OK, "Cart retrieved successfully", cartMapper.toResponse(cart));
     }
 
     @PreAuthorize("hasAnyRole('customer','admin')")

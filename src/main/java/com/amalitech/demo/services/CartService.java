@@ -12,7 +12,6 @@ import com.amalitech.demo.services.interfaces.CartServiceInterface;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -36,44 +35,36 @@ public class CartService implements CartServiceInterface {
     @CachePut(value = "activeUserCart", key = "#userId")
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public CartResponse createCart(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-        boolean exists = cartRepository.existsByUserIdAndStatus(user.getId(), CartStatus.active);
-        if (exists) {
-            Cart cart = cartRepository.findByUserIdAndStatus(user.getId(), CartStatus.active).orElseThrow(() -> new EntityNotFoundException("cart not found"));
-            return buildCartResponse(cart);
-        }
-        Cart cart = cartRepository.save(new Cart(user));
+    public Cart createCart(Long userId) {
 
-        return buildCartResponse(cart);
-    }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-    @Cacheable(value = "activeUserCart", key = "#userId")
-    @Override
-    public CartResponse getCartByUserId(Long userId) {
-        Cart cart = cartRepository.findByUserIdAndStatus(userId, CartStatus.active).orElseThrow(() -> new EntityNotFoundException("cart not found"));
-        return buildCartResponse(cart);
+        Cart cart = cartRepository.findByUserIdAndStatus(userId, CartStatus.active)
+                .orElseGet(() -> cartRepository.save(new Cart(user)));
+
+        return cart;
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public CartItemsReponse addItemToCart(Long userId, Long productId, int quantity) {
 
-        Cart cart = getActiveCartOrThrow(userId);
+        Cart cart = createCart(userId);
 
         Product product = getProductOrThrow(productId);
-
         Inventory inventory = getInventoryOrThrow(productId);
 
-        CartItems cartItem = getCartItem(cart.getId(), productId);
+        CartItems cartItem = cartItemsRepository
+                .findByCartIdAndProductId(cart.getId(), productId)
+                .orElseGet(() -> new CartItems(cart, product, 0));
 
-        int newQuantity = calculateNewQuantity(cartItem, quantity);
+        int newQuantity = cartItem.getQuantity() + quantity;
 
-        validateStockAvailability(inventory, newQuantity, product.getName());
+        validateStockAvailability(inventory, newQuantity);
 
-        CartItems savedCartItem = saveOrUpdateCartItem(cartItem, cart, product, newQuantity);
 
-        return cartItemMapper.toResponse(savedCartItem);
+        return cartItemMapper.toResponse(cartItem);
     }
 
 
@@ -89,26 +80,20 @@ public class CartService implements CartServiceInterface {
     }
 
     @Override
-    @CacheEvict(value = "activeUserCart", allEntries = true)
+    @CacheEvict(value = "activeUserCart", key = "#userId")
     @Transactional(propagation = Propagation.REQUIRED)
     public void removeItemFromCart(Long userId, Long cartItemId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-        CartItems cartItem = cartItemsRepository.findById(cartItemId).orElseThrow(() -> new EntityNotFoundException("Cart item not found"));
 
-        Long cartId = cartItem.getCart().getId();
+        CartItems cartItem = cartItemsRepository.findByIdWithCartAndUser(cartItemId)
+                .orElseThrow(() -> new EntityNotFoundException("Cart item not found"));
 
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new EntityNotFoundException("Cart not found"));
-        if (!cart.getUser().getId().equals(user.getId())) {
+        Cart cart = cartItem.getCart();
+
+        if (!cart.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("Cannot remove item from another user's cart");
         }
 
-        // 3. Verify cart is active (cannot remove items from completed/abandoned carts)
-        if (cart.getStatus() != CartStatus.active) {
-            throw new IllegalStateException("Cannot remove items from a " + cart.getStatus() + " cart");
-        }
-
-        cartItemsRepository.deleteById(cartItemId);
-
+        cartItemsRepository.delete(cartItem);
     }
 
     @Override
@@ -136,9 +121,7 @@ public class CartService implements CartServiceInterface {
         return cartMapper.toResponse(cart, items);
     }
 
-    private Cart getActiveCartOrThrow(Long userId) {
-        return cartRepository.findByUserIdAndStatus(userId, CartStatus.active).orElseThrow(() -> new EntityNotFoundException("Active cart not found for user ID: " + userId));
-    }
+
 
     private Product getProductOrThrow(Long productId) {
         return productRepository.findById(productId).orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + productId));
@@ -148,40 +131,13 @@ public class CartService implements CartServiceInterface {
         return inventoryRepository.findByProductId(productId).orElseThrow(() -> new EntityNotFoundException("Inventory not found for product ID: " + productId));
     }
 
-    private CartItems getCartItem(Long cartId, Long productId) {
-        return cartItemsRepository.findByProductIdAndCartId(productId, cartId).orElse(null);
-    }
 
-    private int calculateNewQuantity(CartItems existingItem, int requestedQuantity) {
 
-        if (existingItem == null) {
-            return requestedQuantity;
-        }
-
-        return existingItem.getQuantity() + requestedQuantity;
-    }
-
-    private void validateStockAvailability(Inventory inventory, int requestedQuantity, String productName) {
+    private void validateStockAvailability(Inventory inventory, int requestedQuantity) {
 
         if (inventory.getStockQuantity() < requestedQuantity) {
-            throw new IllegalArgumentException(String.format("Insufficient stock for product: %s. Available: %d, Requested: %d", productName, inventory.getStockQuantity(), requestedQuantity));
+            throw new IllegalArgumentException(String.format("Insufficient stock for product Available: %d, Requested: %d", inventory.getStockQuantity(), requestedQuantity));
         }
-    }
-
-    private CartItems saveOrUpdateCartItem(CartItems existingItem, Cart cart, Product product, int quantity) {
-
-        CartItems cartItem = existingItem != null ? existingItem : new CartItems();
-
-        if (existingItem == null) {
-            cartItem.setCart(cart);
-            cartItem.setProduct(product);
-            cartItem.setUnitPrice(product.getPrice());
-        }
-
-        cartItem.setQuantity(quantity);
-        cartItem.setTotalPrice(quantity * product.getPrice());
-
-        return cartItemsRepository.save(cartItem);
     }
 
 

@@ -85,4 +85,9 @@ public class InventoryService implements InventoryServiceInterface {
 
         inventoryRepository.deleteById(inventory.getId());
     }
+
+    @Override
+    public Inventory getInventoryByProductId(Long productId) {
+        return inventoryRepository.findByProduct_Id(productId);
+    }
 }

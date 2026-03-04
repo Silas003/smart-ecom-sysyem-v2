@@ -1,8 +1,6 @@
 package com.amalitech.demo.config;
 
-import com.amalitech.demo.security.CustomUserDetailsService;
-import com.amalitech.demo.security.JwtAuthenticationFilter;
-import com.amalitech.demo.security.OAuth2AuthenticationSuccessHandler;
+import com.amalitech.demo.security.*;
 import com.amalitech.demo.services.CustomOidcUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -35,24 +33,33 @@ public class SecurityConfig {
 
     private final AuthenticationFailureHandler oauth2AuthenticationFailureHandler;
 
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+
+    private final RestAccessDeniedHandler restAccessDeniedHandler;
+
     @Autowired
     private CorsConfigurationSource corsConfigurationSource;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                           CustomOidcUserService customOidcUserService,
                           OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
-                          AuthenticationFailureHandler oauth2AuthenticationFailureHandler
-                          ) {
+                          AuthenticationFailureHandler oauth2AuthenticationFailureHandler,
+                          RestAuthenticationEntryPoint restAuthenticationEntryPoint,
+                          RestAccessDeniedHandler restAccessDeniedHandler
+    ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.customOidcUserService = customOidcUserService;
         this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
         this.oauth2AuthenticationFailureHandler = oauth2AuthenticationFailureHandler;
+        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
+        this.restAccessDeniedHandler = restAccessDeniedHandler;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource)).csrf(AbstractHttpConfigurer::disable)
+        http.cors(cors ->
+                        cors.configurationSource(corsConfigurationSource)).csrf(AbstractHttpConfigurer::disable)
 
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
@@ -71,6 +78,9 @@ public class SecurityConfig {
                                 "graphql", "/oauth2/**", "/login/oauth2/**")
                         .permitAll()
                         .anyRequest().authenticated())
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint(restAuthenticationEntryPoint)
+                        .accessDeniedHandler(restAccessDeniedHandler))
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo ->
                                 userInfo.oidcUserService(customOidcUserService))

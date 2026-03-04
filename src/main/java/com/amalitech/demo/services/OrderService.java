@@ -191,7 +191,6 @@ public class OrderService implements OrderServiceInterface {
                 .map(OrderItemRequest::getProductId)
                 .collect(Collectors.toList());
 
-        // Batch-load products and inventories to avoid N+1 queries
         Map<Long, Product> productsById = productRepository.findByIdIn(productIds).stream()
                 .collect(Collectors.toMap(Product::getId, p -> p));
 

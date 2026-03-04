@@ -67,18 +67,6 @@ public class CartService implements CartServiceInterface {
         return cartItemMapper.toResponse(cartItem);
     }
 
-
-    @CachePut(value = "activeUserCart", key = "#result.id")
-    @Transactional(propagation = Propagation.REQUIRED)
-    @Override
-    public CartResponse updateCartStatus(Long cartId, CartStatus Status) {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new EntityNotFoundException("cart not found"));
-
-        cart.setStatus(Status);
-        Cart saved = cartRepository.save(cart);
-        return buildCartResponse(saved);
-    }
-
     @Override
     @CacheEvict(value = "activeUserCart", key = "#userId")
     @Transactional(propagation = Propagation.REQUIRED)

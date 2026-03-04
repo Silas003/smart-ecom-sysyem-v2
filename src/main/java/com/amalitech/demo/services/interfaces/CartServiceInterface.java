@@ -16,8 +16,6 @@ public interface CartServiceInterface {
 
     CartItemsReponse addItemToCart(Long userId, Long productId, int quantity);
 
-    CartResponse updateCartStatus(Long cartId, CartStatus Status);
-
     @Transactional
     void removeItemFromCart(Long userId, Long cartItemId);
 

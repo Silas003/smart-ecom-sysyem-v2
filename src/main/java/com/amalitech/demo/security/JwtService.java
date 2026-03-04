@@ -31,6 +31,11 @@ public class JwtService {
     private final Map<String, Claims> claimsCache = new ConcurrentHashMap<>();
     private final Map<String, TokenValidationResult> validationCache = new ConcurrentHashMap<>();
 
+    @Value("${security.jwt.expiration-ms}")
+    private long jwtExpirationMs;
+
+    @Value("${app.custom.jwt-refresh.expiration-ms}")
+    private long jwtRefreshExpirationMs;
 
 
     public JwtService(
@@ -64,7 +69,7 @@ public class JwtService {
                 .claim("roles", roles)
                 .claim("name", user.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 15))
+                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -75,7 +80,7 @@ public class JwtService {
                 .issuer(issuer)
                 .claim("type", "refresh")
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 30))
+                .expiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }

@@ -516,6 +516,160 @@ Performance metrics and benchmarking tools are located in the `docs/performance`
 
 ---
 
-## License
 
-This repository does not currently declare an explicit license in `pom.xml` or a LICENSE file. Before using it in production or redistributing, clarify the licensing terms with the code owner or add an appropriate license file.
+---
+
+## Performance & Optimization Architecture (implementation-accurate)
+
+This section explains how the project satisfies the performance-focused epics (async, concurrency, algorithmic optimization, and metrics) in practical, production-style terms.
+
+### 1. Goals & Scope
+
+- Make core flows (cart, orders, inventory, reviews) responsive and scalable under concurrent load.
+- Protect shared resources (especially inventory and orders) with strong transactional guarantees.
+- Use algorithms, database features, caching, and observability to remove bottlenecks and make behavior measurable.
+
+Key implementation areas:
+- `services/*` – business logic, transactions, caching.
+- `config/*` – async executor, caching, actuator/metrics setup.
+- `aop/LoggingAspect` – cross-cutting logging.
+- `metrics/OrderMetricsConfig` – Micrometer metrics.
+- `notification/EmailNotification` – async background tasks.
+- `models/Inventory` – optimistic locking.
+
+### 2. Asynchronous Processing (Epic 2)
+
+**Async Infrastructure**
+- `config/AsyncConfig` enables Spring’s `@Async` support and configures a `ThreadPoolTaskExecutor` bean.
+  - Tuned core pool size / max size / queue capacity to handle spikes without exhausting Tomcat request threads.
+  - Uses meaningful thread name prefix for easier debugging in logs.
+
+**Where async is used**
+- `notification/EmailNotification#send(NotificationDto)` is annotated with `@Async("Executor")`.
+  - Called from `OrderService#createOrder` after the order is persisted.
+  - Offloads email rendering + SMTP I/O to a background thread so the HTTP response returns quickly.
+  - Failures are logged; they do not roll back the order transaction.
+
+**Why only some tasks are async**
+- Order creation, cart updates, and inventory changes stay **synchronous and transactional** to keep data consistent.
+- Async is reserved for non-critical, I/O-bound work (notifications, potential future audit logging), which matches industry practice for high-traffic systems.
+
+**Impact on responsiveness**
+- Under load, endpoints that used to block on external I/O (like email) now complete faster because the request thread does not wait for those tasks.
+- Thread pool isolation prevents slow external services from degrading the entire API.
+
+### 3. Concurrency & Thread Safety (Epic 3)
+
+**Transactional boundaries**
+- `OrderService#createOrder` and `OrderService#updateOrderStatus`:
+  - Annotated with `@Transactional(propagation = REQUIRED, isolation = REPEATABLE_READ)`.
+  - Within a single transaction, the service:
+    - Validates order items.
+    - Fetches all products and inventories in batch.
+    - Checks stock and decrements inventory.
+    - Persists the `Orders` aggregate and order items.
+  - Caching annotations (`@Caching`, `@CachePut`, `@CacheEvict`) keep `order`, `ordersByUser`, and `orders` caches consistent after writes.
+
+- `CartService` methods (`createCart`, `addItemToCart`, `removeItemFromCart`, `clearCart`):
+  - Use `@Transactional(propagation = REQUIRED)` so all cart changes in a request are atomic.
+  - `clearCart` evicts the `activeUserCart` cache to avoid stale carts.
+
+**Optimistic locking on inventory**
+- `models/Inventory` includes a JPA `@Version` field.
+  - Concurrent updates to the same inventory row will fail fast with `OptimisticLockException` if a conflicting write occurs.
+  - This prevents “lost updates” where two orders silently overwrite each other’s stock changes.
+
+**Concurrency-safe validation helpers**
+- `OrderService#validateStock(Inventory inventory, int requestedQty, Long productId)` and
+  `CartService#validateStockAvailability(Inventory inventory, int requestedQuantity)`:
+  - Perform stock checks inside active transactions using fresh DB state.
+  - Guard against negative stock and invalid quantities for each order/cart item.
+
+**Thread-safe service design**
+- Services are stateless Spring singletons; they do not hold per-request mutable state in fields.
+- All stateful work (entities, DTOs, collections) is request-scoped and confined to method variables.
+- Shared infrastructure (executor, caches, MeterRegistry) is configured once and not mutated at runtime.
+
+This matches typical cloud-ready Spring Boot guidance: stateless services + transactional database + optimistic locking for hot rows.
+
+### 4. Data & Algorithmic Optimization (Epic 4)
+
+**Database-side sorting and pagination**
+- Controllers expose paginated endpoints using `Pageable` for products, orders, users, and reviews.
+- Repositories (e.g. `OrdersRepository`, `ProductRepository`, `ReviewRepository`) accept `Pageable` and rely on database `ORDER BY` instead of manual in-memory sorting.
+  - Example: order listings sorted by `createdAt` or `status` are delegated to the database.
+- This offloads sorting and pagination work to the DB engine, which is optimized and index-aware, improving memory usage and latency.
+
+**Batching and efficient loops**
+- `OrderService#createOrder`:
+  - Gathers all product IDs from the request once, then calls `productRepository.findByIdIn(productIds)` and `inventoryRepository.findByProductIdIn(productIds)`.
+  - Builds `Map<Long, Product>` and `Map<Long, Inventory>` so the main loop over `OrderItemRequest`s is O(n) with only map lookups.
+  - The for-loop over items performs:
+    - Lookups from the pre-built maps (constant time per item).
+    - A single validation and inventory decrement per item.
+    - Construction of `OrderItem` objects and accumulation of a running total.
+- This removes repeated per-item database calls (no N+1 pattern) and keeps the CPU-efficient part localized in memory.
+
+**Dynamic queries via Specifications**
+- `OrderSpecification`, `ProductSpecification`, `ReviewSpecification` implement JPA Criteria-based filtering.
+  - Used by services to support flexible search (by user, status, date range, category, rating, etc.).
+  - The generated SQL is index-friendly and avoids loading large tables into memory.
+
+**Entity graphs and N+1 avoidance**
+- Repositories apply `@EntityGraph` where read-heavy paths need related entities eagerly (e.g., cart with items, orders with items and user).
+  - Reduces total queries from “1 + N” to “1” in typical page loads.
+
+### 5. Metrics, Logging, and Observability (Epic 5)
+
+**Micrometer metrics**
+- `metrics/OrderMetricsConfig` registers:
+  - A Micrometer `Gauge` named `ecom_orders_total` via `MeterRegistry`.
+  - The gauge reads from `OrdersRepository.count()`.
+- When Spring Boot Actuator is enabled, this metric appears under the `/actuator/metrics` endpoint, allowing dashboards (Prometheus, Grafana, etc.) to track order counts over time.
+
+**HTTP and system metrics via Actuator**
+- Spring Boot Actuator is included and configured in `application-*.properties`.
+  - Provides built-in metrics: HTTP request latency, JVM/memory, thread pools, uptime, DB connection pool usage.
+  - These can be scraped and visualized for stress tests and performance regressions.
+
+**Cross-cutting logging with AOP**
+- `aop/LoggingAspect` defines a `@Pointcut` on `com.amalitech.demo.services..*` and applies:
+  - `@Before` advice logging method name and arguments.
+  - `@After` advice logging completion.
+  - `@AfterThrowing` advice logging exceptions.
+  - `@Around` advice measuring execution time and logging duration in milliseconds.
+- This gives consistent timing logs across service methods without modifying each method’s business logic, a common production pattern for latency analysis.
+
+**Why AOP + logging instead of manual logs**
+- Keeps service methods clean and focused on domain logic.
+- Ensures every service call gets a uniform log format, which is easier to parse and analyze.
+- Minimizes the risk of missing logs in new or refactored methods.
+
+### 6. Caching Strategy (Cross-epic)
+
+**Cache configuration**
+- `config/CacheConfig` configures Caffeine caches for hot read paths:
+  - Products: `product`, `productsByCategory`, paged `products`.
+  - Categories: `category`, `allcategories`.
+  - Users: `user`, `userCount`.
+  - Cart: `activeUserCart`.
+  - Orders: `order`, `ordersByUser`, `orders`.
+  - Token blacklist and review-related entries.
+
+**Cache usage in services**
+- Read methods use `@Cacheable` to store results; write methods use `@CachePut` and `@CacheEvict` to keep caches fresh.
+- Examples:
+  - `OrderService#getOrderById` caches single orders.
+  - `OrderService#getOrderByUserId` caches per-user order lists.
+  - `CartService#createCart` and cart mutations evict `activeUserCart` to avoid stale carts.
+
+This design improves latency for common queries while keeping cache invalidation aligned with write operations.
+
+### 7. Summary of Requirements vs Implementation
+
+- **Async programming**: Implemented via `AsyncConfig` and `@Async` on email notifications; critical paths kept synchronous and transactional.
+- **Concurrency & thread safety**: Achieved with transactional service methods, optimistic locking on `Inventory`, stateless service beans, and validation guards.
+- **Algorithmic optimization**: Batch fetching, map-based lookups, database-side sorting/pagination, and dynamic Specifications replace naive loops and in-memory sorting.
+- **Metrics & reporting**: Micrometer + Actuator for runtime metrics, AOP logging for execution timing, and performance documentation under `docs/performance` support profiling and reporting.
+
+These choices follow industry standards for high-traffic Spring Boot e-commerce systems: keep invariants strongly consistent, isolate background work with async, rely on the database for heavy data operations, and make performance observable.

@@ -25,6 +25,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.*;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -82,8 +83,7 @@ public class UserService implements UserServiceInterface {
 
     @Override
     @Cacheable(value = "users", keyGenerator = "userKeyGenerator")
-    public Page<UserResponse> getAllUsers(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("username").ascending());
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
         Page<User> page = userRepository.findAll(pageable);
         List<User> content = page.getContent();
 
@@ -153,9 +153,10 @@ public class UserService implements UserServiceInterface {
 
     @Override
     public LoginResponse loginUser(UserLoginRequest userRequest, HttpServletResponse response) {
-        try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.email(), userRequest.password()));
+
             if (authentication.isAuthenticated()) {
+
                 CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
                 User user = userDetails.getUser();
                 Map<String, String> tokens = jwtService.generateToken(user);
@@ -166,12 +167,9 @@ public class UserService implements UserServiceInterface {
 
                 return new LoginResponse(accessToken, userMapper.toResponse(user));
             } else {
-                throw new IllegalArgumentException("Invalid credentials");
+                throw new BadCredentialsException("Invalid credentials");
             }
-        } catch (Exception e) {
-            log.error("[LOGIN] Login failed: {}", e.getMessage());
-            throw e;
-        }
+
     }
 
     @Override

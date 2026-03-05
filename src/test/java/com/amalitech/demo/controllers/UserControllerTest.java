@@ -89,7 +89,8 @@ public class UserControllerTest {
                 PageRequest.of(Math.max(0, pageNumber - 1), pageSize),
                 userResponses.size()
         );
-        when(userService.getAllUsers(pageNumber, pageSize)).thenReturn(page);
+        PageRequest pageable = PageRequest.of(0,10);
+        when(userService.getAllUsers(pageable)).thenReturn(page);
 
         mockMvc.perform(get("/api/v1/users")
                         .param("page", "1")

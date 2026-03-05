@@ -18,7 +18,7 @@ public interface UserServiceInterface {
 
     User getUserByIdForReview(Long id);
 
-    Page<UserResponse> getAllUsers(int pageNumber, int pageSize);
+    Page<UserResponse> getAllUsers(Pageable pageable);
 
     UserResponse updateUser(Long id, UserRequest userRequest);
 

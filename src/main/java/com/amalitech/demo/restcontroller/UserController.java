@@ -50,8 +50,8 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Users retrieved",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))))
     })
-    public ResponseDto<Page<UserResponse>> getAllUsers(@RequestParam int page, @RequestParam int size) {
-        Page<UserResponse> users = userService.getAllUsers(page, size);
+    public ResponseDto<Page<UserResponse>> getAllUsers(@PageableDefault(size = 10) Pageable page) {
+        Page<UserResponse> users = userService.getAllUsers(page);
         return new ResponseDto<>(HttpStatus.OK, "users retrieved", users);
     }
 

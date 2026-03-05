@@ -92,8 +92,12 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    @Caching(put = {@CachePut(value = "user", key = "#id"),}, evict = {@CacheEvict(value = "users", allEntries = true)}
-
+    @Caching(
+            put = { @CachePut(value = "user", key = "#id") },
+            evict = {
+                    @CacheEvict(value = "users", allEntries = true),
+                    @CacheEvict(value = "userAuth", key = "#result.email()")
+            }
     )
     @Transactional
     public UserResponse updateUser(Long id, UserRequest userRequest) {

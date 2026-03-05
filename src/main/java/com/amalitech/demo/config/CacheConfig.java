@@ -42,8 +42,7 @@ public class CacheConfig {
                 "reviewsByUser",
                 "reviews",
                 "reviewsByProduct",
-                "users",
-                "userAuth"
+                "users"
         );
 
         caffeineCacheManager.setCaffeine(Caffeine.newBuilder()
@@ -61,7 +60,13 @@ public class CacheConfig {
                 .recordStats()
                 .build();
 
+        Cache<Object, Object> authCache = Caffeine.newBuilder()
+                .expireAfterWrite(10, TimeUnit.MINUTES)
+                .maximumSize(1000)
+                .build();
+
         caffeineCacheManager.registerCustomCache("tokenBlacklist", tokenCache);
+        caffeineCacheManager.registerCustomCache("userAuth", authCache);
 
         return caffeineCacheManager;
     }

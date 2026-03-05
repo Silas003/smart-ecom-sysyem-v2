@@ -1,0 +1,31 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1772659007099,193,01_Login,200,,Load Test - Users 1-1,text,true,,1129,237,2,2,http://localhost:8080/api/v1/users/login,192,0,3
+1772659007978,187,01_Login,200,,Load Test - Users 1-2,text,true,,1129,237,3,3,http://localhost:8080/api/v1/users/login,186,0,2
+1772659008248,48,Add To Cart,201,,Load Test - Users 1-1,text,true,,590,504,3,3,http://localhost:8080/api/v1/carts/users/18/items,47,0,1
+1772659008839,196,01_Login,200,,Load Test - Users 1-3,text,true,,1129,237,3,3,http://localhost:8080/api/v1/users/login,196,0,1
+1772659009742,45,Add To Cart,201,,Load Test - Users 1-2,text,true,,591,504,5,5,http://localhost:8080/api/v1/carts/users/19/items,45,0,1
+1772659009767,177,01_Login,200,,Load Test - Users 1-4,text,true,,1129,237,4,4,http://localhost:8080/api/v1/users/login,176,0,2
+1772659010047,48,Add To Cart,201,,Load Test - Users 1-3,text,true,,591,503,4,4,http://localhost:8080/api/v1/carts/users/20/items,47,0,1
+1772659010292,51,Add To Cart,201,,Load Test - Users 1-4,text,true,,592,504,3,3,http://localhost:8080/api/v1/carts/users/21/items,51,0,2
+1772659010373,183,01_Login,200,,Load Test - Users 1-6,text,true,,1129,237,3,3,http://localhost:8080/api/v1/users/login,182,0,3
+1772659011143,173,01_Login,200,,Load Test - Users 1-5,text,true,,1129,237,4,4,http://localhost:8080/api/v1/users/login,172,0,2
+1772659011333,187,01_Login,200,,Load Test - Users 1-7,text,true,,1129,237,4,4,http://localhost:8080/api/v1/users/login,187,0,1
+1772659011564,49,Add To Cart,201,,Load Test - Users 1-5,text,true,,592,504,4,4,http://localhost:8080/api/v1/carts/users/22/items,48,0,2
+1772659011708,58,Add To Cart,201,,Load Test - Users 1-7,text,true,,591,504,4,4,http://localhost:8080/api/v1/carts/users/24/items,58,0,1
+1772659012054,48,Add To Cart,201,,Load Test - Users 1-6,text,true,,590,504,3,3,http://localhost:8080/api/v1/carts/users/23/items,47,0,1
+1772659012605,202,01_Login,200,,Load Test - Users 1-10,text,true,,1135,238,3,3,http://localhost:8080/api/v1/users/login,202,0,1
+1772659012973,179,01_Login,200,,Load Test - Users 1-8,text,true,,1129,237,4,4,http://localhost:8080/api/v1/users/login,179,0,1
+1772659013462,183,01_Login,200,,Load Test - Users 1-9,text,true,,1129,237,4,4,http://localhost:8080/api/v1/users/login,182,0,2
+1772659013782,51,Add To Cart,201,,Load Test - Users 1-10,text,true,,591,505,5,5,http://localhost:8080/api/v1/carts/users/27/items,50,0,2
+1772659014404,56,Add To Cart,201,,Load Test - Users 1-9,text,true,,588,504,5,5,http://localhost:8080/api/v1/carts/users/26/items,56,0,2
+1772659014567,50,Add To Cart,201,,Load Test - Users 1-8,text,true,,591,504,4,4,http://localhost:8080/api/v1/carts/users/25/items,49,0,1
+1772659014692,174,01_Login,200,,Load Test - Users 1-11,text,true,,1135,238,3,3,http://localhost:8080/api/v1/users/login,174,0,2
+1772659015045,190,01_Login,200,,Load Test - Users 1-12,text,true,,1135,238,4,4,http://localhost:8080/api/v1/users/login,189,0,1
+1772659015204,167,01_Login,200,,Load Test - Users 1-13,text,true,,1129,237,4,4,http://localhost:8080/api/v1/users/login,166,0,1
+1772659015504,190,01_Login,200,,Load Test - Users 1-14,text,true,,1129,237,4,4,http://localhost:8080/api/v1/users/login,189,0,2
+1772659016110,50,Add To Cart,201,,Load Test - Users 1-13,text,true,,591,504,5,5,http://localhost:8080/api/v1/carts/users/18/items,50,0,2
+1772659016394,40,Add To Cart,201,,Load Test - Users 1-11,text,true,,592,506,4,4,http://localhost:8080/api/v1/carts/users/28/items,40,0,1
+1772659016755,44,Add To Cart,201,,Load Test - Users 1-14,text,true,,589,504,3,3,http://localhost:8080/api/v1/carts/users/19/items,44,0,1
+1772659016792,52,Add To Cart,201,,Load Test - Users 1-12,text,true,,592,506,2,2,http://localhost:8080/api/v1/carts/users/29/items,52,0,1
+1772659017116,186,01_Login,200,,Load Test - Users 1-15,text,true,,1129,237,1,1,http://localhost:8080/api/v1/users/login,185,0,1
+1772659018227,40,Add To Cart,201,,Load Test - Users 1-15,text,true,,590,504,1,1,http://localhost:8080/api/v1/carts/users/20/items,39,0,1

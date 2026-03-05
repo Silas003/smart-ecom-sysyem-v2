@@ -36,4 +36,8 @@ public class UserRequest {
     @Schema(description = "Role for the user: admin | customer | seller", example = "customer")
     private String userRole;
 
+    @NotBlank(message="account provider cannot be blank")
+    @Schema(description = "account identity provider: local", example = "local")
+    private String provider;
+
 }

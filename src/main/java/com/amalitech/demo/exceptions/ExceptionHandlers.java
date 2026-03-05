@@ -6,6 +6,7 @@ import org.springframework.aop.AopInvocationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -94,6 +95,18 @@ public class ExceptionHandlers {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", details);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ResponseEntity<ResponseDto<Object>> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
+        Map<String, Object> details = new HashMap<>();
+        details.put("timestamp", LocalDateTime.now());
+        details.put("path", request != null ? request.getDescription(false) : "");
+        details.put("code", "ACCESS_DENIED");
+        details.put("error", HttpStatus.FORBIDDEN.getReasonPhrase());
+        return build(HttpStatus.FORBIDDEN,
+                "You do not have permission to access this resource.",
+                details);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseDto<Object>> handleAllExceptions(Exception ex, WebRequest request){

@@ -9,14 +9,12 @@ import com.amalitech.demo.models.Product;
 import com.amalitech.demo.repository.InventoryRepository;
 import com.amalitech.demo.services.interfaces.InventoryServiceInterface;
 import com.amalitech.demo.services.interfaces.ProductServiceInterface;
-import com.amalitech.demo.utils.Sorter;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,13 +24,11 @@ public class InventoryService implements InventoryServiceInterface {
     private final InventoryRepository inventoryRepository;
     private final ProductServiceInterface productService;
     private final InventoryMapper inventoryMapper;
-    private final Sorter<Inventory> sorter;
 
-    public InventoryService(InventoryRepository inventoryRepository, ProductServiceInterface productService, InventoryMapper inventoryMapper, Sorter<Inventory> sorter) {
+    public InventoryService(InventoryRepository inventoryRepository, ProductServiceInterface productService, InventoryMapper inventoryMapper) {
         this.inventoryRepository = inventoryRepository;
         this.productService = productService;
         this.inventoryMapper = inventoryMapper;
-        this.sorter = sorter;
     }
 
     @Override
@@ -60,10 +56,9 @@ public class InventoryService implements InventoryServiceInterface {
     @Override
     @Transactional(readOnly = true)
     public List<InventoryResponse> getAllInventories() {
-        List<Inventory> list = inventoryRepository.findAll();
+        List<Inventory> list = inventoryRepository.findAllByOrderByProduct_IdAsc();
         if (list == null || list.isEmpty()) return List.of();
-        List<Inventory> sorted = sorter.sort(list, Comparator.comparing(i -> i.getProduct() == null ? null : i.getProduct().getId(), Comparator.nullsLast(Long::compareTo)));
-        return sorted.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
+        return list.stream().map(inventoryMapper::toResponse).collect(Collectors.toList());
     }
 
     @Override
@@ -89,5 +84,10 @@ public class InventoryService implements InventoryServiceInterface {
         Inventory inventory = inventoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Inventory not found"));
 
         inventoryRepository.deleteById(inventory.getId());
+    }
+
+    @Override
+    public Inventory getInventoryByProductId(Long productId) {
+        return inventoryRepository.findByProduct_Id(productId);
     }
 }

@@ -43,6 +43,14 @@ public class CartItems{
 
     public CartItems(){};
 
+    public CartItems(Cart cart, Product product, int i) {
+        this.cart = cart;
+        this.product = product;
+        this.quantity = i;
+        this.unitPrice = product.getPrice();
+        this.totalPrice = product.getPrice() * i;
+    }
+
     @PrePersist
     public void onCreate(){
         this.updatedAt = LocalDateTime.now();

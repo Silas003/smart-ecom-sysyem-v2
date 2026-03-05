@@ -9,6 +9,7 @@ import com.amalitech.demo.models.User;
 import com.amalitech.demo.repository.ReviewsRepository;
 import com.amalitech.demo.services.interfaces.ReviewsServiceInterface;
 import com.amalitech.demo.services.specification.ReviewSpecification;
+import jakarta.transaction.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -42,7 +43,13 @@ public class ReviewsService implements ReviewsServiceInterface {
     }
 
     @Override
-    @Caching(evict = {@CacheEvict(value = "review", key = "result.id"), @CacheEvict(value = "reviewsByProduct", allEntries = true), @CacheEvict(value = "reviewsByUser", allEntries = true), @CacheEvict(value = "averageRating", allEntries = true)})
+    @Caching(
+            put = {@CachePut(value = "review", key ="#result.id"),
+                    @CachePut(value = "reviewsByProduct", key = "#request.productId"),
+                    @CachePut(value = "reviewsByUser", key = "#request.userId"),},
+            evict = {
+                    @CacheEvict(value = "averageRating",key = "#request.productId")})
+    @Transactional
     public ReviewResponse createReview(ReviewRequest request) {
         Product product = productService.getProductById(request.getProductId());
         User user = userService.getUserByIdForReview(request.getUserId());

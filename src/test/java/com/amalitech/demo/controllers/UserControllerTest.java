@@ -5,6 +5,7 @@ import com.amalitech.demo.dto.Provider;
 import com.amalitech.demo.dto.response.UserResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.UserMapper;
+import com.amalitech.demo.notification.EmailNotification;
 import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.restcontroller.UserController;
 import com.amalitech.demo.security.JwtAuthenticationFilter;
@@ -40,7 +41,6 @@ public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-
     @MockitoBean
     private UserMapper userMapper;
 
@@ -55,6 +55,9 @@ public class UserControllerTest {
 
     @MockitoBean
     private UserRepository userRepository;
+
+    @MockitoBean
+    private EmailNotification emailNotification;
 
     @Test
     @WithMockUser(roles = {"admin", "customer"})
@@ -86,7 +89,8 @@ public class UserControllerTest {
                 PageRequest.of(Math.max(0, pageNumber - 1), pageSize),
                 userResponses.size()
         );
-        when(userService.getAllUsers(pageNumber, pageSize)).thenReturn(page);
+        PageRequest pageable = PageRequest.of(0,10);
+        when(userService.getAllUsers(pageable)).thenReturn(page);
 
         mockMvc.perform(get("/api/v1/users")
                         .param("page", "1")

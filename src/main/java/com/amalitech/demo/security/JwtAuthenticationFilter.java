@@ -1,5 +1,6 @@
 package com.amalitech.demo.security;
 
+import com.amalitech.demo.dto.TokenValidationResult;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,40 +40,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String token = JwtUtil.extractTokenFromRequest(request);
+
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            String token = authHeader.substring(7);
-            String email = jwtService.extractSubject(token);
-
-            if (email == null) {
-                throw new BadCredentialsException("Invalid token: cannot extract subject");
-            }
 
             if (tokenBlacklistService.isTokenBlacklisted(token)) {
                 throw new BadCredentialsException("Token has been revoked");
             }
 
-            if (!jwtService.isTokenValid(token, email)) {
-                throw new BadCredentialsException("Token expired or invalid");
+            TokenValidationResult validationResult = jwtService.validateAndExtract(token);
+
+            if(!validationResult.isValid()){
+                throw new BadCredentialsException("Invalid or expired token");
             }
 
-            // Extract roles from JWT claims (NO DATABASE QUERY)
-            List<String> rolesFromToken = jwtService.extractRolesFromToken(token);
-            if (rolesFromToken == null || rolesFromToken.isEmpty()) {
-                log.warn("No roles found in token for user: {}", email);
-                rolesFromToken = List.of("ROLE_USER");
-            }
-
-            List<SimpleGrantedAuthority> authorities = rolesFromToken.stream()
+            List<SimpleGrantedAuthority> authorities = validationResult.getRoles().stream()
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
 
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(email, null, authorities);
+                    new UsernamePasswordAuthenticationToken(validationResult.getSubject(), null, authorities);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 

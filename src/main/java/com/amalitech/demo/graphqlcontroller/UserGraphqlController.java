@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -37,8 +39,9 @@ public class UserGraphqlController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))))
     })
         public List<UserResponse> users(@Argument int page, @Argument int size) {
-                var p = userService.getAllUsers(page,size);
-                var items = p.getContent();
+            PageRequest pageable = PageRequest.of(page, size);
+                Page<UserResponse> users = userService.getAllUsers(pageable);
+                List<UserResponse> items = users.getContent();
                 return items;
         }
 

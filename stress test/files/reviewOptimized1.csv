@@ -1,0 +1,601 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1772664841750,740,01_Login,500,,Load Test - Users 1-5,text,false,Test failed: code expected to contain /200/,1086,237,12,12,http://localhost:8080/api/v1/users/login,736,0,3
+1772664842453,37,01_Login,500,,Load Test - Users 1-1,text,false,Test failed: code expected to contain /200/,1086,237,12,12,http://localhost:8080/api/v1/users/login,33,0,1
+1772664842372,118,01_Login,500,,Load Test - Users 1-4,text,false,Test failed: code expected to contain /200/,1086,237,12,12,http://localhost:8080/api/v1/users/login,114,0,1
+1772664842697,19,01_Login,500,,Load Test - Users 1-2,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,17,0,1
+1772664842748,19,01_Login,500,,Load Test - Users 1-14,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,17,0,1
+1772664842928,16,01_Login,500,,Load Test - Users 1-3,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,15,0,1
+1772664842978,17,01_Login,500,,Load Test - Users 1-7,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,16,0,1
+1772664843060,18,01_Login,500,,Load Test - Users 1-11,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,17,0,1
+1772664843059,35,Create Review,401,,Load Test - Users 1-5,text,false,,631,314,16,16,http://localhost:8080/api/v1/reviews,35,0,1
+1772664843131,13,Create Review,401,,Load Test - Users 1-11,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,13,0,1
+1772664843177,18,01_Login,500,,Load Test - Users 1-8,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,17,0,1
+1772664843294,10,Create Review,401,,Load Test - Users 1-4,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,10,0,1
+1772664843289,18,01_Login,500,,Load Test - Users 1-9,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,16,0,1
+1772664843308,11,01_Login,500,,Load Test - Users 1-13,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,11,0,0
+1772664843413,10,Create Review,401,,Load Test - Users 1-8,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,10,0,1
+1772664843404,19,01_Login,500,,Load Test - Users 1-10,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,17,0,1
+1772664843468,17,01_Login,500,,Load Test - Users 1-17,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,16,0,1
+1772664843517,15,01_Login,500,,Load Test - Users 1-15,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,13,0,1
+1772664843531,9,Create Review,401,,Load Test - Users 1-3,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,8,0,1
+1772664843612,7,Create Review,401,,Load Test - Users 1-2,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,0
+1772664843682,9,Create Review,401,,Load Test - Users 1-7,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,9,0,0
+1772664843890,9,Create Review,401,,Load Test - Users 1-14,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,9,0,0
+1772664844034,13,01_Login,500,,Load Test - Users 1-12,text,false,Test failed: code expected to contain /200/,1085,238,15,15,http://localhost:8080/api/v1/users/login,12,0,1
+1772664844060,9,Create Review,401,,Load Test - Users 1-9,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,9,0,1
+1772664844062,9,Create Review,401,,Load Test - Users 1-17,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,9,0,1
+1772664844067,16,01_Login,500,,Load Test - Users 1-16,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,15,0,1
+1772664844081,9,Create Review,401,,Load Test - Users 1-10,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,9,0,1
+1772664844075,16,01_Login,500,,Load Test - Users 1-21,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,15,0,1
+1772664844082,13,01_Login,500,,Load Test - Users 1-22,text,false,Test failed: code expected to contain /200/,1086,238,13,13,http://localhost:8080/api/v1/users/login,12,0,1
+1772664844243,10,01_Login,500,,Load Test - Users 1-6,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664844406,10,Create Review,401,,Load Test - Users 1-21,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,10,0,1
+1772664844445,17,01_Login,500,,Load Test - Users 1-18,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,15,0,1
+1772664844495,10,Create Review,401,,Load Test - Users 1-1,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,10,0,1
+1772664844702,16,01_Login,500,,Load Test - Users 1-27,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,15,0,1
+1772664844728,14,01_Login,500,,Load Test - Users 1-20,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,12,0,0
+1772664844804,10,Create Review,401,,Load Test - Users 1-22,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,10,0,1
+1772664844804,10,Create Review,401,,Load Test - Users 1-27,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,10,0,1
+1772664844991,17,01_Login,500,,Load Test - Users 1-29,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,15,0,1
+1772664845000,11,Create Review,401,,Load Test - Users 1-15,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,11,0,1
+1772664845001,10,Create Review,401,,Load Test - Users 1-13,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,10,0,1
+1772664845082,8,Create Review,401,,Load Test - Users 1-29,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,8,0,1
+1772664845093,8,Create Review,401,,Load Test - Users 1-20,text,false,,631,313,13,13,http://localhost:8080/api/v1/reviews,8,0,1
+1772664845112,13,01_Login,500,,Load Test - Users 1-24,text,false,Test failed: code expected to contain /200/,1086,238,13,13,http://localhost:8080/api/v1/users/login,12,0,1
+1772664845216,15,01_Login,500,,Load Test - Users 1-26,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,14,0,1
+1772664845264,6,Create Review,401,,Load Test - Users 1-16,text,false,,631,312,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664845304,8,Create Review,401,,Load Test - Users 1-12,text,false,,630,314,13,13,http://localhost:8080/api/v1/reviews,8,0,1
+1772664845368,14,01_Login,500,,Load Test - Users 1-30,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,13,0,0
+1772664845521,7,Create Review,401,,Load Test - Users 1-6,text,false,,631,314,14,14,http://localhost:8080/api/v1/reviews,7,0,1
+1772664845623,14,01_Login,500,,Load Test - Users 1-19,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,13,0,1
+1772664845861,15,01_Login,500,,Load Test - Users 1-25,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,13,0,1
+1772664845871,14,01_Login,500,,Load Test - Users 1-36,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,13,0,1
+1772664845961,15,01_Login,500,,Load Test - Users 1-28,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,14,0,1
+1772664846003,13,01_Login,500,,Load Test - Users 1-32,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,12,0,1
+1772664846028,11,01_Login,500,,Load Test - Users 1-23,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,10,0,1
+1772664846167,13,01_Login,500,,Load Test - Users 1-34,text,false,Test failed: code expected to contain /200/,1086,238,18,18,http://localhost:8080/api/v1/users/login,12,0,0
+1772664846225,14,01_Login,500,,Load Test - Users 1-33,text,false,Test failed: code expected to contain /200/,1085,237,18,18,http://localhost:8080/api/v1/users/login,13,0,1
+1772664846296,8,Create Review,401,,Load Test - Users 1-24,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,8,0,1
+1772664846299,11,01_Login,500,,Load Test - Users 1-37,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,11,0,0
+1772664846315,8,Create Review,401,,Load Test - Users 1-18,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,8,0,1
+1772664846473,8,Create Review,401,,Load Test - Users 1-37,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,8,0,0
+1772664846481,8,Create Review,401,,Load Test - Users 1-25,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,8,0,1
+1772664846481,13,01_Login,500,,Load Test - Users 1-41,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,12,0,0
+1772664846675,6,Create Review,401,,Load Test - Users 1-30,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,6,0,1
+1772664846717,14,01_Login,500,,Load Test - Users 1-38,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,13,0,1
+1772664846748,6,Create Review,401,,Load Test - Users 1-28,text,false,,631,312,17,17,http://localhost:8080/api/v1/reviews,6,0,1
+1772664846821,8,Create Review,401,,Load Test - Users 1-26,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,8,0,1
+1772664846826,7,Create Review,401,,Load Test - Users 1-34,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664846825,12,01_Login,500,,Load Test - Users 1-31,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,11,0,1
+1772664847077,8,Create Review,401,,Load Test - Users 1-23,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,8,0,1
+1772664847106,8,Create Review,401,,Load Test - Users 1-31,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,8,0,1
+1772664847149,8,Create Review,401,,Load Test - Users 1-41,text,false,,630,313,15,15,http://localhost:8080/api/v1/reviews,8,0,1
+1772664847242,6,01_Login,500,,Load Test - Users 1-39,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,6,0,1
+1772664847327,6,01_Login,500,,Load Test - Users 1-35,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,5,0,0
+1772664847502,7,Create Review,401,,Load Test - Users 1-36,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,7,0,0
+1772664847554,13,01_Login,500,,Load Test - Users 1-46,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,12,0,1
+1772664847579,14,01_Login,500,,Load Test - Users 1-47,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,13,0,1
+1772664847610,7,Create Review,401,,Load Test - Users 1-39,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,7,0,1
+1772664847683,13,01_Login,500,,Load Test - Users 1-42,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,12,0,1
+1772664847698,7,Create Review,401,,Load Test - Users 1-46,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,7,0,1
+1772664847759,15,01_Login,500,,Load Test - Users 1-48,text,false,Test failed: code expected to contain /200/,1084,238,15,15,http://localhost:8080/api/v1/users/login,14,0,1
+1772664847771,13,01_Login,500,,Load Test - Users 1-40,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,12,0,1
+1772664847804,8,Create Review,401,,Load Test - Users 1-35,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,8,0,1
+1772664847956,9,01_Login,500,,Load Test - Users 1-44,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,8,0,0
+1772664847966,11,01_Login,500,,Load Test - Users 1-45,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,10,0,1
+1772664848051,8,Create Review,401,,Load Test - Users 1-32,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,8,0,1
+1772664848112,7,Create Review,401,,Load Test - Users 1-38,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,7,0,0
+1772664848200,8,Create Review,401,,Load Test - Users 1-19,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,8,0,1
+1772664848248,12,01_Login,500,,Load Test - Users 1-50,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,12,0,1
+1772664848310,11,01_Login,500,,Load Test - Users 1-51,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,10,0,0
+1772664848351,7,Create Review,401,,Load Test - Users 1-42,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,7,0,1
+1772664848376,13,01_Login,500,,Load Test - Users 1-43,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,12,0,1
+1772664848441,11,01_Login,500,,Load Test - Users 1-49,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,11,0,1
+1772664848461,6,Create Review,401,,Load Test - Users 1-48,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664848556,8,Create Review,401,,Load Test - Users 1-33,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,8,0,1
+1772664848655,6,Create Review,401,,Load Test - Users 1-50,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664848682,11,01_Login,500,,Load Test - Users 1-53,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664848876,8,Create Review,401,,Load Test - Users 1-47,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,8,0,1
+1772664848884,8,Create Review,401,,Load Test - Users 1-43,text,false,,630,313,15,15,http://localhost:8080/api/v1/reviews,8,0,1
+1772664848929,9,Create Review,401,,Load Test - Users 1-49,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,9,0,1
+1772664848964,14,01_Login,500,,Load Test - Users 1-52,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,13,0,1
+1772664849011,9,Create Review,401,,Load Test - Users 1-40,text,false,,631,314,14,14,http://localhost:8080/api/v1/reviews,9,0,1
+1772664849106,7,01_Login,500,,Load Test - Users 1-55,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,6,0,1
+1772664849165,7,Create Review,401,,Load Test - Users 1-55,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,7,0,0
+1772664849242,6,Create Review,401,,Load Test - Users 1-45,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664849259,11,01_Login,500,,Load Test - Users 1-56,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,10,0,1
+1772664849348,7,Create Review,401,,Load Test - Users 1-51,text,false,,631,313,13,13,http://localhost:8080/api/v1/reviews,7,0,1
+1772664849407,6,Create Review,401,,Load Test - Users 1-44,text,false,,631,313,13,13,http://localhost:8080/api/v1/reviews,6,0,1
+1772664849409,13,01_Login,500,,Load Test - Users 1-57,text,false,Test failed: code expected to contain /200/,1086,237,12,12,http://localhost:8080/api/v1/users/login,12,0,1
+1772664849511,20,01_Login,500,,Load Test - Users 1-54,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,18,0,1
+1772664849665,9,Create Review,401,,Load Test - Users 1-57,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,9,0,1
+1772664849712,10,01_Login,500,,Load Test - Users 1-63,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,10,0,1
+1772664849739,12,01_Login,500,,Load Test - Users 1-60,text,false,Test failed: code expected to contain /200/,1086,238,13,13,http://localhost:8080/api/v1/users/login,12,0,1
+1772664849764,13,01_Login,500,,Load Test - Users 1-58,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,12,0,1
+1772664849836,8,Create Review,401,,Load Test - Users 1-52,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,8,0,1
+1772664849891,16,01_Login,500,,Load Test - Users 1-62,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,15,0,1
+1772664850026,23,01_Login,500,,Load Test - Users 1-64,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,21,0,1
+1772664850302,18,01_Login,500,,Load Test - Users 1-59,text,false,Test failed: code expected to contain /200/,1086,238,17,17,http://localhost:8080/api/v1/users/login,17,0,1
+1772664850320,16,Create Review,401,,Load Test - Users 1-53,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,16,0,1
+1772664850316,24,01_Login,500,,Load Test - Users 1-69,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,21,0,0
+1772664850338,7,Create Review,401,,Load Test - Users 1-59,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,7,0,1
+1772664850438,7,Create Review,401,,Load Test - Users 1-56,text,false,,631,312,16,16,http://localhost:8080/api/v1/reviews,7,0,1
+1772664850491,14,01_Login,500,,Load Test - Users 1-61,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,13,0,1
+1772664850498,14,01_Login,500,,Load Test - Users 1-67,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,13,0,1
+1772664850594,7,Create Review,401,,Load Test - Users 1-58,text,false,,630,312,16,16,http://localhost:8080/api/v1/reviews,7,0,1
+1772664850608,7,Create Review,401,,Load Test - Users 1-64,text,false,,631,312,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664850641,6,Create Review,401,,Load Test - Users 1-61,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664850703,12,01_Login,500,,Load Test - Users 1-68,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,11,0,1
+1772664850736,50,Create Review,401,,Load Test - Users 1-54,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,50,0,1
+1772664850772,16,Create Review,401,,Load Test - Users 1-62,text,false,,631,313,13,13,http://localhost:8080/api/v1/reviews,16,0,2
+1772664850784,6,Create Review,401,,Load Test - Users 1-63,text,false,,631,314,12,12,http://localhost:8080/api/v1/reviews,6,0,0
+1772664850999,10,01_Login,500,,Load Test - Users 1-65,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,9,0,1
+1772664851010,5,Create Review,401,,Load Test - Users 1-60,text,false,,631,313,13,13,http://localhost:8080/api/v1/reviews,5,0,1
+1772664851083,11,01_Login,500,,Load Test - Users 1-66,text,false,Test failed: code expected to contain /200/,1085,237,12,12,http://localhost:8080/api/v1/users/login,10,0,0
+1772664851299,6,Create Review,401,,Load Test - Users 1-69,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664851356,10,01_Login,500,,Load Test - Users 1-76,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664851504,12,01_Login,500,,Load Test - Users 1-70,text,false,Test failed: code expected to contain /200/,1085,238,15,15,http://localhost:8080/api/v1/users/login,11,0,1
+1772664851535,13,01_Login,500,,Load Test - Users 1-75,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,12,0,1
+1772664851553,10,01_Login,500,,Load Test - Users 1-71,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,9,0,1
+1772664851566,7,Create Review,401,,Load Test - Users 1-67,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664851664,8,Create Review,401,,Load Test - Users 1-68,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,8,0,1
+1772664851674,10,01_Login,500,,Load Test - Users 1-72,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664851864,6,Create Review,401,,Load Test - Users 1-76,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,0
+1772664852008,12,01_Login,500,,Load Test - Users 1-73,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,11,0,1
+1772664852203,12,01_Login,500,,Load Test - Users 1-74,text,false,Test failed: code expected to contain /200/,1085,237,17,17,http://localhost:8080/api/v1/users/login,11,0,1
+1772664852220,11,01_Login,500,,Load Test - Users 1-84,text,false,Test failed: code expected to contain /200/,1086,238,17,17,http://localhost:8080/api/v1/users/login,10,0,1
+1772664852307,14,01_Login,500,,Load Test - Users 1-81,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,13,0,1
+1772664852386,8,Create Review,401,,Load Test - Users 1-66,text,false,,631,314,18,18,http://localhost:8080/api/v1/reviews,8,0,1
+1772664852406,11,01_Login,500,,Load Test - Users 1-79,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,10,0,1
+1772664852505,12,01_Login,500,,Load Test - Users 1-82,text,false,Test failed: code expected to contain /200/,1086,238,18,18,http://localhost:8080/api/v1/users/login,11,0,1
+1772664852533,7,Create Review,401,,Load Test - Users 1-75,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,7,0,1
+1772664852588,6,Create Review,401,,Load Test - Users 1-70,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,6,0,1
+1772664852708,5,Create Review,401,,Load Test - Users 1-82,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664852779,11,01_Login,500,,Load Test - Users 1-78,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,10,0,1
+1772664852807,11,01_Login,500,,Load Test - Users 1-77,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,11,0,0
+1772664852809,10,01_Login,500,,Load Test - Users 1-87,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,9,0,1
+1772664852837,7,Create Review,401,,Load Test - Users 1-65,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,7,0,1
+1772664852938,7,Create Review,401,,Load Test - Users 1-87,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,7,0,1
+1772664853010,9,01_Login,500,,Load Test - Users 1-80,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,9,0,1
+1772664853092,12,01_Login,500,,Load Test - Users 1-86,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,11,0,1
+1772664853200,6,Create Review,401,,Load Test - Users 1-71,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,6,0,1
+1772664853212,6,Create Review,401,,Load Test - Users 1-80,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,6,0,1
+1772664853241,7,Create Review,401,,Load Test - Users 1-73,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,7,0,1
+1772664853236,12,01_Login,500,,Load Test - Users 1-89,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,11,0,1
+1772664853276,7,Create Review,401,,Load Test - Users 1-84,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,7,0,0
+1772664853309,13,01_Login,500,,Load Test - Users 1-85,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,12,0,1
+1772664853339,12,01_Login,500,,Load Test - Users 1-88,text,false,Test failed: code expected to contain /200/,1085,237,15,15,http://localhost:8080/api/v1/users/login,11,0,1
+1772664853451,7,Create Review,401,,Load Test - Users 1-72,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,7,0,1
+1772664853537,6,Create Review,401,,Load Test - Users 1-79,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,0
+1772664853598,7,Create Review,401,,Load Test - Users 1-78,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664853706,12,01_Login,500,,Load Test - Users 1-83,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,11,0,1
+1772664853763,8,Create Review,401,,Load Test - Users 1-74,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,8,0,1
+1772664853776,11,01_Login,500,,Load Test - Users 1-94,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,10,0,0
+1772664853807,10,Create Review,401,,Load Test - Users 1-81,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,10,0,1
+1772664853823,12,01_Login,500,,Load Test - Users 1-91,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,11,0,0
+1772664853966,7,Create Review,401,,Load Test - Users 1-89,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664853988,12,01_Login,500,,Load Test - Users 1-90,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,11,0,1
+1772664854018,12,01_Login,500,,Load Test - Users 1-92,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,11,0,1
+1772664854100,7,Create Review,401,,Load Test - Users 1-83,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664854170,6,Create Review,401,,Load Test - Users 1-85,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,0
+1772664854178,6,Create Review,401,,Load Test - Users 1-86,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664854295,12,01_Login,500,,Load Test - Users 1-98,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664854324,11,01_Login,500,,Load Test - Users 1-96,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664854337,6,Create Review,401,,Load Test - Users 1-88,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664854358,10,01_Login,500,,Load Test - Users 1-95,text,false,Test failed: code expected to contain /200/,1086,238,13,13,http://localhost:8080/api/v1/users/login,10,0,1
+1772664854387,11,01_Login,500,,Load Test - Users 1-101,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,11,0,1
+1772664854464,85,01_Login,500,,Load Test - Users 1-97,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,85,0,3
+1772664854551,5,Create Review,401,,Load Test - Users 1-95,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,0
+1772664854581,7,Create Review,401,,Load Test - Users 1-77,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,7,0,1
+1772664854819,11,01_Login,500,,Load Test - Users 1-93,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,11,0,1
+1772664854844,11,01_Login,500,,Load Test - Users 1-100,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,10,0,1
+1772664854954,6,Create Review,401,,Load Test - Users 1-90,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664854961,5,Create Review,401,,Load Test - Users 1-93,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,0
+1772664854983,7,Create Review,401,,Load Test - Users 1-91,text,false,,630,313,14,14,http://localhost:8080/api/v1/reviews,7,0,1
+1772664855028,7,Create Review,401,,Load Test - Users 1-98,text,false,,630,313,13,13,http://localhost:8080/api/v1/reviews,7,0,1
+1772664855078,11,01_Login,500,,Load Test - Users 1-104,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,11,0,0
+1772664855091,7,Create Review,401,,Load Test - Users 1-101,text,false,,630,313,13,13,http://localhost:8080/api/v1/reviews,7,0,1
+1772664855231,11,01_Login,500,,Load Test - Users 1-99,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,11,0,1
+1772664855299,10,01_Login,500,,Load Test - Users 1-107,text,false,Test failed: code expected to contain /200/,1086,238,13,13,http://localhost:8080/api/v1/users/login,10,0,1
+1772664855415,10,01_Login,500,,Load Test - Users 1-103,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664855541,10,01_Login,500,,Load Test - Users 1-110,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,10,0,0
+1772664855618,6,Create Review,401,,Load Test - Users 1-96,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,0
+1772664855644,6,Create Review,401,,Load Test - Users 1-94,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664855683,10,01_Login,500,,Load Test - Users 1-102,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664855696,5,Create Review,401,,Load Test - Users 1-100,text,false,,631,312,14,14,http://localhost:8080/api/v1/reviews,5,0,0
+1772664855857,9,01_Login,500,,Load Test - Users 1-111,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664855912,11,01_Login,500,,Load Test - Users 1-109,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,11,0,1
+1772664855975,12,01_Login,500,,Load Test - Users 1-106,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,11,0,1
+1772664856173,6,Create Review,401,,Load Test - Users 1-92,text,false,,630,313,17,17,http://localhost:8080/api/v1/reviews,6,0,1
+1772664856190,12,01_Login,500,,Load Test - Users 1-112,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,11,0,1
+1772664856210,4,Create Review,401,,Load Test - Users 1-97,text,false,,631,312,16,16,http://localhost:8080/api/v1/reviews,4,0,1
+1772664856257,5,Create Review,401,,Load Test - Users 1-99,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664856312,6,Create Review,401,,Load Test - Users 1-110,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664856365,5,Create Review,401,,Load Test - Users 1-106,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664856379,10,01_Login,500,,Load Test - Users 1-108,text,false,Test failed: code expected to contain /200/,1086,238,13,13,http://localhost:8080/api/v1/users/login,10,0,1
+1772664856439,7,Create Review,401,,Load Test - Users 1-103,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664856478,10,01_Login,500,,Load Test - Users 1-105,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,10,0,1
+1772664856508,6,Create Review,401,,Load Test - Users 1-107,text,false,,631,313,13,13,http://localhost:8080/api/v1/reviews,6,0,0
+1772664856599,6,Create Review,401,,Load Test - Users 1-109,text,false,,631,313,13,13,http://localhost:8080/api/v1/reviews,6,0,1
+1772664856762,6,Create Review,401,,Load Test - Users 1-102,text,false,,631,312,13,13,http://localhost:8080/api/v1/reviews,6,0,1
+1772664856880,11,01_Login,500,,Load Test - Users 1-114,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,10,0,1
+1772664856985,11,01_Login,500,,Load Test - Users 1-118,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664857026,12,01_Login,500,,Load Test - Users 1-116,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,11,0,1
+1772664857218,10,01_Login,500,,Load Test - Users 1-115,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,0
+1772664857225,10,01_Login,500,,Load Test - Users 1-113,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,10,0,0
+1772664857266,4,Create Review,401,,Load Test - Users 1-104,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,4,0,1
+1772664857405,6,Create Review,401,,Load Test - Users 1-114,text,false,,630,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664857410,7,Create Review,401,,Load Test - Users 1-105,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664857598,10,01_Login,500,,Load Test - Users 1-117,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,9,0,0
+1772664857657,6,Create Review,401,,Load Test - Users 1-108,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664857791,6,Create Review,401,,Load Test - Users 1-118,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664857854,7,Create Review,401,,Load Test - Users 1-111,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664858003,6,Create Review,401,,Load Test - Users 1-112,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664858062,11,01_Login,500,,Load Test - Users 1-121,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,10,0,1
+1772664858077,6,Create Review,401,,Load Test - Users 1-117,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,0
+1772664858083,6,Create Review,401,,Load Test - Users 1-115,text,false,,631,314,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664858078,12,01_Login,500,,Load Test - Users 1-125,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,11,0,1
+1772664858199,7,Create Review,401,,Load Test - Users 1-116,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,7,0,1
+1772664858248,11,01_Login,500,,Load Test - Users 1-123,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,10,0,1
+1772664858328,11,01_Login,500,,Load Test - Users 1-119,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664858533,9,01_Login,500,,Load Test - Users 1-124,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,8,0,1
+1772664858537,9,01_Login,500,,Load Test - Users 1-122,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,8,0,0
+1772664858696,10,01_Login,500,,Load Test - Users 1-131,text,false,Test failed: code expected to contain /200/,1086,238,17,17,http://localhost:8080/api/v1/users/login,9,0,1
+1772664858853,11,01_Login,500,,Load Test - Users 1-120,text,false,Test failed: code expected to contain /200/,1086,238,18,18,http://localhost:8080/api/v1/users/login,10,0,1
+1772664858923,6,Create Review,401,,Load Test - Users 1-121,text,false,,631,314,18,18,http://localhost:8080/api/v1/reviews,6,0,1
+1772664859027,12,01_Login,500,,Load Test - Users 1-129,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,11,0,1
+1772664859028,15,01_Login,500,,Load Test - Users 1-128,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,14,0,1
+1772664859046,12,01_Login,500,,Load Test - Users 1-133,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,11,0,1
+1772664859163,6,Create Review,401,,Load Test - Users 1-120,text,false,,631,313,19,19,http://localhost:8080/api/v1/reviews,6,0,1
+1772664859223,12,01_Login,500,,Load Test - Users 1-134,text,false,Test failed: code expected to contain /200/,1086,237,19,19,http://localhost:8080/api/v1/users/login,11,0,1
+1772664859292,6,Create Review,401,,Load Test - Users 1-124,text,false,,631,313,19,19,http://localhost:8080/api/v1/reviews,6,0,1
+1772664859374,6,Create Review,401,,Load Test - Users 1-123,text,false,,631,313,19,19,http://localhost:8080/api/v1/reviews,6,0,1
+1772664859420,6,Create Review,401,,Load Test - Users 1-113,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,6,0,1
+1772664859452,9,01_Login,500,,Load Test - Users 1-136,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,8,0,0
+1772664859474,6,Create Review,401,,Load Test - Users 1-122,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,6,0,1
+1772664859506,7,Create Review,401,,Load Test - Users 1-119,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,7,0,1
+1772664859528,11,01_Login,500,,Load Test - Users 1-130,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,10,0,1
+1772664859556,10,01_Login,500,,Load Test - Users 1-132,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664859576,9,01_Login,500,,Load Test - Users 1-126,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,8,0,0
+1772664859851,6,Create Review,401,,Load Test - Users 1-125,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,6,0,1
+1772664859901,6,Create Review,401,,Load Test - Users 1-129,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,6,0,1
+1772664859912,10,01_Login,500,,Load Test - Users 1-127,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,9,0,1
+1772664859954,6,Create Review,401,,Load Test - Users 1-131,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,6,0,1
+1772664859975,5,Create Review,401,,Load Test - Users 1-134,text,false,,631,314,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664859998,12,01_Login,500,,Load Test - Users 1-143,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,11,0,1
+1772664860161,6,Create Review,401,,Load Test - Users 1-133,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,6,0,1
+1772664860176,6,Create Review,401,,Load Test - Users 1-136,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664860392,11,01_Login,500,,Load Test - Users 1-139,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,10,0,1
+1772664860435,6,Create Review,401,,Load Test - Users 1-130,text,false,,629,314,17,17,http://localhost:8080/api/v1/reviews,6,0,1
+1772664860453,9,01_Login,500,,Load Test - Users 1-138,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,0
+1772664860462,11,01_Login,500,,Load Test - Users 1-141,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664860537,6,Create Review,401,,Load Test - Users 1-128,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,6,0,0
+1772664860576,12,01_Login,500,,Load Test - Users 1-140,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,11,0,1
+1772664860584,12,01_Login,500,,Load Test - Users 1-135,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,11,0,1
+1772664860604,7,Create Review,401,,Load Test - Users 1-135,text,false,,630,313,16,16,http://localhost:8080/api/v1/reviews,7,0,1
+1772664860776,9,01_Login,500,,Load Test - Users 1-137,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664860888,6,Create Review,401,,Load Test - Users 1-141,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,6,0,1
+1772664860892,6,Create Review,401,,Load Test - Users 1-126,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664860908,9,01_Login,500,,Load Test - Users 1-142,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,8,0,1
+1772664860914,6,Create Review,401,,Load Test - Users 1-138,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664860924,16,01_Login,500,,Load Test - Users 1-145,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,15,0,1
+1772664860960,6,Create Review,401,,Load Test - Users 1-132,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664860968,10,01_Login,500,,Load Test - Users 1-147,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664861093,13,01_Login,500,,Load Test - Users 1-148,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,12,0,1
+1772664861112,6,Create Review,401,,Load Test - Users 1-137,text,false,,631,314,15,15,http://localhost:8080/api/v1/reviews,6,0,0
+1772664861140,5,Create Review,401,,Load Test - Users 1-127,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,0
+1772664861236,9,01_Login,500,,Load Test - Users 1-146,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,8,0,1
+1772664861317,10,01_Login,500,,Load Test - Users 1-153,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664861553,6,Create Review,401,,Load Test - Users 1-145,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664861555,10,01_Login,500,,Load Test - Users 1-144,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,9,0,1
+1772664861743,11,01_Login,500,,Load Test - Users 1-149,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,10,0,1
+1772664861765,7,Create Review,401,,Load Test - Users 1-140,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,7,0,1
+1772664861828,6,Create Review,401,,Load Test - Users 1-143,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664861832,10,01_Login,500,,Load Test - Users 1-150,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,10,0,1
+1772664861912,6,Create Review,401,,Load Test - Users 1-139,text,false,,631,314,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664862246,8,Create Review,401,,Load Test - Users 1-148,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,7,0,1
+1772664862245,9,Create Review,401,,Load Test - Users 1-146,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,8,0,1
+1772664862290,16,01_Login,500,,Load Test - Users 1-154,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,15,0,1
+1772664862305,7,Create Review,401,,Load Test - Users 1-142,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,7,0,1
+1772664862338,7,Create Review,401,,Load Test - Users 1-147,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664862362,11,01_Login,500,,Load Test - Users 1-156,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664862377,9,01_Login,500,,Load Test - Users 1-152,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,8,0,1
+1772664862480,6,Create Review,401,,Load Test - Users 1-154,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664862537,5,Create Review,401,,Load Test - Users 1-150,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664862542,5,Create Review,401,,Load Test - Users 1-153,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664862548,5,Create Review,401,,Load Test - Users 1-152,text,false,,631,312,13,13,http://localhost:8080/api/v1/reviews,5,0,0
+1772664862577,6,Create Review,401,,Load Test - Users 1-144,text,false,,631,313,12,12,http://localhost:8080/api/v1/reviews,6,0,1
+1772664862594,10,01_Login,500,,Load Test - Users 1-157,text,false,Test failed: code expected to contain /200/,1085,237,11,11,http://localhost:8080/api/v1/users/login,9,0,1
+1772664862650,10,01_Login,500,,Load Test - Users 1-151,text,false,Test failed: code expected to contain /200/,1085,237,11,11,http://localhost:8080/api/v1/users/login,10,0,1
+1772664862846,5,Create Review,401,,Load Test - Users 1-149,text,false,,631,313,13,13,http://localhost:8080/api/v1/reviews,5,0,1
+1772664862848,5,Create Review,401,,Load Test - Users 1-156,text,false,,631,313,12,12,http://localhost:8080/api/v1/reviews,5,0,1
+1772664862884,9,01_Login,500,,Load Test - Users 1-161,text,false,Test failed: code expected to contain /200/,1086,237,11,11,http://localhost:8080/api/v1/users/login,8,0,1
+1772664862897,8,01_Login,500,,Load Test - Users 1-155,text,false,Test failed: code expected to contain /200/,1086,238,11,11,http://localhost:8080/api/v1/users/login,8,0,1
+1772664863337,7,Create Review,401,,Load Test - Users 1-157,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664863443,10,01_Login,500,,Load Test - Users 1-159,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664863493,9,01_Login,500,,Load Test - Users 1-167,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,8,0,1
+1772664863553,7,Create Review,401,,Load Test - Users 1-155,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664863577,10,01_Login,500,,Load Test - Users 1-165,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664863726,11,01_Login,500,,Load Test - Users 1-166,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,10,0,1
+1772664863820,10,01_Login,500,,Load Test - Users 1-160,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664863855,10,01_Login,500,,Load Test - Users 1-163,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664863916,12,01_Login,500,,Load Test - Users 1-162,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,11,0,0
+1772664863929,8,01_Login,500,,Load Test - Users 1-158,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,8,0,0
+1772664864034,11,01_Login,500,,Load Test - Users 1-169,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,11,0,0
+1772664864049,7,Create Review,401,,Load Test - Users 1-160,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,7,0,1
+1772664864137,9,01_Login,500,,Load Test - Users 1-164,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,9,0,1
+1772664864145,10,01_Login,500,,Load Test - Users 1-168,text,false,Test failed: code expected to contain /200/,1086,238,18,18,http://localhost:8080/api/v1/users/login,9,0,1
+1772664864214,6,Create Review,401,,Load Test - Users 1-151,text,false,,631,314,18,18,http://localhost:8080/api/v1/reviews,6,0,1
+1772664864277,34,01_Login,500,,Load Test - Users 1-171,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,33,0,1
+1772664864536,7,Create Review,401,,Load Test - Users 1-167,text,false,,631,313,20,20,http://localhost:8080/api/v1/reviews,7,0,1
+1772664864535,12,01_Login,500,,Load Test - Users 1-175,text,false,Test failed: code expected to contain /200/,1086,237,19,19,http://localhost:8080/api/v1/users/login,11,0,1
+1772664864566,9,01_Login,500,,Load Test - Users 1-172,text,false,Test failed: code expected to contain /200/,1086,237,19,19,http://localhost:8080/api/v1/users/login,9,0,1
+1772664864577,5,Create Review,401,,Load Test - Users 1-163,text,false,,631,313,19,19,http://localhost:8080/api/v1/reviews,5,0,1
+1772664864628,6,Create Review,401,,Load Test - Users 1-159,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,6,0,0
+1772664864626,11,01_Login,500,,Load Test - Users 1-176,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,10,0,0
+1772664864682,5,Create Review,401,,Load Test - Users 1-161,text,false,,631,314,18,18,http://localhost:8080/api/v1/reviews,5,0,0
+1772664864724,9,01_Login,500,,Load Test - Users 1-170,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,8,0,1
+1772664864759,10,01_Login,500,,Load Test - Users 1-173,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,10,0,1
+1772664864790,5,Create Review,401,,Load Test - Users 1-171,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,5,0,1
+1772664864815,10,01_Login,500,,Load Test - Users 1-179,text,false,Test failed: code expected to contain /200/,1086,238,17,17,http://localhost:8080/api/v1/users/login,10,0,1
+1772664864848,6,Create Review,401,,Load Test - Users 1-165,text,false,,630,313,17,17,http://localhost:8080/api/v1/reviews,6,0,0
+1772664864859,9,01_Login,500,,Load Test - Users 1-174,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,8,0,1
+1772664864863,5,Create Review,401,,Load Test - Users 1-166,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664864946,5,Create Review,401,,Load Test - Users 1-158,text,false,,631,314,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664865013,5,Create Review,401,,Load Test - Users 1-172,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664865040,5,Create Review,401,,Load Test - Users 1-168,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664865179,13,01_Login,500,,Load Test - Users 1-180,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,12,0,1
+1772664865459,6,Create Review,401,,Load Test - Users 1-176,text,false,,631,314,17,17,http://localhost:8080/api/v1/reviews,6,0,1
+1772664865541,5,Create Review,401,,Load Test - Users 1-164,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664865562,5,Create Review,401,,Load Test - Users 1-169,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664865604,5,Create Review,401,,Load Test - Users 1-173,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,0
+1772664865653,8,01_Login,500,,Load Test - Users 1-178,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,8,0,1
+1772664865710,10,01_Login,500,,Load Test - Users 1-177,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664865883,5,Create Review,401,,Load Test - Users 1-175,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664866017,6,Create Review,401,,Load Test - Users 1-162,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,0
+1772664866069,9,01_Login,500,,Load Test - Users 1-185,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,8,0,1
+1772664866105,5,Create Review,401,,Load Test - Users 1-174,text,false,,630,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664866118,8,01_Login,500,,Load Test - Users 1-187,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,8,0,1
+1772664866173,7,Create Review,401,,Load Test - Users 1-177,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664866276,5,Create Review,401,,Load Test - Users 1-179,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664866282,11,01_Login,500,,Load Test - Users 1-181,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664866323,9,01_Login,500,,Load Test - Users 1-186,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,8,0,1
+1772664866370,5,Create Review,401,,Load Test - Users 1-178,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664866466,12,01_Login,500,,Load Test - Users 1-182,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,11,0,1
+1772664866488,14,01_Login,500,,Load Test - Users 1-184,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,13,0,1
+1772664866599,9,01_Login,500,,Load Test - Users 1-188,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,8,0,0
+1772664866661,6,Create Review,401,,Load Test - Users 1-188,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664866707,6,Create Review,401,,Load Test - Users 1-170,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664866774,8,01_Login,500,,Load Test - Users 1-183,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,8,0,1
+1772664866790,7,01_Login,500,,Load Test - Users 1-191,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,6,0,0
+1772664866845,9,01_Login,500,,Load Test - Users 1-189,text,false,Test failed: code expected to contain /200/,1084,237,15,15,http://localhost:8080/api/v1/users/login,9,0,1
+1772664866879,6,Create Review,401,,Load Test - Users 1-180,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664866922,6,Create Review,401,,Load Test - Users 1-183,text,false,,630,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664866980,6,Create Review,401,,Load Test - Users 1-182,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664867315,6,Create Review,401,,Load Test - Users 1-181,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,0
+1772664867337,8,01_Login,500,,Load Test - Users 1-192,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,8,0,0
+1772664867379,7,Create Review,401,,Load Test - Users 1-185,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,7,0,1
+1772664867552,9,01_Login,500,,Load Test - Users 1-195,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,9,0,1
+1772664867578,5,Create Review,401,,Load Test - Users 1-187,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664867616,9,01_Login,500,,Load Test - Users 1-193,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,9,0,1
+1772664867661,11,01_Login,500,,Load Test - Users 1-194,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,10,0,0
+1772664867665,9,01_Login,500,,Load Test - Users 1-198,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,8,0,1
+1772664867823,6,Create Review,401,,Load Test - Users 1-191,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664867826,26,Create Review,401,,Load Test - Users 1-186,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,26,0,1
+1772664867929,16,Create Review,401,,Load Test - Users 1-189,text,false,,629,313,15,15,http://localhost:8080/api/v1/reviews,16,0,1
+1772664868084,13,01_Login,500,,Load Test - Users 1-196,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,12,0,0
+1772664868205,7,Create Review,401,,Load Test - Users 1-184,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,7,0,1
+1772664868315,10,01_Login,500,,Load Test - Users 1-190,text,false,Test failed: code expected to contain /200/,1085,238,16,16,http://localhost:8080/api/v1/users/login,10,0,0
+1772664868417,6,Create Review,401,,Load Test - Users 1-192,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,6,0,1
+1772664868499,13,01_Login,500,,Load Test - Users 1-204,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,12,0,2
+1772664868547,10,01_Login,500,,Load Test - Users 1-197,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,9,0,1
+1772664868593,9,01_Login,500,,Load Test - Users 1-200,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,8,0,1
+1772664868661,5,Create Review,401,,Load Test - Users 1-197,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664868673,5,Create Review,401,,Load Test - Users 1-193,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,5,0,1
+1772664868742,9,01_Login,500,,Load Test - Users 1-205,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664868811,8,01_Login,500,,Load Test - Users 1-201,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,8,0,1
+1772664868856,5,Create Review,401,,Load Test - Users 1-194,text,false,,631,314,17,17,http://localhost:8080/api/v1/reviews,5,0,1
+1772664868965,9,01_Login,500,,Load Test - Users 1-199,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,8,0,1
+1772664868983,9,01_Login,500,,Load Test - Users 1-211,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,8,0,0
+1772664869110,10,01_Login,500,,Load Test - Users 1-208,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,10,0,0
+1772664869153,6,Create Review,401,,Load Test - Users 1-196,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,6,0,1
+1772664869220,5,Create Review,401,,Load Test - Users 1-195,text,false,,631,312,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664869218,9,01_Login,500,,Load Test - Users 1-206,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,9,0,0
+1772664869262,5,Create Review,401,,Load Test - Users 1-198,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,5,0,1
+1772664869303,10,01_Login,500,,Load Test - Users 1-202,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664869365,5,Create Review,401,,Load Test - Users 1-201,text,false,,630,313,17,17,http://localhost:8080/api/v1/reviews,5,0,0
+1772664869449,6,Create Review,401,,Load Test - Users 1-200,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,6,0,1
+1772664869652,5,Create Review,401,,Load Test - Users 1-205,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,5,0,1
+1772664869761,11,01_Login,500,,Load Test - Users 1-207,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,10,0,1
+1772664869784,12,01_Login,500,,Load Test - Users 1-203,text,false,Test failed: code expected to contain /200/,1086,238,17,17,http://localhost:8080/api/v1/users/login,11,0,1
+1772664869894,3,Create Review,401,,Load Test - Users 1-190,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,3,0,0
+1772664869901,2,Create Review,401,,Load Test - Users 1-211,text,false,,631,314,17,17,http://localhost:8080/api/v1/reviews,2,0,0
+1772664869899,5,01_Login,500,,Load Test - Users 1-215,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,5,0,0
+1772664870084,12,01_Login,500,,Load Test - Users 1-209,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,11,0,2
+1772664870093,8,Create Review,401,,Load Test - Users 1-206,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,8,0,1
+1772664870102,8,Create Review,401,,Load Test - Users 1-204,text,false,,630,313,16,16,http://localhost:8080/api/v1/reviews,8,0,1
+1772664870231,4,Create Review,401,,Load Test - Users 1-203,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,4,0,0
+1772664870353,9,01_Login,500,,Load Test - Users 1-216,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,8,0,1
+1772664870382,9,01_Login,500,,Load Test - Users 1-212,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,9,0,1
+1772664870476,10,01_Login,500,,Load Test - Users 1-214,text,false,Test failed: code expected to contain /200/,1086,238,17,17,http://localhost:8080/api/v1/users/login,9,0,0
+1772664870522,9,01_Login,500,,Load Test - Users 1-210,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,9,0,1
+1772664870541,6,Create Review,401,,Load Test - Users 1-199,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,6,0,1
+1772664870583,11,01_Login,500,,Load Test - Users 1-217,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,11,0,1
+1772664870712,10,01_Login,500,,Load Test - Users 1-218,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,9,0,0
+1772664870722,5,Create Review,401,,Load Test - Users 1-218,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664870729,5,Create Review,401,,Load Test - Users 1-208,text,false,,631,314,17,17,http://localhost:8080/api/v1/reviews,5,0,0
+1772664870756,5,Create Review,401,,Load Test - Users 1-207,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664870777,5,Create Review,401,,Load Test - Users 1-202,text,false,,631,312,15,15,http://localhost:8080/api/v1/reviews,5,0,0
+1772664870779,9,01_Login,500,,Load Test - Users 1-222,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,9,0,1
+1772664870785,5,Create Review,401,,Load Test - Users 1-215,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664870841,7,Create Review,401,,Load Test - Users 1-216,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,7,0,0
+1772664870937,7,Create Review,401,,Load Test - Users 1-210,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,7,0,1
+1772664870983,8,01_Login,500,,Load Test - Users 1-213,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,8,0,1
+1772664871175,9,01_Login,500,,Load Test - Users 1-220,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,8,0,1
+1772664871244,11,01_Login,500,,Load Test - Users 1-219,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,10,0,1
+1772664871281,5,Create Review,401,,Load Test - Users 1-209,text,false,,630,314,15,15,http://localhost:8080/api/v1/reviews,5,0,0
+1772664871311,10,01_Login,500,,Load Test - Users 1-221,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,9,0,1
+1772664871322,9,01_Login,500,,Load Test - Users 1-225,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,8,0,1
+1772664871330,5,Create Review,401,,Load Test - Users 1-214,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,4,0,1
+1772664871422,5,Create Review,401,,Load Test - Users 1-212,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,0
+1772664871666,4,Create Review,401,,Load Test - Users 1-220,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,4,0,1
+1772664871690,5,Create Review,401,,Load Test - Users 1-221,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664871837,8,Create Review,401,,Load Test - Users 1-222,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,8,0,3
+1772664871851,14,01_Login,500,,Load Test - Users 1-230,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,13,0,1
+1772664871933,8,01_Login,500,,Load Test - Users 1-224,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,8,0,1
+1772664871976,5,Create Review,401,,Load Test - Users 1-225,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664871998,6,Create Review,401,,Load Test - Users 1-219,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664872045,9,01_Login,500,,Load Test - Users 1-223,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,9,0,1
+1772664872099,11,01_Login,500,,Load Test - Users 1-226,text,false,Test failed: code expected to contain /200/,1086,238,13,13,http://localhost:8080/api/v1/users/login,10,0,1
+1772664872104,10,01_Login,500,,Load Test - Users 1-227,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664872135,11,01_Login,500,,Load Test - Users 1-235,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664872197,6,Create Review,401,,Load Test - Users 1-213,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,6,0,0
+1772664872313,4,Create Review,401,,Load Test - Users 1-217,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,4,0,0
+1772664872416,9,01_Login,500,,Load Test - Users 1-229,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,8,0,1
+1772664872541,4,Create Review,401,,Load Test - Users 1-223,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,4,0,1
+1772664872735,11,01_Login,500,,Load Test - Users 1-231,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,10,0,1
+1772664872743,9,01_Login,500,,Load Test - Users 1-236,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,8,0,0
+1772664872784,11,01_Login,500,,Load Test - Users 1-232,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,10,0,1
+1772664872856,4,Create Review,401,,Load Test - Users 1-231,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,4,0,1
+1772664872968,5,Create Review,401,,Load Test - Users 1-235,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664873064,9,01_Login,500,,Load Test - Users 1-234,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664873194,9,01_Login,500,,Load Test - Users 1-228,text,false,Test failed: code expected to contain /200/,1086,238,17,17,http://localhost:8080/api/v1/users/login,8,0,0
+1772664873303,8,01_Login,500,,Load Test - Users 1-233,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,8,0,1
+1772664873320,10,01_Login,500,,Load Test - Users 1-243,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,10,0,1
+1772664873361,4,Create Review,401,,Load Test - Users 1-232,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,4,0,1
+1772664873417,13,01_Login,500,,Load Test - Users 1-239,text,false,Test failed: code expected to contain /200/,1086,238,17,17,http://localhost:8080/api/v1/users/login,12,0,1
+1772664873510,4,Create Review,401,,Load Test - Users 1-226,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,4,0,1
+1772664873543,2,Create Review,401,,Load Test - Users 1-224,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,2,0,0
+1772664873609,9,01_Login,500,,Load Test - Users 1-237,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,8,0,1
+1772664873682,9,01_Login,500,,Load Test - Users 1-238,text,false,Test failed: code expected to contain /200/,1086,238,17,17,http://localhost:8080/api/v1/users/login,9,0,1
+1772664873722,5,Create Review,401,,Load Test - Users 1-229,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664873796,5,Create Review,401,,Load Test - Users 1-230,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,5,0,1
+1772664873827,9,01_Login,500,,Load Test - Users 1-240,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,8,0,1
+1772664873961,3,Create Review,401,,Load Test - Users 1-228,text,false,,631,312,17,17,http://localhost:8080/api/v1/reviews,3,0,1
+1772664873990,5,Create Review,401,,Load Test - Users 1-243,text,false,,630,313,17,17,http://localhost:8080/api/v1/reviews,5,0,0
+1772664874005,9,01_Login,500,,Load Test - Users 1-247,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664874096,5,Create Review,401,,Load Test - Users 1-234,text,false,,629,313,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664874110,5,Create Review,401,,Load Test - Users 1-227,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664874114,5,Create Review,401,,Load Test - Users 1-236,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664874140,6,Create Review,401,,Load Test - Users 1-238,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664874252,10,01_Login,500,,Load Test - Users 1-244,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664874262,9,01_Login,500,,Load Test - Users 1-242,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664874309,9,01_Login,500,,Load Test - Users 1-241,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,8,0,1
+1772664874347,5,Create Review,401,,Load Test - Users 1-233,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664874394,5,Create Review,401,,Load Test - Users 1-240,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664874408,8,01_Login,500,,Load Test - Users 1-248,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,8,0,1
+1772664874667,9,01_Login,500,,Load Test - Users 1-246,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,9,0,1
+1772664874680,5,Create Review,401,,Load Test - Users 1-239,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664874677,10,01_Login,500,,Load Test - Users 1-249,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664874687,5,Create Review,401,,Load Test - Users 1-247,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,0
+1772664874724,8,01_Login,500,,Load Test - Users 1-245,text,false,Test failed: code expected to contain /200/,1086,237,13,13,http://localhost:8080/api/v1/users/login,8,0,1
+1772664874877,6,Create Review,401,,Load Test - Users 1-244,text,false,,631,314,14,14,http://localhost:8080/api/v1/reviews,6,0,1
+1772664874936,10,01_Login,500,,Load Test - Users 1-251,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664874979,5,Create Review,401,,Load Test - Users 1-237,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664875108,10,01_Login,500,,Load Test - Users 1-250,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664875154,11,01_Login,500,,Load Test - Users 1-252,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664875171,6,Create Review,401,,Load Test - Users 1-241,text,false,,631,312,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664875209,10,01_Login,500,,Load Test - Users 1-258,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,9,0,0
+1772664875216,11,01_Login,500,,Load Test - Users 1-253,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,10,0,1
+1772664875465,10,01_Login,500,,Load Test - Users 1-254,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,10,0,1
+1772664875515,11,01_Login,500,,Load Test - Users 1-257,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,11,0,1
+1772664875548,10,01_Login,500,,Load Test - Users 1-259,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,10,0,1
+1772664875585,5,Create Review,401,,Load Test - Users 1-252,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,5,0,1
+1772664875668,6,Create Review,401,,Load Test - Users 1-251,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664875737,5,Create Review,401,,Load Test - Users 1-245,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664875862,5,Create Review,401,,Load Test - Users 1-248,text,false,,630,313,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664875886,5,Create Review,401,,Load Test - Users 1-246,text,false,,631,314,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664875926,9,01_Login,500,,Load Test - Users 1-255,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,8,0,1
+1772664875971,5,Create Review,401,,Load Test - Users 1-250,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664876013,10,01_Login,500,,Load Test - Users 1-262,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664876114,11,01_Login,500,,Load Test - Users 1-261,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,10,0,1
+1772664876134,11,01_Login,500,,Load Test - Users 1-256,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,10,0,1
+1772664876230,9,Create Review,401,,Load Test - Users 1-242,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,9,0,1
+1772664876329,6,Create Review,401,,Load Test - Users 1-258,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664876456,5,Create Review,401,,Load Test - Users 1-259,text,false,,631,314,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664876601,10,01_Login,500,,Load Test - Users 1-260,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,9,0,0
+1772664876658,6,Create Review,401,,Load Test - Users 1-254,text,false,,631,312,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664876790,6,Create Review,401,,Load Test - Users 1-257,text,false,,631,314,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664876791,5,Create Review,401,,Load Test - Users 1-249,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664876921,10,01_Login,500,,Load Test - Users 1-270,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,9,0,1
+1772664877056,6,Create Review,401,,Load Test - Users 1-262,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664877097,6,Create Review,401,,Load Test - Users 1-253,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664877116,5,Create Review,401,,Load Test - Users 1-256,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664877207,5,Create Review,401,,Load Test - Users 1-260,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664877324,9,01_Login,500,,Load Test - Users 1-268,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,8,0,1
+1772664877343,10,01_Login,500,,Load Test - Users 1-265,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664877454,7,01_Login,500,,Load Test - Users 1-269,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,7,0,0
+1772664877646,9,01_Login,500,,Load Test - Users 1-271,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664877676,5,Create Review,401,,Load Test - Users 1-269,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,5,0,1
+1772664877684,5,Create Review,401,,Load Test - Users 1-255,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664877692,5,Create Review,401,,Load Test - Users 1-261,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664877692,9,01_Login,500,,Load Test - Users 1-263,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664877843,9,01_Login,500,,Load Test - Users 1-275,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,8,0,1
+1772664877849,5,Create Review,401,,Load Test - Users 1-270,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664877902,8,01_Login,500,,Load Test - Users 1-264,text,false,Test failed: code expected to contain /200/,1086,238,14,14,http://localhost:8080/api/v1/users/login,7,0,1
+1772664877916,10,01_Login,500,,Load Test - Users 1-266,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,9,0,1
+1772664878066,7,01_Login,500,,Load Test - Users 1-267,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,7,0,1
+1772664878134,8,01_Login,500,,Load Test - Users 1-274,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,7,0,1
+1772664878205,9,01_Login,500,,Load Test - Users 1-272,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664878256,8,01_Login,500,,Load Test - Users 1-273,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,8,0,1
+1772664878357,10,01_Login,500,,Load Test - Users 1-279,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,9,0,1
+1772664878647,5,Create Review,401,,Load Test - Users 1-265,text,false,,631,312,20,20,http://localhost:8080/api/v1/reviews,5,0,1
+1772664878751,6,Create Review,401,,Load Test - Users 1-263,text,false,,631,313,19,19,http://localhost:8080/api/v1/reviews,6,0,1
+1772664878829,5,Create Review,401,,Load Test - Users 1-271,text,false,,631,314,19,19,http://localhost:8080/api/v1/reviews,5,0,1
+1772664878850,5,Create Review,401,,Load Test - Users 1-266,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664878913,10,01_Login,500,,Load Test - Users 1-278,text,false,Test failed: code expected to contain /200/,1086,237,18,18,http://localhost:8080/api/v1/users/login,10,0,1
+1772664878953,5,Create Review,401,,Load Test - Users 1-279,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664878989,10,01_Login,500,,Load Test - Users 1-276,text,false,Test failed: code expected to contain /200/,1086,238,17,17,http://localhost:8080/api/v1/users/login,10,0,1
+1772664879036,5,Create Review,401,,Load Test - Users 1-264,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664879064,8,01_Login,500,,Load Test - Users 1-282,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,8,0,1
+1772664879088,4,Create Review,401,,Load Test - Users 1-274,text,false,,631,312,17,17,http://localhost:8080/api/v1/reviews,4,0,1
+1772664879144,11,01_Login,500,,Load Test - Users 1-285,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,10,0,1
+1772664879191,10,01_Login,500,,Load Test - Users 1-281,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,9,0,1
+1772664879197,5,Create Review,401,,Load Test - Users 1-268,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,5,0,1
+1772664879204,9,01_Login,500,,Load Test - Users 1-277,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,8,0,1
+1772664879283,6,Create Review,401,,Load Test - Users 1-267,text,false,,631,314,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664879393,7,01_Login,500,,Load Test - Users 1-288,text,false,Test failed: code expected to contain /200/,1086,238,16,16,http://localhost:8080/api/v1/users/login,6,0,1
+1772664879395,7,01_Login,500,,Load Test - Users 1-280,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,6,0,1
+1772664879548,10,01_Login,500,,Load Test - Users 1-283,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,9,0,1
+1772664879657,5,Create Review,401,,Load Test - Users 1-275,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664879678,5,Create Review,401,,Load Test - Users 1-273,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,5,0,1
+1772664879718,9,01_Login,500,,Load Test - Users 1-287,text,false,Test failed: code expected to contain /200/,1086,238,17,17,http://localhost:8080/api/v1/users/login,9,0,1
+1772664879762,9,01_Login,500,,Load Test - Users 1-284,text,false,Test failed: code expected to contain /200/,1086,237,17,17,http://localhost:8080/api/v1/users/login,8,0,1
+1772664879828,5,Create Review,401,,Load Test - Users 1-272,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664879976,5,Create Review,401,,Load Test - Users 1-277,text,false,,631,314,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664880098,5,Create Review,401,,Load Test - Users 1-285,text,false,,631,313,18,18,http://localhost:8080/api/v1/reviews,5,0,1
+1772664880133,5,Create Review,401,,Load Test - Users 1-278,text,false,,631,313,17,17,http://localhost:8080/api/v1/reviews,5,0,1
+1772664880143,4,Create Review,401,,Load Test - Users 1-283,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,4,0,0
+1772664880176,10,01_Login,500,,Load Test - Users 1-294,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,9,0,0
+1772664880202,5,Create Review,401,,Load Test - Users 1-281,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,5,0,1
+1772664880270,10,01_Login,500,,Load Test - Users 1-291,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,9,0,1
+1772664880284,8,01_Login,500,,Load Test - Users 1-289,text,false,Test failed: code expected to contain /200/,1086,237,15,15,http://localhost:8080/api/v1/users/login,8,0,1
+1772664880335,4,Create Review,401,,Load Test - Users 1-280,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,4,0,1
+1772664880533,6,Create Review,401,,Load Test - Users 1-288,text,false,,631,313,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664880547,10,01_Login,500,,Load Test - Users 1-286,text,false,Test failed: code expected to contain /200/,1086,238,15,15,http://localhost:8080/api/v1/users/login,9,0,1
+1772664880615,9,01_Login,500,,Load Test - Users 1-292,text,false,Test failed: code expected to contain /200/,1086,237,16,16,http://localhost:8080/api/v1/users/login,9,0,1
+1772664880711,6,Create Review,401,,Load Test - Users 1-276,text,false,,631,314,16,16,http://localhost:8080/api/v1/reviews,6,0,1
+1772664880730,6,Create Review,401,,Load Test - Users 1-291,text,false,,631,313,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664880774,6,Create Review,401,,Load Test - Users 1-284,text,false,,631,314,15,15,http://localhost:8080/api/v1/reviews,6,0,1
+1772664880815,8,01_Login,500,,Load Test - Users 1-290,text,false,Test failed: code expected to contain /200/,1086,237,14,14,http://localhost:8080/api/v1/users/login,7,0,0
+1772664880838,5,Create Review,401,,Load Test - Users 1-282,text,false,,631,313,14,14,http://localhost:8080/api/v1/reviews,5,0,1
+1772664880851,4,Create Review,401,,Load Test - Users 1-287,text,false,,630,313,13,13,http://localhost:8080/api/v1/reviews,4,0,1
+1772664880952,8,01_Login,500,,Load Test - Users 1-298,text,false,Test failed: code expected to contain /200/,1086,238,12,12,http://localhost:8080/api/v1/users/login,7,0,0
+1772664881175,5,Create Review,401,,Load Test - Users 1-290,text,false,,631,313,12,12,http://localhost:8080/api/v1/reviews,5,0,1
+1772664881191,8,01_Login,500,,Load Test - Users 1-299,text,false,Test failed: code expected to contain /200/,1086,238,11,11,http://localhost:8080/api/v1/users/login,8,0,1
+1772664881257,11,01_Login,500,,Load Test - Users 1-296,text,false,Test failed: code expected to contain /200/,1086,237,11,11,http://localhost:8080/api/v1/users/login,10,0,1
+1772664881293,10,01_Login,500,,Load Test - Users 1-295,text,false,Test failed: code expected to contain /200/,1086,237,11,11,http://localhost:8080/api/v1/users/login,10,0,1
+1772664881340,13,01_Login,500,,Load Test - Users 1-297,text,false,Test failed: code expected to contain /200/,1086,237,11,11,http://localhost:8080/api/v1/users/login,12,0,1
+1772664881538,11,01_Login,500,,Load Test - Users 1-293,text,false,Test failed: code expected to contain /200/,1086,237,11,11,http://localhost:8080/api/v1/users/login,10,0,1
+1772664881624,9,01_Login,500,,Load Test - Users 1-300,text,false,Test failed: code expected to contain /200/,1086,238,11,11,http://localhost:8080/api/v1/users/login,8,0,1
+1772664881678,5,Create Review,401,,Load Test - Users 1-292,text,false,,631,313,11,11,http://localhost:8080/api/v1/reviews,5,0,0
+1772664881697,4,Create Review,401,,Load Test - Users 1-286,text,false,,631,313,10,10,http://localhost:8080/api/v1/reviews,4,0,1
+1772664881800,6,Create Review,401,,Load Test - Users 1-294,text,false,,631,313,9,9,http://localhost:8080/api/v1/reviews,6,0,1
+1772664881822,5,Create Review,401,,Load Test - Users 1-295,text,false,,631,313,8,8,http://localhost:8080/api/v1/reviews,5,0,1
+1772664881832,5,Create Review,401,,Load Test - Users 1-289,text,false,,631,313,7,7,http://localhost:8080/api/v1/reviews,5,0,1
+1772664881924,5,Create Review,401,,Load Test - Users 1-298,text,false,,631,314,6,6,http://localhost:8080/api/v1/reviews,5,0,1
+1772664881977,5,Create Review,401,,Load Test - Users 1-299,text,false,,630,313,5,5,http://localhost:8080/api/v1/reviews,5,0,1
+1772664882046,4,Create Review,401,,Load Test - Users 1-293,text,false,,631,313,4,4,http://localhost:8080/api/v1/reviews,4,0,0
+1772664882197,5,Create Review,401,,Load Test - Users 1-300,text,false,,631,313,3,3,http://localhost:8080/api/v1/reviews,5,0,1
+1772664882318,5,Create Review,401,,Load Test - Users 1-296,text,false,,631,313,2,2,http://localhost:8080/api/v1/reviews,5,0,1
+1772664883043,8,Create Review,401,,Load Test - Users 1-297,text,false,,631,313,1,1,http://localhost:8080/api/v1/reviews,8,0,1

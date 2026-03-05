@@ -2,7 +2,7 @@ package com.amalitech.demo.controllers;
 
 import com.amalitech.demo.config.SecurityConfig;
 import com.amalitech.demo.dto.response.CartItemsReponse;
-import com.amalitech.demo.dto.response.CartResponse;
+import com.amalitech.demo.models.Cart;
 import com.amalitech.demo.restcontroller.CartManagementController;
 import com.amalitech.demo.security.JwtAuthenticationFilter;
 import com.amalitech.demo.security.JwtService;
@@ -12,16 +12,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import org.springframework.security.test.context.support.WithMockUser;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @WebMvcTest(CartManagementController.class)
@@ -43,7 +42,7 @@ public class CartManagementControllerTest {
     @Test
     @WithMockUser(roles= {"admin", "customer"})
     void shouldCreateCart() throws Exception {
-        CartResponse resp = new CartResponse(1L, 1L, "active", List.of());
+        Cart resp = new Cart();
         when(cartService.createCart(5L)).thenReturn(resp);
 
         mockMvc.perform(get("/api/v1/carts/users/5"))
@@ -68,11 +67,10 @@ public class CartManagementControllerTest {
     @Test
     @WithMockUser(roles= {"admin", "customer"})
     void shouldGetCart() throws Exception {
-        CartResponse resp = new CartResponse(1L, 5L, "OPEN", List.of());
+        Cart resp = new Cart();
         when(cartService.createCart(5L)).thenReturn(resp);
 
         mockMvc.perform(get("/api/v1/carts/users/5"))
-                .andDo(print())
                 .andExpect(status().isOk());
     }
 }

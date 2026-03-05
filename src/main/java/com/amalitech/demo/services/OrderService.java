@@ -7,6 +7,8 @@ import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.OrdersMapper;
 import com.amalitech.demo.models.*;
+import com.amalitech.demo.notification.EmailNotification;
+import com.amalitech.demo.notification.NotificationDto;
 import com.amalitech.demo.repository.InventoryRepository;
 import com.amalitech.demo.repository.OrdersRepository;
 import com.amalitech.demo.repository.ProductRepository;
@@ -15,6 +17,7 @@ import com.amalitech.demo.security.CurrentUser;
 import com.amalitech.demo.services.interfaces.OrderServiceInterface;
 import com.amalitech.demo.services.specification.OrderSpecification;
 import com.amalitech.demo.utils.Sorter;
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -32,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,8 +46,7 @@ public class OrderService implements OrderServiceInterface {
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
     private final UserRepository userRepository;
-
-    private final Sorter<Orders> sorter;
+    private final EmailNotification emailNotification;
 
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS =
             Map.of(
@@ -140,26 +143,30 @@ public class OrderService implements OrderServiceInterface {
             }
     )
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
-        Orders order = ordersRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        try {
+            Orders order = ordersRepository.findById(orderId)
+                    .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        OrderStatus currentStatus = order.getStatus();
+            OrderStatus currentStatus = order.getStatus();
 
-        if (!ALLOWED_TRANSITIONS.getOrDefault(currentStatus, Collections.emptySet()).contains(newStatus)) {
-            throw new IllegalStateException(
-                    "Cannot change order status from " + currentStatus + " to " + newStatus
-            );
+            if (!ALLOWED_TRANSITIONS.getOrDefault(currentStatus, Collections.emptySet()).contains(newStatus)) {
+                throw new IllegalStateException(
+                        "Cannot change order status from " + currentStatus + " to " + newStatus
+                );
+            }
+
+            // If transitioning into cancelled from a non-cancelled state, restore inventory
+            if (currentStatus != OrderStatus.cancelled && newStatus == OrderStatus.cancelled) {
+                restoreInventory(order);
+            }
+
+            order.setStatus(newStatus);
+            Orders saved = ordersRepository.save(order);
+
+            return ordersMapper.toResponse(saved);
+        } catch (OptimisticLockException e) {
+            throw new IllegalStateException("Failed to update order due to concurrent modification. Please retry.");
         }
-
-        // If transitioning into cancelled from a non-cancelled state, restore inventory
-        if (currentStatus != OrderStatus.cancelled && newStatus == OrderStatus.cancelled) {
-            restoreInventory(order);
-        }
-
-        order.setStatus(newStatus);
-        Orders saved = ordersRepository.save(order);
-
-        return ordersMapper.toResponse(saved);
     }
 
 
@@ -180,13 +187,28 @@ public class OrderService implements OrderServiceInterface {
 
         Orders order = buildOrder(user);
 
+        // Collect all product IDs from the request up front
+        List<Long> productIds = req.getItems().stream()
+                .map(OrderItemRequest::getProductId)
+                .collect(Collectors.toList());
+
+        Map<Long, Product> productsById = productRepository.findByIdIn(productIds).stream()
+                .collect(Collectors.toMap(Product::getId, p -> p));
+
+        Map<Long, Inventory> inventoryByProductId = inventoryRepository.findByProductIdIn(productIds).stream()
+                .collect(Collectors.toMap(inv -> inv.getProduct().getId(), inv -> inv));
+
         List<OrderItem> orderItems = new ArrayList<>();
         double totalAmount = 0.0;
 
         for (OrderItemRequest itemReq : req.getItems()) {
+            Long productId = itemReq.getProductId();
 
-            Product product = getProductOrThrow(itemReq.getProductId());
-            Inventory inventory = getInventoryOrThrow(product.getId());
+            Product product = Optional.ofNullable(productsById.get(productId))
+                    .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + productId));
+
+            Inventory inventory = Optional.ofNullable(inventoryByProductId.get(productId))
+                    .orElseThrow(() -> new EntityNotFoundException("Inventory not found for product ID: " + productId));
 
             validateStock(inventory, itemReq.getQuantity(), product.getId());
 
@@ -203,7 +225,19 @@ public class OrderService implements OrderServiceInterface {
 
         Orders savedOrder = ordersRepository.save(order);
 
-        return ordersMapper.toResponse(savedOrder);
+        OrderResponse response = ordersMapper.toResponse(savedOrder);
+
+
+        String subject = "Order Confirmation";
+        String message = String.format(
+                "Dear %s, your order #%d has been successfully placed. Total amount: %.2f.",
+                user.getUsername(),
+                response.id(),
+                response.totalAmount()
+        );
+        NotificationDto notificationDto = new NotificationDto(subject, message, user.getEmail(), "");
+        emailNotification.send(notificationDto);
+        return response;
     }
 
 

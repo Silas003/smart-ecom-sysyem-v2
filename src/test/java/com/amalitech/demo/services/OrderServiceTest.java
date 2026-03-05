@@ -7,6 +7,8 @@ import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.OrdersMapper;
 import com.amalitech.demo.models.*;
+import com.amalitech.demo.notification.EmailNotification;
+import com.amalitech.demo.notification.NotificationDto;
 import com.amalitech.demo.repository.InventoryRepository;
 import com.amalitech.demo.repository.OrdersRepository;
 import com.amalitech.demo.repository.ProductRepository;
@@ -55,6 +57,9 @@ public class OrderServiceTest {
 
     @Mock
     private Sorter<Orders> sorter;
+
+    @Mock
+    private EmailNotification emailNotification;
 
     @InjectMocks
     private OrderService orderService;
@@ -197,5 +202,41 @@ public class OrderServiceTest {
         when(ordersRepository.findById(7L)).thenReturn(Optional.of(order));
         orderService.deleteOrder(7L);
         verify(ordersRepository, times(1)).deleteById(7L);
+    }
+
+    @Test
+    void createOrder_success_triggersEmailNotification() {
+        User user = new User(); user.setId(1L); user.setEmail("user@example.com"); user.setUsername("john");
+        Product prod = new Product(); prod.setId(10L); prod.setPrice(5.0);
+        Inventory inv = new Inventory(); inv.setId(100L); inv.setProduct(prod); inv.setStockQuantity(10);
+
+        OrderItemRequest itemReq = new OrderItemRequest(); itemReq.setProductId(prod.getId()); itemReq.setQuantity(2);
+        OrderRequest req = new OrderRequest(); req.setUserId(user.getId()); req.setItems(List.of(itemReq));
+
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(productRepository.findByIdIn(List.of(prod.getId()))).thenReturn(List.of(prod));
+        when(inventoryRepository.findByProductIdIn(List.of(prod.getId()))).thenReturn(List.of(inv));
+
+        Orders savedOrder = new Orders(); savedOrder.setId(55L);
+        when(ordersRepository.save(any(Orders.class))).thenReturn(savedOrder);
+
+        OrderResponse mapped = new OrderResponse(55L, user.getId(), "pending", 10.0, List.of(), LocalDateTime.now());
+        when(ordersMapper.toResponse(any(Orders.class))).thenReturn(mapped);
+
+        orderService.createOrder(req);
+
+        verify(emailNotification, times(1)).send(any(NotificationDto.class));
+    }
+
+    @Test
+    void createOrder_failure_doesNotTriggerEmailNotification() {
+        User user = new User(); user.setId(1L); user.setEmail("user@example.com");
+        OrderRequest req = new OrderRequest(); req.setUserId(user.getId()); req.setItems(List.of());
+
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(req));
+
+        verify(emailNotification, never()).send(any(NotificationDto.class));
     }
 }

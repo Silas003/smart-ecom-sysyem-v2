@@ -5,6 +5,8 @@ import com.amalitech.demo.dto.request.AddItemToCartRequest;
 import com.amalitech.demo.dto.request.UpdateCartStatusRquest;
 import com.amalitech.demo.dto.response.CartItemsReponse;
 import com.amalitech.demo.dto.response.CartResponse;
+import com.amalitech.demo.mapper.CartMapper;
+import com.amalitech.demo.models.Cart;
 import com.amalitech.demo.services.interfaces.CartServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,6 +37,7 @@ import java.time.LocalDateTime;
 @Tag(name = "Carts", description = "Shopping cart management")
 public class CartManagementController {
     private final CartServiceInterface cartService;
+    private final CartMapper cartMapper;
 
     private boolean isAdmin(Authentication auth) {
         return auth.getAuthorities().stream()
@@ -63,8 +66,8 @@ public class CartManagementController {
         if (!isAdmin(auth)) {
             // TODO: enforce that userId matches the authenticated user when userId mapping is available
         }
-        CartResponse cart = cartService.createCart(userId);
-        return new ResponseDto<>(HttpStatus.OK, "Cart retrieved successfully", cart);
+        Cart cart = cartService.createCart(userId);
+        return new ResponseDto<>(HttpStatus.OK, "Cart retrieved successfully", cartMapper.toResponse(cart));
     }
 
     @PreAuthorize("hasAnyRole('customer','admin')")
@@ -121,29 +124,6 @@ public class CartManagementController {
         return new ResponseDto<>(HttpStatus.NO_CONTENT, "Item removed from cart successfully", null);
     }
 
-    // Admin can adjust cart status (e.g., after order processing); customer typically cannot
-    @PreAuthorize("hasAnyRole('admin','customer')")
-    @PatchMapping("/{cartId}/status")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(
-        summary = "Update cart status",
-        description = "Update the status of a cart (e.g., active, abandoned, completed)"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cart status updated successfully",
-                    content = @Content(schema = @Schema(implementation = CartResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid status value"),
-            @ApiResponse(responseCode = "404", description = "Cart not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseDto<CartResponse> updateCartStatus(
-            @Parameter(description = "ID of the cart", required = true)
-            @PathVariable @Positive Long cartId,
-            @Parameter(description = "New cart status", required = true)
-            @Valid @RequestBody UpdateCartStatusRquest status) {
-        CartResponse cartResponse = cartService.updateCartStatus(cartId, status.status());
-        return new ResponseDto<>(HttpStatus.OK, "Cart status updated successfully", null);
-    }
 
     @PreAuthorize("hasAnyRole('customer','admin')")
     @DeleteMapping("/users/{userId}/items")

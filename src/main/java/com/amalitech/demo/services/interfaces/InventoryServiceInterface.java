@@ -2,6 +2,7 @@ package com.amalitech.demo.services.interfaces;
 
 import com.amalitech.demo.dto.request.InventoryRequest;
 import com.amalitech.demo.dto.response.InventoryResponse;
+import com.amalitech.demo.models.Inventory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,4 +19,6 @@ public interface InventoryServiceInterface {
     InventoryResponse updateInventory(Long id, InventoryRequest request);
 
     void deleteInventory(Long id);
+
+    Inventory getInventoryByProductId(Long productId);
 }

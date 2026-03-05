@@ -9,11 +9,12 @@ import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.exceptions.UserExists;
 import com.amalitech.demo.mapper.UserMapper;
 import com.amalitech.demo.models.User;
+import com.amalitech.demo.notification.EmailNotification;
+import com.amalitech.demo.notification.NotificationDto;
 import com.amalitech.demo.repository.UserRepository;
 import com.amalitech.demo.security.CustomUserDetails;
 import com.amalitech.demo.security.JwtService;
 import com.amalitech.demo.services.interfaces.UserServiceInterface;
-import com.amalitech.demo.utils.PasswordUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.*;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +45,8 @@ public class UserService implements UserServiceInterface {
     private final UserMapper userMapper;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailNotification emailNotification;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -52,9 +57,15 @@ public class UserService implements UserServiceInterface {
             throw new UserExists("User with given email or username already exists");
         }
         User user = userMapper.toEntity(userRequest);
-        String password = PasswordUtils.hashPassword(user.getPassword());
+        String password = passwordEncoder.encode(user.getPassword());
         user.setPassword(password);
+        System.out.println(user);
         userRepository.save(user);
+        String message = String.format(
+                "Dear %s,Thanks for registering with us. Your account has been successfully created.", user.getUsername()
+        );
+        NotificationDto notificationDto = new NotificationDto("Account Registration", message, user.getEmail(), "");
+        emailNotification.send(notificationDto);
     }
 
     @Override
@@ -72,8 +83,7 @@ public class UserService implements UserServiceInterface {
 
     @Override
     @Cacheable(value = "users", keyGenerator = "userKeyGenerator")
-    public Page<UserResponse> getAllUsers(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("username").ascending());
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
         Page<User> page = userRepository.findAll(pageable);
         List<User> content = page.getContent();
 
@@ -82,14 +92,18 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    @Caching(put = {@CachePut(value = "user", key = "#id"),}, evict = {@CacheEvict(value = "users", allEntries = true)}
-
+    @Caching(
+            put = { @CachePut(value = "user", key = "#id") },
+            evict = {
+                    @CacheEvict(value = "users", allEntries = true),
+                    @CacheEvict(value = "userAuth", key = "#result.email()")
+            }
     )
     @Transactional
     public UserResponse updateUser(Long id, UserRequest userRequest) {
         User existingUser = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        String password = PasswordUtils.hashPassword(userRequest.getPassword());
+        String password = passwordEncoder.encode(userRequest.getPassword());
 
         existingUser.setUsername(userRequest.getUsername());
         existingUser.setEmail(userRequest.getEmail());
@@ -143,9 +157,10 @@ public class UserService implements UserServiceInterface {
 
     @Override
     public LoginResponse loginUser(UserLoginRequest userRequest, HttpServletResponse response) {
-        try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.email(), userRequest.password()));
+
             if (authentication.isAuthenticated()) {
+
                 CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
                 User user = userDetails.getUser();
                 Map<String, String> tokens = jwtService.generateToken(user);
@@ -156,11 +171,9 @@ public class UserService implements UserServiceInterface {
 
                 return new LoginResponse(accessToken, userMapper.toResponse(user));
             } else {
-                throw new IllegalArgumentException("Invalid credentials");
+                throw new BadCredentialsException("Invalid credentials");
             }
-        } catch (Exception e) {
-            throw e;
-        }
+
     }
 
     @Override

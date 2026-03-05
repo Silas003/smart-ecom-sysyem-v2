@@ -7,6 +7,8 @@ import com.amalitech.demo.dto.response.OrderResponse;
 import com.amalitech.demo.exceptions.EntityNotFoundException;
 import com.amalitech.demo.mapper.OrdersMapper;
 import com.amalitech.demo.models.*;
+import com.amalitech.demo.notification.EmailNotification;
+import com.amalitech.demo.notification.NotificationDto;
 import com.amalitech.demo.repository.InventoryRepository;
 import com.amalitech.demo.repository.OrdersRepository;
 import com.amalitech.demo.repository.ProductRepository;
@@ -44,8 +46,7 @@ public class OrderService implements OrderServiceInterface {
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
     private final UserRepository userRepository;
-
-    private final Sorter<Orders> sorter;
+    private final EmailNotification emailNotification;
 
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS =
             Map.of(
@@ -224,7 +225,19 @@ public class OrderService implements OrderServiceInterface {
 
         Orders savedOrder = ordersRepository.save(order);
 
-        return ordersMapper.toResponse(savedOrder);
+        OrderResponse response = ordersMapper.toResponse(savedOrder);
+
+
+        String subject = "Order Confirmation";
+        String message = String.format(
+                "Dear %s, your order #%d has been successfully placed. Total amount: %.2f.",
+                user.getUsername(),
+                response.id(),
+                response.totalAmount()
+        );
+        NotificationDto notificationDto = new NotificationDto(subject, message, user.getEmail(), "");
+        emailNotification.send(notificationDto);
+        return response;
     }
 
 

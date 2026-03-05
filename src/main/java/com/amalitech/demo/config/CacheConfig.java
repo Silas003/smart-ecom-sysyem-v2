@@ -42,7 +42,8 @@ public class CacheConfig {
                 "reviewsByUser",
                 "reviews",
                 "reviewsByProduct",
-                "users"
+                "users",
+                "userAuth"
         );
 
         caffeineCacheManager.setCaffeine(Caffeine.newBuilder()

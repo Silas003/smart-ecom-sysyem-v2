@@ -129,7 +129,6 @@ public class UserService implements UserServiceInterface {
 
     @Override
     public LoginResponse refreshToken(String refreshToken, HttpServletResponse response) {
-        log.info("[REFRESH] Attempting to refresh token");
         try {
             String subject = jwtService.extractSubject(refreshToken);
             User user = userRepository.findByEmail(subject).orElseThrow(() -> new EntityNotFoundException("User not found"));
